@@ -1,0 +1,26 @@
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+dist-hex/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+.claude/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+artifacts/
+.local-assets/
+
+# 临时借用的付费素材：许可禁止分发素材文件本身，仓库转公开前不得提交。
+# 详见 CREDITS.md。
+hex/public/donarg/

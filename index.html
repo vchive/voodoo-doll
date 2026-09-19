@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#11100f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>巫柜 · Voodoo Doll</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient-glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark">✶</span>
+          <div>
+            <p class="eyebrow">MIDNIGHT CABINET <span>01</span></p>
+            <p class="brand-name">巫柜 <span>/</span> VOODOO DOLL</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="mana-pill" aria-label="法力值">
+            <span class="mana-orb"></span>
+            <span id="manaValue">72</span><small>法力</small>
+          </div>
+          <button class="icon-button" id="wardrobeButton" aria-label="打开衣橱">♢</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="intro-row">
+          <div>
+            <p class="section-kicker"><span class="live-dot"></span> YOUR PRIVATE ALTAR</p>
+            <h1>把一点点坏运气，<br /><em>缝进布里。</em></h1>
+          </div>
+          <button class="round-button" id="refreshMood" aria-label="换一个心情">↻</button>
+        </section>
+
+        <section class="doll-card" id="dollCard">
+          <div class="card-topline"><span>VESSEL / <span id="dollName">NO. 001</span></span><span class="card-time" id="ritualTime">今晚 · 01:37</span></div>
+          <div class="stage-halo"></div>
+          <div class="doll-stage" id="dollStage" aria-label="你的巫毒娃娃，可拖动">
+            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <div class="doll-shadow"></div>
+            <div class="doll" id="doll">
+            <div class="pin-pin pin-forehead" data-part="额头"><span></span></div>
+            <div class="pin-pin pin-heart" data-part="心口"><span></span></div>
+            <div class="pin-pin pin-wrist" data-part="手腕"><span></span></div>
+
+              <div class="doll-halo">✦</div>
+              <div class="doll-head">
+                <div class="stitch stitch-a"></div><div class="stitch stitch-b"></div>
+                <div class="doll-face" id="dollFace"><span id="avatarLetter">V</span><img id="avatarImage" alt="自定义头像" /></div>
+                <div class="eye eye-left"><i></i></div><div class="eye eye-right"><i></i></div>
+                <div class="doll-mouth"></div>
+              </div>
+              <div class="doll-body">
+                <span class="patch patch-one"></span><span class="patch patch-two"></span>
+                <div class="heart-seam">♡</div>
+                <div class="doll-arm arm-left"></div><div class="doll-arm arm-right"></div>
+              </div>
+              <div class="doll-legs"><span></span><span></span></div>
+              <div class="accessory accessory-ribbon" id="accessoryRibbon"></div>
+              <div class="accessory accessory-bell" id="accessoryBell">◌</div>
+            </div>
+            <div class="stage-caption"><span>拖动它</span><span class="caption-line"></span><span>听它说话</span></div>
+          </div>
+          <div class="card-bottomline"><span class="status-candle">●</span> 安静地陪你 <span id="streakText">· 第 3 夜</span><button id="historyButton">仪式记录 ↗</button></div>
+        </section>
+
+        <section class="quick-actions" id="dollPanel">
+          <div class="panel-heading"><div><p class="section-kicker">TODAY'S LITTLE INTENTIONS</p><h2>给它一件小事。</h2></div><span class="counter" id="pinCounter">0 / 3</span></div>
+          <div class="action-grid">
+            <button class="intent-card intent-pin" data-intent="pin"><span class="intent-icon">⌖</span><span><b>插一根针</b><small>把烦恼留在这里</small></span><i>→</i></button>
+            <button class="intent-card intent-whisper" data-intent="whisper"><span class="intent-icon">∿</span><span><b>说一个愿望</b><small>轻轻说，不必实现</small></span><i>→</i></button>
+            <button class="intent-card intent-shake" data-intent="shake"><span class="intent-icon">✧</span><span><b>抖掉坏运气</b><small>摇一摇你的手机</small></span><i>→</i></button>
+          </div>
+          <div class="activity-line" id="activityLine"><span class="activity-icon">✺</span><span>它正在等你给今晚定个基调。</span></div>
+        </section>
+
+        <section class="spells-panel hidden" id="spellsPanel">
+          <div class="panel-heading"><div><p class="section-kicker">SAFE LITTLE HEXES</p><h2>施一点无害的法。</h2></div><span class="counter">今日仪式 <b id="spellCount">0</b></span></div>
+          <div class="spell-list" id="spellList">
+            <button class="spell-card spell-luck" data-spell="好运签"><span class="spell-glyph">☽</span><span class="spell-copy"><b>好运签</b><small>让下一件小事顺利一点</small></span><span class="spell-arrow">↗</span></button>
+            <button class="spell-card spell-sneeze" data-spell="打个喷嚏"><span class="spell-glyph">✳</span><span class="spell-copy"><b>打个喷嚏</b><small>给沉闷的下午一点动静</small></span><span class="spell-arrow">↗</span></button>
+            <button class="spell-card spell-dream" data-spell="甜梦"><span class="spell-glyph">☼</span><span class="spell-copy"><b>甜梦</b><small>把月光缝进今晚的枕头</small></span><span class="spell-arrow">↗</span></button>
+            <button class="spell-card spell-shield" data-spell="社恐护盾"><span class="spell-glyph">◇</span><span class="spell-copy"><b>社恐护盾</b><small>替你挡掉一小时尴尬</small></span><span class="spell-arrow">↗</span></button>
+            <button class="spell-card spell-itch" data-spell="脚底发痒"><span class="spell-glyph">⌁</span><span class="spell-copy"><b>脚底发痒</b><small>送一阵坐不住的小风</small></span><span class="spell-arrow">↗</span></button>
+            <button class="spell-card spell-lace" data-spell="鞋带打结"><span class="spell-glyph">⋈</span><span class="spell-copy"><b>鞋带打结</b><small>让烦心事原地绊一跤</small></span><span class="spell-arrow">↗</span></button>
+          </div>
+        </section>
+
+        <section class="display-panel hidden" id="displayPanel">
+          <div class="display-card">
+            <div class="display-preview"><div class="mini-candle"><span></span></div><div class="mini-doll">✶</div><div class="display-time" id="displayTime">01:37</div></div>
+            <div class="display-copy"><p class="section-kicker">ORNAMENT MODE</p><h2>让它安静呼吸。</h2><p>把手机放在床头，它会替你守着这一小块夜色。</p><div class="scene-picker" aria-label="摆件氛围"><button class="scene-option selected" data-scene="amber" aria-pressed="true">✦ 烛光</button><button class="scene-option" data-scene="moon" aria-pressed="false">☽ 月夜</button></div><div class="display-options"><label class="toggle-row"><span>蜡烛微光</span><input type="checkbox" id="candleToggle" checked /><i></i></label><label class="toggle-row"><span>轻微呼吸</span><input type="checkbox" id="breathToggle" checked /><i></i></label><label class="toggle-row"><span>低声环境音</span><input type="checkbox" id="soundToggle" /><i></i></label></div><button class="primary-button" id="enterDisplay">进入摆件模式 <span>↗</span></button></div>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="主导航">
+        <button class="nav-item active" data-tab="doll"><span>✶</span><small>娃娃</small></button>
+        <button class="nav-item" data-tab="spells"><span>☽</span><small>施法</small></button>
+        <button class="nav-item" data-tab="display"><span>◒</span><small>摆件</small></button>
+      </nav>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modalBackdrop">
+      <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></section>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

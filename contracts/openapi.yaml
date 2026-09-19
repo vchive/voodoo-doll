@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Voodoo Doll World Kernel
+  version: 0.1.0
+  description: Authoritative multi-agent world API. Agents submit proposals; the kernel commits events.
+servers:
+  - url: http://localhost:8000
+paths:
+  /healthz:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Service status
+  /api/v4/world:
+    get:
+      operationId: getWorld
+      parameters:
+        - name: viewer
+          in: query
+          schema: { type: string, default: YOU }
+      responses:
+        '200': { description: Current public snapshot }
+  /api/v4/turns:
+    post:
+      operationId: submitTurn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './world.schema.json#/definitions/PlayerTurn' }
+      responses:
+        '200': { description: Committed turn result }
+        '409': { description: Version or idempotency conflict }
+        '422': { description: Invalid or unauthorized action }
+  /api/v4/turns/{turnId}/confirm:
+    post:
+      operationId: confirmTurn
+      parameters:
+        - { name: turnId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Idempotent committed result }
+  /api/v4/turns/{turnId}/cancel:
+    post:
+      operationId: cancelTurn
+      parameters:
+        - { name: turnId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Cancellation result }
+  /api/v4/events:
+    get:
+      operationId: getEvents
+      parameters:
+        - { name: after, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+        - { name: viewer, in: query, schema: { type: string, default: YOU } }
+      responses:
+        '200': { description: Viewer-filtered events }
+  /api/v4/events/stream:
+    get:
+      operationId: streamEvents
+      responses:
+        '200': { description: Server-sent event stream, content: { text/event-stream: {} } }

@@ -1,0 +1,47 @@
+.single-player {
+  width: min(100%, 600px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: max(10px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+  color: var(--paper, #eee8dc);
+}
+.single-player button, .single-player input, .single-player textarea { font: inherit; }
+.single-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:8px 0 14px; }
+.single-brand { color:var(--copper-bright,#eed4ac); font-size:16px; letter-spacing:.08em; }
+.single-state { flex:1; min-width:0; color:var(--muted,#aaa8ad); font-size:11px; text-align:right; overflow-wrap:anywhere; }
+.single-tools { width:100%; display:flex; justify-content:flex-end; gap:8px; }
+.single-tools .single-button { min-height:36px; padding:6px 12px; font-size:12px; }
+.single-card { margin:10px 0; padding:16px; border:1px solid var(--line,rgba(214,204,195,.14)); border-radius:16px; background:linear-gradient(145deg,#2b2d3b,#222532); }
+.single-card h1,.single-card h2 { margin:0 0 10px; font-family:var(--serif,Georgia,serif); font-weight:600; }
+.single-card h1 { font-size:24px; } .single-card h2 { font-size:18px; }
+.single-card p { color:var(--muted,#aaa8ad); line-height:1.65; margin:8px 0; }
+.single-label { display:block; color:var(--muted,#aaa8ad); font-size:12px; margin:12px 0 5px; }
+.single-input,.single-textarea { width:100%; min-height:46px; border:1px solid var(--line,rgba(214,204,195,.14)); border-radius:10px; padding:10px 12px; background:#292b38; color:var(--paper,#eee8dc); font-size:16px; }
+.single-textarea { min-height:112px; resize:vertical; line-height:1.55; }
+.single-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.single-button { min-height:46px; padding:9px 15px; border:1px solid var(--line,rgba(214,204,195,.14)); border-radius:12px; color:var(--paper,#eee8dc); background:rgba(255,255,255,.04); cursor:pointer; }
+.single-button.primary { border-color:var(--copper,#c9af8d); color:var(--copper-bright,#eed4ac); background:rgba(201,175,141,.14); }
+.single-button:disabled { opacity:.45; cursor:default; }
+.single-meta { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0; }
+.single-pill { padding:6px 9px; border:1px solid var(--line,rgba(214,204,195,.14)); border-radius:12px; color:var(--muted,#aaa8ad); font-size:11px; }
+.single-stage { overflow:hidden; border:1px solid var(--line,rgba(214,204,195,.14)); border-radius:14px; background:#303440; }
+.single-stage canvas { display:block; width:100%; height:auto; image-rendering:pixelated; }
+.single-log { min-height:130px; max-height:34svh; overflow:auto; padding:12px 3px 0; }
+.single-log:empty { min-height:0; padding-top:0; }
+.single-line { padding:7px 0; border-bottom:1px solid rgba(214,204,195,.07); line-height:1.55; font-size:14px; }
+.single-line small { display:block; color:var(--copper,#c9af8d); font-size:10px; margin-bottom:2px; }
+.single-line.system small { color:var(--dim,#85818c); }
+.single-compose { display:flex; gap:8px; margin-top:10px; }
+.single-compose .single-input { min-width:0; flex:1; }
+.single-error { color:#f0a69b; font-size:12px; line-height:1.5; }
+.single-preview { padding:10px; border-radius:10px; background:rgba(201,175,141,.07); line-height:1.6; white-space:pre-wrap; }
+.single-relations { color:var(--muted,#aaa8ad); font-size:12px; line-height:1.6; }
+.single-choices { margin:12px 0; padding:10px 0; border-top:1px solid rgba(214,204,195,.08); border-bottom:1px solid rgba(214,204,195,.08); }
+.single-choices h2 { margin:0 0 8px; font-family:inherit; font-size:13px; color:var(--paper,#eee8dc); }
+.single-choices h3 { margin:10px 0 6px; font-size:11px; font-weight:500; color:var(--muted,#aaa8ad); }
+.single-action-row { display:flex; gap:7px; overflow-x:auto; padding-bottom:3px; scrollbar-width:thin; }
+.single-action-row .single-button { flex:0 0 auto; min-height:38px; padding:7px 11px; border-radius:8px; font-size:12px; }
+#single-quick-actions > .single-action-row:first-child { flex-wrap:wrap; overflow-x:visible; }
+#single-quick-actions > .single-action-row:first-child .single-button { border-color:rgba(201,175,141,.48); background:rgba(201,175,141,.1); }
+.single-hidden { display:none !important; }
+@media (max-width: 360px) { .single-player { padding-left:12px; padding-right:12px; } .single-card { padding:13px; } .single-card h1 { font-size:21px; } }

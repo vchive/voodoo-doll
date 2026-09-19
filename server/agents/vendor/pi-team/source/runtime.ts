@@ -1,0 +1,1631 @@
+import { createHash, randomUUID } from "node:crypto";
+import {
+  assertValidMemberId,
+  type AuditEvent,
+  type Channel,
+  type ChannelId,
+  type ChannelTarget,
+  type MemberId,
+  type MessageEnvelope,
+  type MessageId,
+  type PollOutcome,
+  type PollResult,
+  type PrincipalId,
+  type TeamActivity,
+  type TeamAgent,
+  type TeamCommand,
+  type TeamDigest,
+  type TeamMemberState,
+  type TeamProgress,
+  type TeamResult,
+  type TeamSettlement,
+  type WakePolicy,
+} from "./domain.js";
+
+/**
+ * The one claim resource the runtime itself interprets. Holding it is a
+ * reporting duty, not authority: after the team settles, the runtime gives
+ * the holder one final turn whose response becomes the team's report. The
+ * name is task-agnostic — it describes a runtime mechanic (who speaks to
+ * the requester at the end), never a task rule.
+ */
+export const REPORTER_RESOURCE = "reporter";
+
+export interface TeamRuntimeOptions {
+  maxTurns?: number;
+  actionTimeoutMs?: number;
+  waveConcurrency?: number;
+  maxCommandsPerTurn?: number;
+  /**
+   * Random per-wake delay before a member starts acting, staggering
+   * concurrent wave members so a burst of simultaneous contenders doesn't
+   * all start (and visually light up) at the exact same instant. Off by
+   * default (0ms); a product surface opts in explicitly.
+   */
+  reactionDelayMs?: { min: number; max: number };
+  /**
+   * When every runnable member is done and blocked members remain, keep
+   * run() alive — parked quiescently, no polling or busy loop — awaiting an
+   * external intervene() call instead of settling immediately. Default
+   * false: a blocked team settles quiescent ("blocked-members-remain") and
+   * the caller decides how to act on the honest result. Integrators that
+   * run the team in the background and want to unblock members mid-run opt
+   * in explicitly.
+   */
+  waitForIntervention?: boolean;
+  /**
+   * Pre-designates the member who must deliver the final report. Omit to
+   * let the team decide during play by claiming `REPORTER_RESOURCE`; when
+   * set, this designation wins over any claim.
+   */
+  reporterId?: MemberId;
+  /**
+   * Caller-supplied instructions for the report turn (format, files,
+   * audience). The runtime passes it through verbatim — the user's prompt
+   * defines the reporting protocol, not the runtime.
+   */
+  reportPrompt?: string;
+  onProgress?: (progress: TeamProgress) => void;
+  onActivity?: (activity: TeamActivity) => void;
+}
+
+export type TeamInitialPost =
+  | { channel: { kind: "public" }; body: string }
+  | { channel: { kind: "direct"; memberId: MemberId }; body: string };
+
+interface OpenPoll {
+  explicit: boolean;
+  initiator: MemberId;
+  initiatorVotes: boolean;
+  maxReminders: number;
+  onReminderExhausted: "leave-missing" | "abstain";
+  eligible: Set<MemberId>;
+  votes: Map<MemberId, string>;
+  abstained: Set<MemberId>;
+  autoAbstained: Set<MemberId>;
+  reminders: Map<MemberId, number>;
+}
+
+export class TeamRuntime {
+  readonly teamId: string;
+  private readonly observations = new Map<MemberId, MessageEnvelope[]>();
+  private readonly disabledObservers = new Set<"onProgress" | "onActivity">();
+  private readonly envelopes: MessageEnvelope[] = [];
+  private readonly groups = new Map<ChannelId, Extract<Channel, { kind: "group" }>>();
+  private readonly events: AuditEvent[] = [];
+  private readonly finished = new Map<MemberId, string>();
+  private readonly errored = new Map<MemberId, string>();
+  /**
+   * Members paused via team_block, keyed by their saved reason. Blocked is
+   * a non-terminal pause: the member is excluded from scheduling until an
+   * external intervene() call returns it to ready, but it still receives
+   * mail passively (nothing sent while it paused is lost or bounced).
+   */
+  private readonly blocked = new Map<MemberId, string>();
+  private readonly turns = new Map<MemberId, number>();
+  private readonly ready = new Set<MemberId>();
+  private readonly flushing = new Set<MemberId>();
+  /**
+   * The envelope id that most recently made each member ready. When an
+   * entire wave shares one cause (typically a single broadcast reaching
+   * everyone at once), those members are woken sequentially instead of
+   * concurrently — each act() call then observes the prior members'
+   * already-applied claims/groups/polls in its digest, so N members told
+   * the same thing at the same time converge on one coordination structure
+   * instead of each independently creating their own and reconciling
+   * duplicates afterward. Waves caused by distinct envelopes (directed
+   * messages, handoffs) keep running concurrently, unaffected.
+   */
+  private readonly readyCause = new Map<MemberId, MessageId>();
+  private readonly claims = new Map<string, MemberId>();
+  private readonly polls = new Map<string, OpenPoll>();
+  private readonly closedPolls = new Map<string, PollResult>();
+  private readonly readyPolls = new Set<string>();
+  private readonly states = new Map<MemberId, TeamMemberState>();
+  /**
+   * The members made ready together by a *single* initial post — the common
+   * "objective sent to everyone" case. Same-source sequencing (see
+   * `readyCause` above) makes that opening wave converge on shared
+   * coordination structures, but sequential wake-up also means an earlier
+   * member's passive public speech would otherwise land in a later member's
+   * mailbox before that later member has taken even its own first turn,
+   * anchoring their first take on a peer's conclusion instead of the raw
+   * objective. `openingWaveDrafted`/`heldBackForReveal` below implement a
+   * barrier for exactly this round: null once every member here has drafted
+   * (or become terminal) and the held-back speech has been revealed.
+   */
+  private openingWaveMembers: Set<MemberId> | null = null;
+  private readonly openingWaveDrafted = new Set<MemberId>();
+  private readonly heldBackForReveal = new Map<MemberId, MessageEnvelope[]>();
+  private activitySequence = 0;
+  private auditHead = "0".repeat(64);
+  private recent = "Team created";
+  private started = false;
+  private userInterventions: number;
+  /**
+   * Resolver for the single pending quiescent intervention wait, if the
+   * execute loop is currently parked in awaitIntervention(). intervene()
+   * fires it so the loop re-checks; the wait and a ready member are
+   * mutually exclusive, so a single slot can never miss a wake.
+   */
+  private resolveIntervention?: () => void;
+  /**
+   * Set once the coordination loop has exited. intervene() refuses after
+   * this: agent sessions are about to be closed, so a message posted into
+   * a settled runtime could never be delivered.
+   */
+  private settled = false;
+  /**
+   * The member currently volunteered as reporter via the REPORTER_RESOURCE
+   * claim. Kept when the claim auto-releases on finish (finishing your work
+   * doesn't renounce the duty), cleared on voluntary release or error, and
+   * overwritten if someone claims the freed resource afterward.
+   */
+  private claimedReporter?: MemberId;
+
+  constructor(
+    readonly objective: string,
+    private readonly agents: ReadonlyMap<MemberId, TeamAgent>,
+    private readonly options: TeamRuntimeOptions = {},
+    teamId: string = randomUUID(),
+    initialUserInterventions = 0,
+  ) {
+    this.teamId = teamId;
+    this.userInterventions = initialUserInterventions;
+    if (agents.size < 2) throw new Error("A team requires at least two agents");
+    for (const [id, agent] of agents) {
+      if (id !== agent.member.id) throw new Error(`Agent map identity mismatch: ${id}`);
+      assertValidMemberId(id);
+      this.observations.set(id, []);
+      this.turns.set(id, 0);
+      this.states.set(id, "idle");
+    }
+    const sessionIds = [...agents.values()].map((agent) => agent.sessionId);
+    if (new Set(sessionIds).size !== sessionIds.length)
+      throw new Error("Agent session IDs must be unique");
+    if (options.reporterId !== undefined && !agents.has(options.reporterId))
+      throw new Error(`Unknown reporterId: ${options.reporterId}`);
+  }
+
+  /**
+   * A TeamRuntime instance represents one coordination round and runs once.
+   * Settlement ends that round, not the underlying member sessions. Call
+   * next() to create a fresh round over the same agents and their existing
+   * first-person histories; call close() only when the team itself is being
+   * discarded.
+   */
+  async run(
+    initial: TeamInitialPost | readonly TeamInitialPost[],
+    signal?: AbortSignal,
+  ): Promise<TeamResult> {
+    if (this.started)
+      throw new Error(
+        "TeamRuntime.run() may only be called once per round; call next() to continue the team",
+      );
+    this.started = true;
+    try {
+      return await this.execute(initial, signal);
+    } finally {
+      // Close the intervention channel on ordinary settlement and on
+      // abort/error paths, but retain the member sessions for a later round.
+      this.settled = true;
+    }
+  }
+
+  hasMember(memberId: MemberId): boolean {
+    return this.agents.has(memberId);
+  }
+
+  /** Create a clean coordination round while retaining every agent session. */
+  next(
+    objective: string,
+    options: Partial<TeamRuntimeOptions> = {},
+    requesterInitiated = false,
+  ): TeamRuntime {
+    if (!this.started || !this.settled)
+      throw new Error("TeamRuntime.next() requires the current round to be settled");
+    if (!objective.trim()) throw new Error("Continuation objective must not be empty");
+    return new TeamRuntime(
+      objective,
+      this.agents,
+      { ...this.options, ...options },
+      this.teamId,
+      requesterInitiated ? 1 : 0,
+    );
+  }
+
+  /** Permanently release the retained member sessions. */
+  async close(): Promise<void> {
+    await Promise.allSettled([...this.agents.values()].map((agent) => agent.close?.()));
+  }
+
+  progress(): TeamProgress {
+    return Object.freeze({
+      teamId: this.teamId,
+      active: Object.freeze([...this.ready]),
+      finished: Object.freeze([...this.finished.keys()]),
+      blocked: Object.freeze([...this.blocked.keys()]),
+      blockedReasons: Object.freeze(Object.fromEntries(this.blocked)),
+      states: Object.freeze(Object.fromEntries(this.states)),
+      queuedMessages: [...this.observations.values()].reduce((sum, queue) => sum + queue.length, 0),
+      turns: this.totalTurns(),
+      recent: this.recent,
+    });
+  }
+
+  /**
+   * External intervention channel for integrators running the team in the
+   * background: posts a direct interrupt carrying the given guidance and
+   * wakes the member, unblocking it if it was blocked — the recover-to-ready
+   * path team_block exists for. Works on any non-terminal member (nudging a
+   * working member is harmless: it receives the message next wake), but
+   * refuses unknown, terminal, or already-settled targets explicitly rather
+   * than silently posting into a dead runtime. This is requester-originated
+   * input, so it is posted as "user" and counted honestly in the result.
+   */
+  intervene(memberId: MemberId, message: string): void {
+    if (!this.started)
+      throw new Error("TeamRuntime.intervene() may only be called while run() is executing");
+    if (this.settled)
+      throw new Error(
+        "the current team round has already settled; start a continuation round before intervening",
+      );
+    if (!this.agents.has(memberId)) throw new Error(`Unknown member: ${memberId}`);
+    if (this.finished.has(memberId) || this.errored.has(memberId))
+      throw new Error(
+        `member ${memberId} is terminal (${this.states.get(memberId)}) and cannot be intervened`,
+      );
+    if (!message.trim()) throw new Error("intervention message must not be empty");
+    const wasBlocked = this.blocked.delete(memberId);
+    this.userInterventions += 1;
+    this.record("member.intervened", memberId, undefined, { unblocked: wasBlocked });
+    // Delivering the interrupt re-adds the member to `ready` (it is no
+    // longer blocked at this point), so a loop parked in awaitIntervention
+    // must be kicked to re-check; if it was busy running other waves the
+    // ready member is picked up by the normal scheduling pass.
+    this.post("user", { kind: "direct", memberId }, message, "interrupt", "message");
+    this.resolveIntervention?.();
+  }
+
+  /**
+   * Parks the execute loop quiescently (no polling, no busy loop) until
+   * intervene() resolves it or the parent signal aborts. Only one wait can
+   * be pending at a time: the loop is single-threaded and awaits this before
+   * anything else can happen, and a ready member and a registered waiter are
+   * mutually exclusive, so the single resolver slot can never miss a wake.
+   */
+  private async awaitIntervention(signal?: AbortSignal): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const cleanup = () => {
+        signal?.removeEventListener("abort", onAbort);
+        if (this.resolveIntervention === onIntervene) this.resolveIntervention = undefined;
+      };
+      const onIntervene = () => {
+        cleanup();
+        resolve();
+      };
+      const onAbort = () => {
+        cleanup();
+        reject(signal?.reason ?? new Error("aborted"));
+      };
+      this.resolveIntervention = onIntervene;
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+  }
+
+  private async execute(
+    initial: TeamInitialPost | readonly TeamInitialPost[],
+    signal?: AbortSignal,
+  ): Promise<TeamResult> {
+    this.record("team.started", undefined, undefined, {
+      objective: this.objective,
+      memberCount: this.agents.size,
+    });
+    const initialPosts = Array.isArray(initial) ? initial : [initial];
+    for (const post of initialPosts)
+      this.post("user", post.channel, post.body, "interrupt", "message");
+    // Exactly one initial envelope is the case same-source sequencing applies
+    // to, regardless of whether the caller used the scalar or array spelling;
+    // only then does the first-turn barrier below have anything to protect.
+    if (initialPosts.length === 1) this.openingWaveMembers = new Set(this.ready);
+
+    const maxTurns = this.options.maxTurns ?? Math.max(256, this.agents.size * 32);
+    const waveConcurrency = Math.max(1, this.options.waveConcurrency ?? 8);
+    let exhausted = false;
+    while (!signal?.aborted) {
+      if (!this.ready.size && !this.promoteStarvedMembers()) {
+        // Open polls get a bounded liveness pass before ordinary
+        // quiescence. Missing voters are reminded only at this natural idle
+        // boundary, never busy-polled; exhausted voters can become explicit
+        // abstentions according to the poll's declared policy.
+        if (this.advanceOpenPollsAtQuiescence()) continue;
+        // Blocked members pause the team quiescently rather than settling:
+        // nothing is runnable, no mail is waiting, and the only way forward
+        // is external intervention. With waitForIntervention opted in, the
+        // loop parks here (no polling, no busy loop) until intervene() or
+        // abort; otherwise it settles and the honest "blocked-members-remain"
+        // result tells the caller exactly what happened. The turn budget
+        // still caps the wait: a team that keeps blocking past maxTurns is
+        // reported exhausted like any other budget overrun.
+        if (
+          this.blocked.size > 0 &&
+          this.options.waitForIntervention &&
+          maxTurns - this.totalTurns() > 0
+        ) {
+          this.emitActivity(
+            "runtime",
+            "wait",
+            `team quiescent — waiting for external intervention on blocked: ${[...this.blocked.keys()].join(", ")}`,
+            { kind: "public" },
+            [...this.agents.keys()],
+          );
+          this.recent = "waiting for external intervention";
+          await this.awaitIntervention(signal);
+          this.safeObserve("onProgress", () => this.options.onProgress?.(this.progress()));
+          continue;
+        }
+        break;
+      }
+      const remaining = maxTurns - this.totalTurns();
+      if (remaining <= 0) {
+        exhausted = true;
+        break;
+      }
+      const rankSeed = `${this.teamId}:${this.totalTurns()}`;
+      const fullWave = [...this.ready].sort(
+        (left, right) => stableRank(rankSeed, left) - stableRank(rankSeed, right),
+      );
+      // Cap the wave to the remaining budget so a wave of N ready members
+      // can never consume more than N turns beyond maxTurns — previously
+      // this was only checked *before* building a wave, so a wave larger
+      // than the remaining budget (whether run sequentially as same-source,
+      // or concurrently in one waveConcurrency chunk) still ran to
+      // completion, letting totalTurns overshoot maxTurns before the next
+      // check ever saw it. Anyone cut here stays in `ready` for the next
+      // iteration — or, if the budget is now spent, is correctly reported
+      // as still-ready in the exhausted settlement rather than silently run.
+      const wave = fullWave.slice(0, remaining);
+      const deferredByBudget = fullWave.slice(remaining);
+      this.ready.clear();
+      for (const id of deferredByBudget) this.ready.add(id);
+      const waveCause = this.readyCause.get(wave[0]);
+      const sameSource =
+        wave.length > 1 &&
+        waveCause !== undefined &&
+        wave.every((id) => this.readyCause.get(id) === waveCause);
+      if (sameSource) {
+        for (const id of wave) await this.wake(id, signal);
+      } else {
+        for (let start = 0; start < wave.length; start += waveConcurrency)
+          await Promise.all(
+            wave.slice(start, start + waveConcurrency).map((id) => this.wake(id, signal)),
+          );
+      }
+      // Once every opening-wave member has independently drafted a first
+      // take (or become terminal without ever getting the chance), reveal
+      // whatever peer speech was held back from each of them — the barrier
+      // only needs to last for exactly this one round.
+      if (
+        this.openingWaveMembers &&
+        [...this.openingWaveMembers].every(
+          (id) => this.openingWaveDrafted.has(id) || !this.runnable(id),
+        )
+      ) {
+        this.revealOpeningWaveDrafts();
+        this.openingWaveMembers = null;
+      }
+      this.safeObserve("onProgress", () => this.options.onProgress?.(this.progress()));
+    }
+    if (signal?.aborted) throw signal.reason;
+    this.settled = true;
+
+    const settlement =
+      this.finished.size === this.agents.size
+        ? ({ kind: "completed", meaning: "all-members-finished" } as const)
+        : exhausted
+          ? ({ kind: "exhausted", meaning: "max-turns-reached" } as const)
+          : this.finished.size + this.errored.size === this.agents.size
+            ? // Every non-finished member is terminally errored: this state can
+              // never change, unlike a genuine stuck quiescence.
+              ({ kind: "quiescent", meaning: "errored-members-remain" } as const)
+            : this.blocked.size ===
+                this.agents.size - this.finished.size - this.errored.size
+              ? // Every remaining non-terminal member deliberately blocked,
+                // paused for external intervention — a stable, honest state,
+                // distinct from a team that got stuck without choosing to.
+                ({ kind: "quiescent", meaning: "blocked-members-remain" } as const)
+              : ({ kind: "quiescent", meaning: "no-runnable-members" } as const);
+    this.record(
+      settlement.kind === "completed"
+        ? "team.completed"
+        : settlement.kind === "exhausted"
+          ? "team.exhausted"
+          : "team.quiescent",
+      undefined,
+      undefined,
+      {
+        finished: this.finished.size,
+        errored: this.errored.size,
+        blocked: this.blocked.size,
+      },
+    );
+    const { report, reportError } = await this.collectReport(settlement, signal);
+    return Object.freeze({
+      teamId: this.teamId,
+      settlement,
+      objectiveVerification: "unverified" as const,
+      report,
+      reportError,
+      members: Object.freeze(
+        [...this.agents.values()].map((agent) =>
+          Object.freeze({
+            id: agent.member.id,
+            sessionId: agent.sessionId,
+            sessionRef: agent.sessionRef,
+            turns: this.turns.get(agent.member.id) ?? 0,
+            state: this.states.get(agent.member.id) ?? "idle",
+            summary: this.finished.get(agent.member.id),
+            error: this.errored.get(agent.member.id),
+            blockedReason: this.blocked.get(agent.member.id),
+          }),
+        ),
+      ),
+      publicTranscript: Object.freeze(
+        this.envelopes
+          .filter((envelope) => envelope.channel.kind === "public")
+          .map(({ id, sequence, from, body }) => Object.freeze({ id, sequence, from, body })),
+      ),
+      restrictedMessages: Object.freeze(
+        this.envelopes
+          .filter(
+            (
+              envelope,
+            ): envelope is MessageEnvelope & { channel: Exclude<Channel, { kind: "public" }> } =>
+              envelope.channel.kind !== "public",
+          )
+          .map((envelope) =>
+            Object.freeze({
+              id: envelope.id,
+              sequence: envelope.sequence,
+              from: envelope.from,
+              channelKind: envelope.channel.kind,
+              audienceHash: sha256([...envelope.audience].sort().join("\0")),
+              bodyHash: sha256(envelope.body),
+            }),
+          ),
+      ),
+      events: Object.freeze([...this.events]),
+      userInterventions: this.userInterventions,
+      auditHead: this.auditHead,
+    });
+  }
+
+  /**
+   * The report turn: one extra prompt to the reporter's session after the
+   * team settled, whose final response is the team's report. The reporter is
+   * the pre-designated `options.reporterId` if given, else whoever last
+   * validly held the REPORTER_RESOURCE claim. The runtime verifies only that
+   * a response exists — its content, format, and any files it references are
+   * the reporter's business (invariant 12: settlement never asserts
+   * correctness, and neither does a report). No reporter → no report, and
+   * the result says so honestly instead of the runtime writing one itself.
+   */
+  private async collectReport(
+    settlement: TeamSettlement,
+    signal?: AbortSignal,
+  ): Promise<{ report?: { reporterId: MemberId; body: string }; reportError?: string }> {
+    const reporterId = this.options.reporterId ?? this.claimedReporter;
+    if (reporterId === undefined) return {};
+    const agent = this.agents.get(reporterId)!;
+    if (this.errored.has(reporterId))
+      return {
+        reportError: `reporter ${reporterId} errored before reporting: ${this.errored.get(reporterId)}`,
+      };
+    if (!agent.report)
+      return { reportError: `reporter ${reporterId} does not support a report turn` };
+    this.record("report.requested", reporterId, undefined, {
+      designated: this.options.reporterId !== undefined,
+      settlement: settlement.kind,
+    });
+    const controller = new AbortController();
+    const relayAbort = () => controller.abort(signal?.reason);
+    signal?.addEventListener("abort", relayAbort, { once: true });
+    const timeout = setTimeout(
+      () => controller.abort(new Error(`Reporter ${reporterId} timed out`)),
+      this.options.actionTimeoutMs ?? 300_000,
+    );
+    try {
+      const body = await agent.report(this.reportTurnPrompt(settlement), controller.signal);
+      this.record("report.submitted", reporterId, undefined, { bodyHash: sha256(body) });
+      this.emitActivity(
+        reporterId,
+        "report",
+        "final report",
+        { kind: "public" },
+        [...this.agents.keys()],
+        body,
+      );
+      return { report: Object.freeze({ reporterId, body }) };
+    } catch (cause) {
+      if (signal?.aborted) throw cause;
+      const message = cause instanceof Error ? cause.message : String(cause);
+      this.record("report.failed", reporterId, undefined, { error: message });
+      return { reportError: message };
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", relayAbort);
+    }
+  }
+
+  private reportTurnPrompt(settlement: TeamSettlement): string {
+    return [
+      `TEAM SETTLED: ${settlement.kind} (${settlement.meaning}).`,
+      "You are the team's reporter; this is one final turn after the whole team settled. Team coordination tools are inactive — write for the requester who started the team, not for your teammates.",
+      this.options.reportPrompt ??
+        "Deliver the team's final report. Your response is returned verbatim to the requester as the team's result, so it must stand alone: state the outcome and everything the objective asked for. If your work produced files, reference their paths.",
+    ].join("\n");
+  }
+
+  /**
+   * Before declaring quiescence, wake unfinished members holding undelivered
+   * passive observations so no one settles with unread mail. Repeated flush
+   * cycles are bounded by maxTurns.
+   */
+  private promoteStarvedMembers(): boolean {
+    let promoted = false;
+    for (const [id, queue] of this.observations) {
+      if (!queue.length || !this.runnable(id) || this.flushing.has(id)) continue;
+      this.ready.add(id);
+      this.flushing.add(id);
+      this.states.set(id, "ready");
+      // Flush promotion is not a shared broadcast cause; never let a flush
+      // wave be mistaken for a same-source wave.
+      this.readyCause.delete(id);
+      promoted = true;
+    }
+    return promoted;
+  }
+
+  /**
+   * Schedulable now: not terminal and not blocked. Blocked members pause
+   * out of the scheduling loop entirely — no spontaneous wake, no flush —
+   * and only an external intervene() returns them to runnable.
+   */
+  private runnable(memberId: MemberId): boolean {
+    return (
+      !this.finished.has(memberId) &&
+      !this.errored.has(memberId) &&
+      !this.blocked.has(memberId)
+    );
+  }
+
+  /**
+   * Can still receive mail: not terminal. A blocked member is not runnable
+   * but remains deliverable — messages directed at it are enqueued passively
+   * (never waking it) and delivered together with the eventual intervention,
+   * so nothing said while it paused is lost or bounced. Poll eligibility
+   * follows this too: blocking is a pause, not a departure.
+   */
+  private deliverable(memberId: MemberId): boolean {
+    return !this.finished.has(memberId) && !this.errored.has(memberId);
+  }
+
+  private heldBackQueue(memberId: MemberId): MessageEnvelope[] {
+    let queue = this.heldBackForReveal.get(memberId);
+    if (!queue) {
+      queue = [];
+      this.heldBackForReveal.set(memberId, queue);
+    }
+    return queue;
+  }
+
+  /**
+   * An explicit interrupt opts its recipient out of the opening-independence
+   * barrier: a prompt that refers to earlier public speech is unusable if
+   * that speech remains hidden until a later turn. Move any held context
+   * into the ordinary mailbox before the interrupt itself is enqueued and
+   * preserve the immutable envelope order across both queues.
+   */
+  private liftOpeningBarrierForInterrupt(memberId: MemberId): void {
+    const held = this.heldBackForReveal.get(memberId);
+    if (!held?.length) return;
+    const queue = this.observations.get(memberId)!;
+    queue.push(...held);
+    queue.sort((left, right) => left.sequence - right.sequence);
+    this.heldBackForReveal.delete(memberId);
+    this.openingWaveDrafted.add(memberId);
+  }
+
+  /**
+   * Delivers everything held back during the opening wave and wakes every
+   * recipient that has any — a same-source reveal of the round's exchanged
+   * first takes, all at once, rather than a silent trickle-in whenever some
+   * unrelated later event happens to wake each recipient. A member with
+   * nothing held back (typically whoever drafted first, before any peer had
+   * spoken) is left alone; it has nothing new to reveal.
+   */
+  private revealOpeningWaveDrafts(): void {
+    for (const [memberId, envelopes] of this.heldBackForReveal) {
+      if (!envelopes.length || !this.deliverable(memberId)) continue;
+      const queue = this.observations.get(memberId)!;
+      queue.push(...envelopes);
+      queue.sort((left, right) => left.sequence - right.sequence);
+      // A blocked member retains the reveal in its mailbox but must not wake
+      // until requester intervention. Without this split, clearing the
+      // held-back map silently discarded opening speech for blocked members.
+      if (this.runnable(memberId)) {
+        this.ready.add(memberId);
+        this.states.set(memberId, "ready");
+        this.readyCause.set(memberId, OPENING_WAVE_REVEAL_CAUSE);
+      }
+    }
+    this.heldBackForReveal.clear();
+  }
+
+  private async reactionDelay(signal?: AbortSignal): Promise<void> {
+    const { min, max } = this.options.reactionDelayMs ?? { min: 0, max: 0 };
+    const ms = min + Math.random() * Math.max(0, max - min);
+    if (ms <= 0) return;
+    await new Promise<void>((resolve, reject) => {
+      const onAbort = () => {
+        clearTimeout(timer);
+        reject(signal?.reason ?? new Error("aborted"));
+      };
+      const timer = setTimeout(() => {
+        signal?.removeEventListener("abort", onAbort);
+        resolve();
+      }, ms);
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+  }
+
+  private async wake(memberId: MemberId, parentSignal?: AbortSignal): Promise<void> {
+    // Marks this member's opening-wave barrier as lifted the instant its own
+    // first wake begins — unconditionally, so a member is never left
+    // permanently undrafted (and so permanently hoarding held-back mail)
+    // even on a call that turns out to have nothing to observe below.
+    if (this.openingWaveMembers?.has(memberId)) this.openingWaveDrafted.add(memberId);
+    if (!this.runnable(memberId)) return;
+    const flush = this.flushing.delete(memberId);
+    const observations = this.observations.get(memberId)!.splice(0);
+    if (!observations.length) return;
+    try {
+      await this.reactionDelay(parentSignal);
+    } catch (cause) {
+      if (parentSignal?.aborted) throw cause;
+      this.markErrored(memberId, cause);
+      return;
+    }
+    const agent = this.agents.get(memberId)!;
+    const turn = (this.turns.get(memberId) ?? 0) + 1;
+    this.turns.set(memberId, turn);
+    this.states.set(memberId, "running");
+    for (const message of observations)
+      this.record("message.observed", memberId, message.id, {
+        channelId: message.channel.id,
+        bodyHash: sha256(message.body),
+      });
+    this.record(flush ? "member.flushWoke" : "member.woke", memberId, undefined, {
+      turn,
+      observationIds: observations.map((message) => message.id),
+      sessionId: agent.sessionId,
+    });
+    this.emitActivity(
+      memberId,
+      "wake",
+      `turn ${turn} · observed ${observations.length}${flush ? " (final flush)" : ""}`,
+      {
+        kind: "direct",
+        memberId,
+      },
+      [memberId],
+    );
+    const controller = new AbortController();
+    const relayAbort = () => controller.abort(parentSignal?.reason);
+    parentSignal?.addEventListener("abort", relayAbort, { once: true });
+    const timeout = setTimeout(
+      () => controller.abort(new Error(`Agent ${memberId} timed out`)),
+      this.options.actionTimeoutMs ?? 300_000,
+    );
+    const abortRejection = new Promise<never>((_, reject) => {
+      controller.signal.addEventListener(
+        "abort",
+        () => reject(controller.signal.reason ?? new Error(`Agent ${memberId} aborted`)),
+        { once: true },
+      );
+    });
+    abortRejection.catch(() => {});
+    try {
+      const commands = await Promise.race([
+        agent.act(
+          {
+            teamId: this.teamId,
+            objective: this.objective,
+            member: agent.member,
+            peers: Object.freeze(
+              [...this.agents.values()]
+                .map((value) => value.member)
+                .filter((member) => member.id !== memberId)
+                .sort(
+                  (left, right) =>
+                    stableRank(`${this.teamId}:${memberId}`, left.id) -
+                    stableRank(`${this.teamId}:${memberId}`, right.id),
+                ),
+            ),
+            observations: Object.freeze(observations),
+            digest: this.digestFor(memberId),
+            turn,
+          },
+          controller.signal,
+        ),
+        abortRejection,
+      ]);
+      const claim = commands.find((command) => command.type === "claim");
+      if (claim) {
+        this.applyCommand(memberId, claim);
+        if (commands.length > 1)
+          this.emitActivity(
+            memberId,
+            "wait",
+            `claim fence discarded ${commands.length - 1} speculative action${commands.length === 2 ? "" : "s"}`,
+            { kind: "direct", memberId },
+            [memberId],
+          );
+      } else {
+        // Invariant 16 (turn-ending protocol): once wait/block/finish appears
+        // in the batch, nothing after it applies. PiTeamAgent's TurnState
+        // already enforces this on the way in, so a well-behaved adapter's
+        // array is already correctly truncated here — but TeamAgent is a
+        // public interface, and this is the one place the invariant holds
+        // for *any* implementation, not only PiTeamAgent's.
+        const terminalIndex = commands.findIndex(
+          (command) =>
+            command.type === "wait" ||
+            command.type === "finish" ||
+            command.type === "block",
+        );
+        const effective = terminalIndex === -1 ? commands : commands.slice(0, terminalIndex + 1);
+        const budget = Math.max(1, this.options.maxCommandsPerTurn ?? 16);
+        // Invariant 26 (fail-stop batches): committed commands are never
+        // rolled back, but the first rejection halts the batch — anything
+        // after it is discarded, not applied. A batch's later commands were
+        // planned assuming its earlier ones landed; the trap this closes is
+        // a rejected send followed in the same batch by finish, which sealed
+        // the member terminal before it could ever see the bounce. The
+        // COMMAND_FAILED interrupt wakes the member to replan next turn.
+        const applicable = effective.slice(0, budget);
+        for (let index = 0; index < applicable.length; index++) {
+          if (this.applyCommand(memberId, applicable[index])) continue;
+          const discarded = applicable.length - index - 1;
+          if (discarded > 0)
+            this.post(
+              "runtime",
+              { kind: "direct", memberId },
+              `COMMAND_BATCH_HALTED rejected=${applicable[index].type} discarded=${discarded}; commands after a rejection are not applied — replan and resend what still matters next turn`,
+              "interrupt",
+              "system",
+            );
+          break;
+        }
+        if (effective.length > budget)
+          this.post(
+            "runtime",
+            { kind: "direct", memberId },
+            `COMMAND_BUDGET_EXCEEDED applied=${budget} dropped=${effective.length - budget}; resend what still matters next turn`,
+            "interrupt",
+            "system",
+          );
+        const discardedAfterTurnEnd = commands.length - effective.length;
+        if (discardedAfterTurnEnd > 0)
+          this.emitActivity(
+            memberId,
+            "wait",
+            `turn already ended by wait/block/finish; discarded ${discardedAfterTurnEnd} action${discardedAfterTurnEnd === 1 ? "" : "s"} queued after it`,
+            { kind: "direct", memberId },
+            [memberId],
+          );
+      }
+      if (this.runnable(memberId) && !this.ready.has(memberId))
+        this.states.set(memberId, "waiting");
+    } catch (cause) {
+      if (parentSignal?.aborted) throw cause;
+      this.markErrored(memberId, cause);
+    } finally {
+      clearTimeout(timeout);
+      parentSignal?.removeEventListener("abort", relayAbort);
+    }
+  }
+
+  /** A member whose turn failed becomes terminal; the team routes around it. */
+  private markErrored(memberId: MemberId, cause: unknown): void {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    this.errored.set(memberId, message);
+    this.states.set(memberId, "errored");
+    this.ready.delete(memberId);
+    this.record("member.errored", memberId, undefined, { error: message });
+    this.emitActivity(memberId, "error", message, { kind: "direct", memberId }, [memberId]);
+    this.releaseClaims(memberId, "member-errored");
+    this.recheckOpenPollsAfterTerminalTransition();
+    this.post(
+      "runtime",
+      { kind: "public" },
+      `MEMBER_ERRORED member=${memberId} error=${JSON.stringify(message)}. This member is out; route around it. Messages to it will bounce.`,
+      "interrupt",
+      "system",
+    );
+  }
+
+  /** Returns whether the command was accepted; a rejection bounces to the sender. */
+  private applyCommand(from: MemberId, command: TeamCommand): boolean {
+    try {
+      this.executeCommand(from, command);
+      return true;
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : String(cause);
+      this.record("command.failed", from, undefined, { commandType: command.type, error: message });
+      this.post(
+        "runtime",
+        { kind: "direct", memberId: from },
+        `COMMAND_FAILED type=${command.type} error=${JSON.stringify(message)}`,
+        "interrupt",
+        "system",
+      );
+      return false;
+    }
+  }
+
+  private executeCommand(from: MemberId, command: TeamCommand): void {
+    if (command.type === "wait") {
+      this.emitActivity(from, "wait", "WAIT", { kind: "direct", memberId: from }, [from]);
+      return;
+    }
+    if (command.type === "block") {
+      // Empty reason is a caller bug, not a block: bounce it like any other
+      // invalid command so the member wakes to replan with the error.
+      if (!command.reason.trim())
+        throw new Error("block reason must not be empty or whitespace-only");
+      this.blocked.set(from, command.reason);
+      this.states.set(from, "blocked");
+      // Invariant 11: audit carries only the reason hash, never the reason
+      // plaintext (a blocked reason may be as sensitive as a message body).
+      this.record("member.blocked", from, undefined, { reasonHash: sha256(command.reason) });
+      this.emitActivity(
+        from,
+        "block",
+        `blocked: ${command.reason}`,
+        { kind: "direct", memberId: from },
+        [from],
+      );
+      this.post(
+        "runtime",
+        { kind: "public" },
+        `MEMBER_BLOCKED member=${from} reason=${JSON.stringify(command.reason)}. This member paused and is awaiting external intervention; route around it until it resumes.`,
+        "passive",
+        "system",
+      );
+      return;
+    }
+    if (command.type === "finish") {
+      this.finished.set(from, command.summary);
+      this.states.set(from, "finished");
+      this.record("member.finished", from, undefined, { summaryHash: sha256(command.summary) });
+      this.emitActivity(from, "finish", command.summary, { kind: "direct", memberId: from }, [from]);
+      this.releaseClaims(from, "member-finished");
+      this.recheckOpenPollsAfterTerminalTransition();
+      return;
+    }
+    if (command.type === "claim") {
+      this.claim(from, command.resource);
+      return;
+    }
+    if (command.type === "release") {
+      const owner = this.claims.get(command.resource);
+      if (owner !== from)
+        throw new Error(
+          `cannot release ${command.resource}: ${owner ? `owned by ${owner}` : "not currently claimed"}`,
+        );
+      this.releaseClaim(command.resource, from, "released-by-owner");
+      return;
+    }
+    if (command.type === "create-group") {
+      this.createGroup(from, command.channelId, command.name, command.members);
+      return;
+    }
+    if (command.type === "vote-open") {
+      this.openPoll(from, command);
+      return;
+    }
+    if (command.type === "vote-cast") {
+      this.castVote(from, command.pollId, command.choice);
+      return;
+    }
+    if (command.type === "vote-abstain") {
+      this.abstainVote(from, command.pollId);
+      return;
+    }
+    if (command.type === "vote-close") {
+      this.closePoll(from, command.pollId);
+      return;
+    }
+    if (command.type === "say") {
+      // A mention names who should reply: the speech stays public and
+      // passive for everyone else, but each mentioned member is woken as if
+      // interrupted. A self-mention is dropped rather than bounced — the
+      // speaker is already awake, and failing the whole public message over
+      // a meaningless wake would lose real speech. A mention of a terminal
+      // member bounces (via assertDeliverable) before anything is posted:
+      // silently not waking them would leave the speaker awaiting a reply
+      // that can never come.
+      const mentions = [
+        ...new Set((command.to ?? []).map((candidate) => this.resolveMemberId(candidate))),
+      ].filter((memberId) => memberId !== from);
+      for (const memberId of mentions) this.assertDeliverable(memberId);
+      this.post(from, { kind: "public" }, command.body, "passive", "speech", mentions);
+      return;
+    }
+    if (command.type === "broadcast") {
+      // The only member-originated public interrupt: for the rare case
+      // where every member must respond to the same thing right now. Wakes
+      // everyone in one wave sharing one envelope, so the same-source
+      // sequencing above applies to whatever they do next.
+      this.post(from, { kind: "public" }, command.body, "interrupt", "speech");
+      return;
+    }
+    if (command.type === "group-send") {
+      this.post(
+        from,
+        { kind: "group", channelId: command.channelId },
+        command.body,
+        "interrupt",
+        "message",
+      );
+      return;
+    }
+    const to = this.resolveMemberId(command.to);
+    if (to === from) throw new Error(`cannot ${command.type} to yourself`);
+    this.assertDeliverable(to);
+    this.post(
+      from,
+      { kind: "direct", memberId: to },
+      command.body,
+      "interrupt",
+      command.type === "handoff" ? "handoff" : "message",
+    );
+  }
+
+  /**
+   * Members are told each other's opaque id, but also see display names in
+   * PEERS and every transcript — mixing the two up is a natural mistake,
+   * not a rule violation, so it's resolved rather than just bounced. An id
+   * always wins outright; a name resolves only when it unambiguously names
+   * exactly one member. Two members sharing a display name is never
+   * silently guessed at — that would risk delivering to the wrong person,
+   * strictly worse than a bounce.
+   */
+  private resolveMemberId(candidate: string): MemberId {
+    if (this.agents.has(candidate)) return candidate;
+    const matches = [...this.agents.values()].filter((agent) => agent.member.name === candidate);
+    if (matches.length === 1) return matches[0].member.id;
+    if (matches.length > 1)
+      throw new Error(
+        `ambiguous recipient "${candidate}": multiple members share that name; use one of their ids instead (${matches.map((agent) => agent.member.id).join(", ")})`,
+      );
+    throw new Error(`unknown recipient "${candidate}"`);
+  }
+
+  private assertDeliverable(to: MemberId): void {
+    if (this.finished.has(to)) throw new Error(`recipient ${to} has finished and cannot be woken`);
+    if (this.errored.has(to)) throw new Error(`recipient ${to} errored and cannot be woken`);
+  }
+
+  private claim(from: MemberId, resource: string): void {
+    const owner = this.claims.get(resource);
+    if (!owner) {
+      this.claims.set(resource, from);
+      if (resource === REPORTER_RESOURCE) this.claimedReporter = from;
+      this.record("member.claimed", from, undefined, { resource });
+      this.emitActivity(from, "claim", `claimed ${resource}`, { kind: "direct", memberId: from }, [
+        from,
+      ]);
+      this.post(
+        "runtime",
+        { kind: "direct", memberId: from },
+        `CLAIM_ACQUIRED resource=${JSON.stringify(resource)} owner=${from}`,
+        "interrupt",
+        "system",
+      );
+      return;
+    }
+    if (owner !== from) {
+      this.record("member.claimRejected", from, undefined, { resource, owner });
+      this.emitActivity(
+        from,
+        "claim",
+        `${resource} already claimed by ${owner}`,
+        { kind: "direct", memberId: from },
+        [from],
+      );
+    }
+    this.post(
+      "runtime",
+      { kind: "direct", memberId: from },
+      `${owner === from ? "CLAIM_ACQUIRED" : "CLAIM_REJECTED"} resource=${JSON.stringify(resource)} owner=${owner}`,
+      "interrupt",
+      "system",
+    );
+  }
+
+  private releaseClaims(owner: MemberId, reason: string): void {
+    for (const [resource, holder] of this.claims)
+      if (holder === owner) this.releaseClaim(resource, owner, reason);
+  }
+
+  private releaseClaim(resource: string, owner: MemberId, reason: string): void {
+    this.claims.delete(resource);
+    // Finishing releases the claim (so another member could take over) but
+    // keeps the duty: a reporter who finished their work still reports.
+    // A voluntary release is a renunciation; an error means the session
+    // can't be trusted to take the report turn.
+    if (resource === REPORTER_RESOURCE && this.claimedReporter === owner && reason !== "member-finished")
+      this.claimedReporter = undefined;
+    this.record("claim.released", owner, undefined, { resource, reason });
+    this.emitActivity(owner, "claim", `released ${resource}`, { kind: "direct", memberId: owner }, [
+      owner,
+    ]);
+    this.post(
+      "runtime",
+      { kind: "public" },
+      `CLAIM_RELEASED resource=${JSON.stringify(resource)} former=${owner} reason=${reason}`,
+      "passive",
+      "system",
+    );
+  }
+
+  private openPoll(
+    from: MemberId,
+    command: Extract<TeamCommand, { type: "vote-open" }>,
+  ): void {
+    const { pollId, initiatorVotes, maxReminders, onReminderExhausted } = command;
+    if (!pollId.trim()) throw new Error("poll id must not be empty");
+    if (this.closedPolls.has(pollId)) throw new Error(`poll already closed: ${pollId}`);
+    if (this.polls.has(pollId)) throw new Error(`poll already open: ${pollId}`);
+    if (this.claims.get(pollId) !== from)
+      throw new Error(`must hold claim ${pollId} before opening that poll`);
+    if (typeof initiatorVotes !== "boolean") throw new Error("initiatorVotes must be boolean");
+    if (!Number.isInteger(maxReminders) || maxReminders < 0 || maxReminders > 3)
+      throw new Error("maxReminders must be an integer from 0 to 3");
+    if (onReminderExhausted !== "leave-missing" && onReminderExhausted !== "abstain")
+      throw new Error("onReminderExhausted must be leave-missing or abstain");
+    const eligible = new Set(
+      [...this.agents.keys()].filter((memberId) => initiatorVotes || memberId !== from),
+    );
+    if (eligible.size === 0) throw new Error("poll must have at least one eligible voter");
+    const poll: OpenPoll = {
+      explicit: true,
+      initiator: from,
+      initiatorVotes,
+      maxReminders,
+      onReminderExhausted,
+      eligible,
+      votes: new Map(),
+      abstained: new Set(),
+      autoAbstained: new Set(),
+      reminders: new Map(),
+    };
+    this.polls.set(pollId, poll);
+    this.record("poll.opened", from, undefined, {
+      pollId,
+      initiatorVotes,
+      maxReminders,
+      onReminderExhausted,
+      eligible: [...eligible],
+    });
+    this.emitActivity(from, "vote", `opened ${pollId}`, { kind: "public" }, [...eligible]);
+    this.post(
+      "runtime",
+      { kind: "public" },
+      `POLL_OPENED pollId=${JSON.stringify(pollId)} initiator=${from} eligible=${JSON.stringify([...eligible])} maxReminders=${maxReminders} onReminderExhausted=${onReminderExhausted}`,
+      "passive",
+      "system",
+    );
+  }
+
+  private castVote(from: MemberId, pollId: string, choice: string): void {
+    if (!choice.trim()) throw new Error("vote choice must not be empty");
+    const poll = this.requireOpenPollForResponse(from, pollId);
+    poll.abstained.delete(from);
+    poll.autoAbstained.delete(from);
+    poll.votes.set(from, choice);
+    this.record("poll.cast", from, undefined, { pollId, choice });
+    this.emitActivity(from, "vote", `voted on ${pollId}`, { kind: "direct", memberId: from }, [from]);
+    this.maybeAnnouncePollReady(pollId, poll);
+  }
+
+  private abstainVote(from: MemberId, pollId: string): void {
+    const poll = this.requireOpenPollForResponse(from, pollId);
+    poll.votes.delete(from);
+    poll.autoAbstained.delete(from);
+    poll.abstained.add(from);
+    this.record("poll.abstained", from, undefined, { pollId, automatic: false });
+    this.emitActivity(from, "vote", `abstained on ${pollId}`, { kind: "direct", memberId: from }, [from]);
+    this.maybeAnnouncePollReady(pollId, poll);
+  }
+
+  private requireOpenPollForResponse(from: MemberId, pollId: string): OpenPoll {
+    if (this.closedPolls.has(pollId)) throw new Error(`poll already closed: ${pollId}`);
+    let poll = this.polls.get(pollId);
+    // Backward-compatible implicit opening: existing callers that claimed an
+    // id and cast directly keep the former all-member electorate and no
+    // reminder policy. New callers should use team_vote_open.
+    if (!poll) {
+      if (!this.claims.has(pollId))
+        throw new Error(`must claim ${pollId} before opening a new poll with that id`);
+      poll = {
+        explicit: false,
+        initiator: this.claims.get(pollId)!,
+        initiatorVotes: true,
+        maxReminders: 0,
+        onReminderExhausted: "leave-missing",
+        eligible: new Set(this.agents.keys()),
+        votes: new Map(),
+        abstained: new Set(),
+        autoAbstained: new Set(),
+        reminders: new Map(),
+      };
+      this.polls.set(pollId, poll);
+    }
+    if (!poll.eligible.has(from))
+      throw new Error(`member ${from} is not eligible to respond to poll ${pollId}`);
+    return poll;
+  }
+
+  private maybeAnnouncePollReady(pollId: string, poll: OpenPoll): void {
+    if (this.readyPolls.has(pollId) || poll.votes.size + poll.abstained.size === 0) return;
+    const result = this.tallyPoll(pollId, poll);
+    if (result.missing.length !== 0) return;
+    this.readyPolls.add(pollId);
+    const details = `pollId=${JSON.stringify(pollId)} voters=${JSON.stringify(Object.keys(result.votes))} abstained=${JSON.stringify(result.abstained)} autoAbstained=${JSON.stringify(result.autoAbstained)}`;
+    if (poll.explicit && this.deliverable(poll.initiator))
+      this.post(
+        "runtime",
+        { kind: "direct", memberId: poll.initiator },
+        `POLL_READY_TO_CLOSE ${details}; call team_vote_close`,
+        "interrupt",
+        "system",
+      );
+    else
+      this.post(
+        "runtime",
+        { kind: "public" },
+        `POLL_FULLY_CAST ${details}`,
+        "interrupt",
+        "system",
+      );
+  }
+
+  private recheckOpenPollsAfterTerminalTransition(): void {
+    for (const [pollId, poll] of this.polls) this.maybeAnnouncePollReady(pollId, poll);
+  }
+
+  private advanceOpenPollsAtQuiescence(): boolean {
+    let changed = false;
+    for (const [pollId, poll] of this.polls) {
+      if (!poll.explicit || this.readyPolls.has(pollId)) continue;
+      const missing = this.tallyPoll(pollId, poll).missing;
+      for (const memberId of missing) {
+        if (!this.deliverable(memberId) || this.blocked.has(memberId)) continue;
+        const reminders = poll.reminders.get(memberId) ?? 0;
+        if (reminders < poll.maxReminders) {
+          const next = reminders + 1;
+          poll.reminders.set(memberId, next);
+          this.record("poll.reminded", memberId, undefined, { pollId, attempt: next });
+          this.post(
+            "runtime",
+            { kind: "direct", memberId },
+            `POLL_REMINDER pollId=${JSON.stringify(pollId)} attempt=${next}/${poll.maxReminders}; call team_vote_cast or team_vote_abstain`,
+            "interrupt",
+            "system",
+          );
+          changed = true;
+        } else if (poll.onReminderExhausted === "abstain") {
+          poll.abstained.add(memberId);
+          poll.autoAbstained.add(memberId);
+          this.record("poll.abstained", memberId, undefined, { pollId, automatic: true });
+          this.emitActivity(
+            "runtime",
+            "vote",
+            `${memberId} auto-abstained on ${pollId} after ${poll.maxReminders} reminder${poll.maxReminders === 1 ? "" : "s"}`,
+            { kind: "direct", memberId },
+            [memberId],
+          );
+          changed = true;
+        }
+      }
+      this.maybeAnnouncePollReady(pollId, poll);
+    }
+    return changed || this.ready.size > 0;
+  }
+
+  /**
+   * Anyone may close a poll — there is no fixed tally-owner, only a fixed
+   * outcome, computed once by the runtime rather than self-reported by a
+   * member. Ties are reported honestly, never broken automatically
+   * (invariant 12: settlement never asserts correctness; a poll outcome
+   * follows the same discipline).
+   */
+  private closePoll(from: MemberId, pollId: string): void {
+    const existing = this.closedPolls.get(pollId);
+    if (existing)
+      throw new Error(`poll already closed: ${pollId} — ${describePollOutcome(existing.outcome)}`);
+    // A nonexistent poll bounces like any other bad reference. An explicitly
+    // opened but wholly unanswered poll also cannot be frozen as a vacuous
+    // no-votes outcome; at least one vote or abstention must exist.
+    const poll = this.polls.get(pollId);
+    if (!poll) throw new Error(`no such poll: ${pollId}`);
+    if (poll.votes.size + poll.abstained.size === 0)
+      throw new Error(`poll ${pollId} has no responses and cannot be closed`);
+    const result = this.tallyPoll(pollId, poll);
+    this.closedPolls.set(pollId, result);
+    this.polls.delete(pollId);
+    this.readyPolls.delete(pollId);
+    this.record("poll.closed", from, undefined, {
+      pollId,
+      tally: result.tally,
+      abstained: result.abstained,
+      autoAbstained: result.autoAbstained,
+      missing: result.missing,
+      outcome: result.outcome,
+    });
+    this.emitActivity(
+      from,
+      "vote",
+      `closed ${pollId}: ${describePollOutcome(result.outcome)}`,
+      { kind: "public" },
+      [...this.agents.keys()],
+    );
+    this.post(
+      "runtime",
+      { kind: "public" },
+      `POLL_CLOSED pollId=${JSON.stringify(pollId)} tally=${JSON.stringify(result.tally)} abstained=${JSON.stringify(result.abstained)} autoAbstained=${JSON.stringify(result.autoAbstained)} missing=${JSON.stringify(result.missing)} outcome=${JSON.stringify(result.outcome)}`,
+      "interrupt",
+      "system",
+    );
+  }
+
+  private tallyPoll(pollId: string, poll: OpenPoll): PollResult {
+    const tally: Record<string, number> = {};
+    for (const choice of poll.votes.values()) tally[choice] = (tally[choice] ?? 0) + 1;
+    const responded = new Set([...poll.votes.keys(), ...poll.abstained]);
+    // Terminal non-responders leave the quorum; blocked members remain
+    // eligible because blocking is a resumable pause rather than departure.
+    const eligible = [...poll.eligible].filter((id) => responded.has(id) || this.deliverable(id));
+    const missing = eligible.filter((id) => !responded.has(id));
+    const entries = Object.entries(tally);
+    const outcome: PollOutcome = !entries.length
+      ? { kind: "no-votes" }
+      : (() => {
+          const max = Math.max(...entries.map(([, count]) => count));
+          const winners = entries.filter(([, count]) => count === max).map(([choice]) => choice);
+          return winners.length === 1
+            ? { kind: "winner", choice: winners[0] }
+            : { kind: "tie", choices: Object.freeze(winners) };
+        })();
+    return Object.freeze({
+      pollId,
+      tally: Object.freeze(tally),
+      votes: Object.freeze(Object.fromEntries(poll.votes)),
+      abstained: Object.freeze([...poll.abstained]),
+      autoAbstained: Object.freeze([...poll.autoAbstained]),
+      eligible: Object.freeze(eligible),
+      missing: Object.freeze(missing),
+      outcome,
+    });
+  }
+
+  private createGroup(
+    creator: MemberId,
+    channelId: ChannelId,
+    name: string,
+    requestedMembers: readonly MemberId[],
+  ): void {
+    if (this.groups.has(channelId)) throw new Error(`Group already exists: ${channelId}`);
+    const holder = this.claims.get(channelId);
+    if (holder !== undefined && holder !== creator)
+      throw new Error(`cannot create group ${channelId}: its id is claimed by ${holder}`);
+    const resolvedMembers = requestedMembers.map((candidate) => this.resolveMemberId(candidate));
+    // Creation is its own arbitration point: an unclaimed id is claimed
+    // atomically with the create, so a private room takes one turn instead of
+    // a claim round-trip followed by a create. The gap between those two
+    // turns is real exposure — members who need the room are awake and
+    // improvising while it doesn't exist yet. Colliding creators arbitrate
+    // exactly as claims do: the first create wins, the loser is rejected
+    // above. The claim is set only after member resolution so a bad member
+    // name leaves no state behind.
+    if (holder === undefined) {
+      this.claims.set(channelId, creator);
+      if (channelId === REPORTER_RESOURCE) this.claimedReporter = creator;
+      this.record("member.claimed", creator, undefined, { resource: channelId });
+    }
+    const members = Object.freeze([...new Set([creator, ...resolvedMembers])]);
+    const group = Object.freeze({ kind: "group" as const, id: channelId, name, members });
+    this.groups.set(channelId, group);
+    this.record("channel.created", creator, undefined, {
+      channelId,
+      audienceHash: sha256([...members].sort().join("\0")),
+    });
+    this.emitActivity(
+      creator,
+      "channel",
+      `created group ${name}`,
+      { kind: "group", channelId },
+      members,
+    );
+  }
+
+  private post(
+    from: PrincipalId,
+    target: ChannelTarget,
+    body: string,
+    wake: WakePolicy,
+    purpose: MessageEnvelope["purpose"],
+    mentions: readonly MemberId[] = [],
+  ): void {
+    const { channel, audience } = this.resolveChannel(from, target);
+    const envelope: MessageEnvelope = Object.freeze({
+      id: randomUUID(),
+      sequence: this.envelopes.length + 1,
+      from,
+      channel,
+      audience: Object.freeze(audience),
+      body,
+      wake,
+      mentions: Object.freeze([...mentions]),
+      purpose,
+      sentAt: Date.now(),
+    });
+    this.envelopes.push(envelope);
+    this.record(
+      "message.posted",
+      from === "user" || from === "runtime" ? undefined : from,
+      envelope.id,
+      {
+        channelKind: channel.kind,
+        channelId: channel.id,
+        purpose,
+        wake,
+        audienceHash: sha256([...audience].sort().join("\0")),
+        bodyHash: sha256(body),
+      },
+    );
+    this.emitActivity(from, "message", body, target, audience, body, envelope.mentions);
+    for (const recipient of audience) {
+      if (recipient === from || !this.deliverable(recipient)) continue;
+      // The wake policy is per-recipient: a channel-level interrupt reaches
+      // its whole audience, while a passive public say still interrupts the
+      // members it explicitly mentions — everyone else receives it passively.
+      // A blocked recipient never wakes from delivery: even an interrupt or
+      // mention is recorded passively and held for its intervention wake.
+      const interrupts =
+        !this.blocked.has(recipient) &&
+        (wake === "interrupt" || envelope.mentions.includes(recipient));
+      // First-turn barrier: public passive speech (team_say) posted while
+      // this recipient is still an undrafted opening-wave member is held
+      // back from its regular mailbox and revealed only once every opening-
+      // wave member has drafted (see revealOpeningWaveDrafts). Direct,
+      // handoff, broadcast, and mentioned recipients are never held back —
+      // those are the sender explicitly choosing to reach this recipient
+      // right now, not a passive conclusion that could anchor an undrafted
+      // first take.
+      if (interrupts) {
+        // A directed/group/broadcast interrupt can depend on passive public
+        // context sent immediately before it. Reveal that context first so
+        // the recipient never observes a later prompt before its premise.
+        this.liftOpeningBarrierForInterrupt(recipient);
+      }
+      const holdBackForReveal =
+        !interrupts &&
+        wake === "passive" &&
+        channel.kind === "public" &&
+        this.openingWaveMembers?.has(recipient) === true &&
+        !this.openingWaveDrafted.has(recipient);
+      (holdBackForReveal ? this.heldBackQueue(recipient) : this.observations.get(recipient)!).push(
+        envelope,
+      );
+      // Lifting can merge two queues; sorting after the new interrupt also
+      // makes the global ordering guarantee explicit at the delivery seam.
+      if (interrupts)
+        this.observations.get(recipient)!.sort((left, right) => left.sequence - right.sequence);
+      this.record("message.enqueued", recipient, envelope.id, {
+        channelId: channel.id,
+        bodyHash: sha256(body),
+      });
+      if (interrupts) {
+        this.ready.add(recipient);
+        this.states.set(recipient, "ready");
+        this.readyCause.set(recipient, envelope.id);
+      }
+    }
+    this.recent = `${from} → ${channel.id}`;
+  }
+
+  private digestFor(memberId: MemberId): TeamDigest {
+    return Object.freeze({
+      states: Object.freeze(Object.fromEntries(this.states)),
+      blockedReasons: Object.freeze(Object.fromEntries(this.blocked)),
+      claims: Object.freeze(Object.fromEntries(this.claims)),
+      groups: Object.freeze(
+        [...this.groups.values()]
+          .filter((group) => group.members.includes(memberId))
+          .map((group) => Object.freeze({ id: group.id, name: group.name, members: group.members })),
+      ),
+      polls: Object.freeze(
+        [...this.polls.entries()].map(([pollId, poll]) => {
+          const result = this.tallyPoll(pollId, poll);
+          return Object.freeze({
+            pollId,
+            initiator: poll.initiator,
+            tally: result.tally,
+            abstained: result.abstained,
+            autoAbstained: result.autoAbstained,
+            missing: result.missing,
+          });
+        }),
+      ),
+    });
+  }
+
+  private resolveChannel(
+    from: PrincipalId,
+    target: ChannelTarget,
+  ): { channel: Channel; audience: MemberId[] } {
+    if (target.kind === "public")
+      return {
+        channel: Object.freeze({ kind: "public", id: "public" }),
+        audience: [...this.agents.keys()],
+      };
+    if (target.kind === "direct") {
+      if (!this.agents.has(target.memberId))
+        throw new Error(`Unknown recipient: ${target.memberId}`);
+      return {
+        channel: Object.freeze({
+          kind: "direct",
+          id: directChannelId(from, target.memberId),
+          members: Object.freeze([from, target.memberId] as const),
+        }),
+        audience: [target.memberId],
+      };
+    }
+    const group = this.groups.get(target.channelId);
+    if (!group) throw new Error(`Unknown group: ${target.channelId}`);
+    if (from !== "runtime" && from !== "user" && !group.members.includes(from))
+      throw new Error(`Member ${from} cannot post to group ${target.channelId}`);
+    return { channel: group, audience: [...group.members] };
+  }
+
+  private record(
+    type: AuditEvent["type"],
+    memberId?: MemberId,
+    messageId?: MessageId,
+    data: Record<string, unknown> = {},
+  ): void {
+    const sequence = this.events.length + 1;
+    const payload = JSON.stringify({
+      sequence,
+      type,
+      memberId,
+      messageId,
+      data,
+      previousHash: this.auditHead,
+    });
+    const hash = sha256(payload);
+    this.events.push(
+      Object.freeze({
+        sequence,
+        type,
+        memberId,
+        messageId,
+        data: Object.freeze(data),
+        previousHash: this.auditHead,
+        hash,
+      }),
+    );
+    this.auditHead = hash;
+  }
+
+  /**
+   * Presentation observers are untrusted guests: a throwing onActivity or
+   * onProgress must never fail the command, error the member, or reject the
+   * run it was merely watching — those are domain outcomes, and observers
+   * have no vote in them. The first throw disables that observer for the
+   * rest of the run and records a diagnostic audit event. A sink that needs
+   * fail-fast durability doesn't belong in these optional callbacks.
+   */
+  private safeObserve(observer: "onProgress" | "onActivity", invoke: () => void): void {
+    if (this.disabledObservers.has(observer)) return;
+    try {
+      invoke();
+    } catch (cause) {
+      this.disabledObservers.add(observer);
+      this.record("observer.failed", undefined, undefined, {
+        observer,
+        error: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+  }
+
+  private emitActivity(
+    memberId: PrincipalId,
+    kind: TeamActivity["kind"],
+    text: string,
+    channel: ChannelTarget,
+    targetIds: readonly MemberId[],
+    body?: string,
+    mentions?: readonly MemberId[],
+  ): void {
+    this.safeObserve("onActivity", () =>
+      this.options.onActivity?.(
+        Object.freeze({
+          sequence: ++this.activitySequence,
+          memberId,
+          kind,
+          text,
+          visibility: channel.kind !== "public" ? "restricted" : "public",
+          channel,
+          targetIds: Object.freeze([...targetIds]),
+          mentions: mentions?.length ? Object.freeze([...mentions]) : undefined,
+          body,
+        }),
+      ),
+    );
+  }
+
+  private totalTurns(): number {
+    return [...this.turns.values()].reduce((sum, count) => sum + count, 0);
+  }
+}
+
+/**
+ * A synthetic readyCause shared by every member revealed together at the end
+ * of the opening wave, so the scheduler's same-source check recognizes them
+ * as one wave and wakes them sequentially — the reveal is a genuinely shared
+ * cause (the round of first-turn speech as a whole), same as any other
+ * same-source wave.
+ */
+const OPENING_WAVE_REVEAL_CAUSE: MessageId = "reveal:opening-wave";
+
+function describePollOutcome(outcome: PollOutcome): string {
+  if (outcome.kind === "winner") return `winner=${outcome.choice}`;
+  if (outcome.kind === "tie") return `tie=${outcome.choices.join(",")}`;
+  return "no votes";
+}
+
+function directChannelId(from: PrincipalId, to: MemberId): string {
+  return `direct:${[from, to].sort().join(":")}`;
+}
+
+function sha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function stableRank(seed: string, memberId: string): number {
+  return Number.parseInt(sha256(`${seed}:${memberId}`).slice(0, 12), 16);
+}
+
+export function verifyAudit(events: readonly AuditEvent[]): boolean {
+  let previousHash = "0".repeat(64);
+  for (let index = 0; index < events.length; index++) {
+    const event = events[index];
+    if (event.sequence !== index + 1 || event.previousHash !== previousHash) return false;
+    const payload = JSON.stringify({
+      sequence: event.sequence,
+      type: event.type,
+      memberId: event.memberId,
+      messageId: event.messageId,
+      data: event.data,
+      previousHash: event.previousHash,
+    });
+    if (sha256(payload) !== event.hash) return false;
+    previousHash = event.hash;
+  }
+  return true;
+}

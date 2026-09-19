@@ -1,0 +1,34 @@
+{
+  "name": "voodoo-doll",
+  "version": "0.1.0",
+  "private": true,
+  "description": "巫柜：移动端优先的巫毒娃娃前端小游戏",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "hex:dev": "vite --config hex/vite.config.js --host 0.0.0.0 --port 5199",
+    "hex:build": "vite build --config hex/vite.config.js",
+    "hex:preview": "vite preview --config hex/vite.config.js --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "start:world": "python3 backend/run.py",
+    "prerelease": "npm run hex:build && npm run start:world",
+    "hex:serve": "npm run hex:build && npm start",
+    "test": "node --test",
+    "agents:vendor": "node server/agents/vendor/pi-team/build.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "0.85.1",
+    "@earendil-works/pi-ai": "0.85.1",
+    "pixi.js": "^8.21.0"
+  }
+}

@@ -1,0 +1,661 @@
+:root {
+  --ink: #1a1c27;
+  --ink-soft: #222532;
+  --panel: #2b2d3b;
+  --paper: #eee8dc;
+  --muted: #aaa8ad;
+  --dim: #85818c;
+  --copper: #c9af8d;
+  --copper-bright: #eed4ac;
+  --red: #cb5b4f;
+  --green: #8eae7b;
+  --blue: #6f8ba0;
+  --line: rgba(214, 204, 195, 0.14);
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif: ui-serif, Georgia, "Songti SC", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-width: 320px;
+}
+
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 9;
+  opacity: 0.025;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: max(4px, env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+}
+
+/* 顶栏 */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0 19px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(200, 148, 90, 0.5);
+  border-radius: 12px;
+  background: rgba(201, 175, 141, 0.07);
+  color: var(--copper-bright);
+  font-size: 13px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.eyebrow span {
+  color: var(--copper);
+}
+
+.brand-name {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.night-pill {
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--copper-bright);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* 房间标题 */
+
+.room-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.room-label {
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.room-hint {
+  color: var(--dim);
+  font-size: 11px;
+}
+
+/* 在场角色名牌 */
+
+.roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 10px;
+}
+
+.roster-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--paper);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* 场景里的角色台词 */
+
+.msg-scene .msg-who {
+  color: var(--copper-bright);
+}
+
+.msg-scene .msg-text {
+  color: var(--paper);
+}
+
+/* 玩家在戏里的身体说的话：由娃娃替玩家说，和玩家自己打的字区分开 */
+
+.msg-body .msg-who {
+  color: #e7c48c;
+}
+
+.msg-body .msg-text {
+  color: var(--paper);
+  font-style: italic;
+}
+
+/* 环境的反馈：没有说话人，像纪录片里的环境音 */
+
+.msg-env .msg-who {
+  color: transparent;
+}
+
+.msg-env .msg-text {
+  color: var(--muted);
+  font-size: 12px;
+  padding-left: 8px;
+  border-left: 2px solid rgba(111, 139, 160, 0.45);
+}
+
+/* 有人对物件做了什么：一行极短的动作记录 */
+
+.msg-act {
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.msg-act .msg-who {
+  color: transparent;
+}
+
+.msg-act .msg-text {
+  color: var(--dim);
+  padding-left: 8px;
+}
+
+/* 舞台 */
+
+.stage-wrap {
+  border: 1px solid var(--line);
+  position: relative;
+  border-radius: 13px;
+  background: #303440;
+  box-shadow: 0 14px 40px rgba(5, 7, 15, 0.24), 0 0 0 4px rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+  line-height: 0;
+}
+
+#stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* 对话 */
+
+.log {
+  flex: 1;
+  min-height: 170px;
+  max-height: 42svh;
+  margin-top: 17px;
+  padding: 0 3px;
+  scrollbar-width: thin;
+  scrollbar-color: #555360 transparent;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.msg {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 13px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.msg-who {
+  flex: 0 0 39px;
+  padding-top: 2px;
+  color: var(--copper);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.msg-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.msg-you .msg-who {
+  color: var(--muted);
+}
+
+.msg-you .msg-text {
+  color: var(--muted);
+}
+
+.msg-sys {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.msg-sys .msg-who {
+  color: transparent;
+}
+
+.msg-sys .msg-text {
+  border-left: 2px solid var(--line);
+  padding-left: 8px;
+}
+
+/* 娃娃的建议 */
+
+.advice {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  padding: 9px 12px;
+  border-left: 2px solid var(--copper);
+  border-radius: 0 6px 6px 0;
+  background: rgba(200, 148, 90, 0.07);
+}
+
+.advice-who {
+  flex: 0 0 auto;
+  color: var(--copper);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.advice-text {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--paper);
+}
+
+/* 它在劝你：最重 */
+.advice-warn {
+  border-left-color: var(--blue);
+  background: rgba(111, 139, 160, 0.1);
+}
+
+.advice-warn .advice-who {
+  color: var(--blue);
+}
+
+/* 它不同意，但还是会照做 */
+.advice-object {
+  border-left-color: var(--red);
+  background: rgba(203, 91, 79, 0.09);
+}
+
+.advice-object .advice-who {
+  color: var(--red);
+}
+
+/* 选项 */
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  padding-bottom: 4px;
+}
+
+.opt {
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 1px solid rgba(200, 148, 90, 0.4);
+  border-radius: 14px;
+  background: rgba(200, 148, 90, 0.08);
+  color: var(--copper-bright);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.opt:active {
+  transform: translateY(1px);
+}
+
+/* 战报 */
+
+.report {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(200, 148, 90, 0.32);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(200, 148, 90, 0.08), transparent);
+}
+
+.report-title {
+  margin: 0 0 6px;
+  color: var(--copper);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.report-body {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.report-foot {
+  margin: 8px 0 0;
+  color: var(--dim);
+  font-size: 10px;
+}
+
+/* 输入 */
+
+.compose {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compose-input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--panel);
+  color: var(--paper);
+  font: inherit;
+  font-size: 16px;
+}
+
+.compose-input:focus {
+  outline: 1px solid var(--copper);
+  outline-offset: 1px;
+}
+
+.compose-input:disabled {
+  opacity: 0.55;
+}
+
+.send {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--copper);
+  border-radius: 50%;
+  background: rgba(200, 148, 90, 0.16);
+  color: var(--copper-bright);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.send:disabled {
+  opacity: 0.45;
+}
+
+/* 娃娃条 */
+
+.doll-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.doll-face {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #7d4f42;
+  color: #1b1614;
+  font-size: 14px;
+}
+
+.doll-face.restless {
+  background: var(--copper);
+}
+
+.doll-face.reluctant {
+  background: var(--blue);
+}
+
+.doll-name {
+  margin: 0;
+  color: var(--copper);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.doll-note {
+  margin: 2px 0 0;
+  color: var(--dim);
+  font-size: 10px;
+}
+
+/* 开场 */
+
+.boot {
+  margin-top: 10px;
+}
+
+.boot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(140deg, #2a2b38, #222532);
+  box-shadow: 0 10px 30px rgba(5, 7, 15, 0.12);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--copper);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.boot-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.boot-input {
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--paper);
+  font: inherit;
+  font-size: 16px;
+}
+
+.btn {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--paper);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn.primary {
+  border-color: var(--copper);
+  background: rgba(200, 148, 90, 0.14);
+  color: var(--copper-bright);
+}
+
+.hint {
+  margin: 0;
+  color: var(--dim);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.boot-textarea {
+  min-height: 100px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--paper);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.boot-label {
+  display: block;
+  margin: 16px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.boot-subtitle {
+  margin: 12px 0 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.boot-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.boot-name-label {
+  flex: 0 0 80px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.boot-name-input {
+  flex: 1;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--paper);
+  font: inherit;
+  font-size: 16px;
+  min-width: 0;
+}
+
+.boot-input:focus,
+.boot-textarea:focus,
+.boot-name-input:focus {
+  outline: 1px solid var(--copper);
+  outline-offset: 1px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (min-width: 560px) {
+  .log {
+    max-height: 34svh;
+  }
+  .boot-title {
+    font-size: 24px;
+  }
+}
+
+/* VIS-01: mobile readability and quiet, contemporary stage framing. */
+.roster-chip::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.room-label::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #a9c3af;
+  box-shadow: 0 0 7px rgba(169, 195, 175, 0.35);
+  vertical-align: 2px;
+}
+button, input, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 2px solid var(--copper-bright); outline-offset: 3px; }
+button { touch-action: manipulation; }
+.msg-text, .advice-text, .report-body { overflow-wrap: anywhere; }
+.compose { padding-top: 3px; }
+.send { border-radius: 15px; background: #c8af90; color: #272734; font-weight: 600; }
+.btn.primary { background: #c8af90; color: #292934; border-color: #c8af90; font-weight: 600; }
+.doll-face { border-radius: 12px; background: #ac8d78; color: #342f3a; }
+.doll-note { line-height: 1.5; }
+.boot-subtitle { margin-bottom: 12px; line-height: 1.7; }
+.boot-name-label { flex-basis: 68px; }
+@media (max-width: 359px) {
+  .app { padding-left: 12px; padding-right: 12px; }
+  .room-hint { font-size: 10px; }
+  .topbar { padding-top: 13px; padding-bottom: 15px; }
+  .roster { gap: 4px; }
+  .roster-chip { padding: 4px 7px; font-size: 10px; }
+  .boot-form { padding: 15px; }
+  .boot-name-row { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .log { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+/* 开场没有台词时把空间留给故事表单，避免空日志撑开首屏。 */
+.log:empty { display: none; }
