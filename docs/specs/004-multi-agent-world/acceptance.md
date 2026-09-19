@@ -4,7 +4,7 @@
 
 | 编号 | 验收项 | 通过条件 | 状态 |
 | --- | --- | --- | --- |
-| MW-AC-01 | 跨语言契约 | OpenAPI/JSON Schema 可生成 TS 类型并由 Pydantic 校验；未知 action、actor、target、channel、relation 被拒绝 | 部分：契约文件已写入工作区（仓库尚无提交），生成/Pydantic 待做 |
+| MW-AC-01 | 跨语言契约 | OpenAPI/JSON Schema 可生成 TS 类型并由 Pydantic 校验；未知 action、actor、target、channel、relation 被拒绝 | 部分：契约文件已纳入 Git 基线，生成/Pydantic 待做 |
 | MW-AC-02 | 身份与控制边界 | `PLAYER_DOLL` 可控制 `YOU`；玩家或模型提交 A/B/C/Z 直控命令返回 422；A/B 可自主拒绝、沉默、离开或反问 | 通过（2026-09-18）：`PYTHONPATH=. python3 -m unittest discover -s backend/tests -v`，16/16；`test_kernel.py`、`test_world_kernel.py` |
 | MW-AC-03 | Python 服务 | FastAPI `/healthz`、命令和 SSE 在本地启动；缺少模型配置不阻塞核心流程；密钥不出现在响应和前端包 | 本机通过（2026-09-18）：`PYTHONPATH=. python3 backend/run.py`；curl `/healthz`=200，A/B 多目标 POST 返回 200；公网仍待测 |
 | MW-AC-04 | 事件存储与回放 | 一幕可写入快照和 append-only 事件；重启后按固定 resolver 重建相同世界/舞台；重放不调用模型 | 通过领域层：SQLite、CAS、回放测试通过 |

@@ -71,7 +71,7 @@
 
 **历史原型采用的设计决策**：[决策 0002](decisions/0002-agent-split.md) 和 [决策 0003](decisions/0003-environment-agent.md)。其中 0002 的“娃娃与玩家身体分开为两个 agent”实现建议已被 [决策 0006](decisions/0006-python-world-kernel.md) 和 004 规格覆盖；0003 的 ENV 只反馈、现代角色素材甄别仍然有效，角色槽位和运行时边界以 004 为准。
 
-本原型仍是验证形态：没有 001 T00 的 Git 基线、战报截图分享未做、未做真机测试。**当前已有 BFS 绕开实心家具**，不再沿用早期“无寻路”结论。`package.json` 的 `hex:*` 脚本与 `.gitignore` 的 `dist-hex/` 属于共享文件改动，若与 T00 安排冲突以 T00 为准。
+本原型仍是验证形态：001 T00 的 Git 基线已于 2026-09-20 建立，初始提交为 `418c79b`；战报截图分享和真机测试仍未完成。**当前已有 BFS 绕开实心家具**，不再沿用早期“无寻路”结论。`package.json` 的 `hex:*` 脚本与 `.gitignore` 的 `dist-hex/` 已纳入基线。
 
 2026-09-18 运行时核查补充：默认并发分支中 A/B/C 通过受控邮箱接收本轮公开台词，顺序模式才把公开 transcript 直接传给下一位；服务端保存已确认事实、角色记忆与版本，浏览器只保留本机头像和离线分支。初始故事显式确认后进入 facts，HF-20 已由已确认事实/记忆重建覆盖。当前本地模板也在浏览器，**无模型可回退与已载页面断网均可演出**。真实模型耗时只作为一次自测记录，不是性能承诺。
 
@@ -115,6 +115,7 @@
 
 ### 004 单人预发布当前证据（更新至 2026-09-20）
 
+- Git 根基线已建立，并以本地标签 `prerelease-local-2026-09-20` 标识本机单人预发布候选；没有推送或部署到外部环境。
 - `PYTHONPATH=. python3 -m unittest discover -s backend/tests -v`：103/103 通过。除 Kernel、生命周期、ToolCompiler、草稿事务和回放外，还覆盖 cookie 会话隔离、故事/行动预览与确认/取消、跨会话草稿拒绝、SQLite 重启恢复、current/v5/v1 导入、非法导入原子性、Origin、1 MiB 默认请求体上限、管理令牌，以及静态服务对敏感文件、父目录穿越和目录列表的拒绝。
 - `python3 -m compileall -q backend`：通过。
 - `PYTHONPATH=. python3 backend/run.py` 后，`curl http://127.0.0.1:8000/healthz` 返回 200；`POST /api/v4/turns` 的 A/B 多目标请求返回一个 worldVersion=1 的原子回合，A 与 B 各自产生回应。该证据仅证明本机 HTTP，不代表公网部署。
