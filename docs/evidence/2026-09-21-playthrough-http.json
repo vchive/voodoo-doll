@@ -1,0 +1,90 @@
+{
+  "origin": "http://127.0.0.1:18766",
+  "health": {
+    "status": "ok",
+    "schemaVersion": 4,
+    "worldVersion": 0
+  },
+  "assets": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "3389bb8a15dbace82bb6d7eedb994eeb9a3a876cedddfd0bb611eea14359def5"
+    },
+    {
+      "path": "/assets/BitmapFont-BFhQr_JB.js",
+      "status": 200,
+      "sha256": "f7d3da1aa4f6c017c40caabc0d1a477988130caf26794e9367aaafc6487d30a8"
+    },
+    {
+      "path": "/assets/BufferResource-CBgknv_H.js",
+      "status": 200,
+      "sha256": "6888e4facb7a53591ee50592e7ada00c9c3e2746850a314e51693421cd02915f"
+    },
+    {
+      "path": "/assets/CanvasRenderer-BYmcntKj.js",
+      "status": 200,
+      "sha256": "e5c389cf7fd5f38862465c962025766de759927c5d3dab762f73a643a8deca26"
+    },
+    {
+      "path": "/assets/Filter-C-YJdhiO.js",
+      "status": 200,
+      "sha256": "65b4f9fecbfb106aef7e4938c84e3dc90fef6d053693890fa7acc91bd148b06a"
+    },
+    {
+      "path": "/assets/RenderTargetSystem-Di-gPGYs.js",
+      "status": 200,
+      "sha256": "18792979330ba1077def15817acbb7d76a3bf28a631a4c0666eacff7ec072444"
+    },
+    {
+      "path": "/assets/WebGLRenderer-CQeeW7Cv.js",
+      "status": 200,
+      "sha256": "4f1b81ef161ab7a468d82a3fd1a79ea52d4c7d9fa95c5e2308ce41dd609281b4"
+    },
+    {
+      "path": "/assets/WebGPURenderer-BZPSDWEH.js",
+      "status": 200,
+      "sha256": "56aab6900115dc5bb199b629d9e293adb4eaad561b6a4259015a47817b023dda"
+    },
+    {
+      "path": "/assets/app-Di4PIOy8.js",
+      "status": 200,
+      "sha256": "853218c9c0a1b5bc6a1f1c5512017eb83a4d15317d21243155a503897a88e5a5"
+    },
+    {
+      "path": "/assets/browserAll-B5q98q01.js",
+      "status": 200,
+      "sha256": "d0cbf539eb31eb6e6145b088096e026a5d3c0e1ea330470314dfed4f2a10543b"
+    },
+    {
+      "path": "/assets/index-B2QvTTsJ.js",
+      "status": 200,
+      "sha256": "2657e678e3e4e2e5b1ab4285e253eaf697d1a4bf2fa07e3330aa695769ef3242"
+    },
+    {
+      "path": "/assets/play-DEleR4Lh.js",
+      "status": 200,
+      "sha256": "2d1965cded08f7dab5f3a732d38241260254744ea26803a44e709b1069baa5a8"
+    },
+    {
+      "path": "/assets/preload-helper-PPVm8Dsz.js",
+      "status": 200,
+      "sha256": "0bcb72f8ec0d95f592f3a84b3554b9ef5a5325ff5416a9114d6913e03c1c9eb4"
+    },
+    {
+      "path": "/assets/stage-CaDC-RV0.js",
+      "status": 200,
+      "sha256": "d0e300e4acdea3768324d9a2bc0e89da3237acd26d9bc35f970fdd71fac4b7a3"
+    },
+    {
+      "path": "/assets/webworkerAll-BrXXx4JP.js",
+      "status": 200,
+      "sha256": "d6ef41dd23ac03b7ea0116cc28e9c2f4396f280d42904cecc87adb690d39f3cd"
+    },
+    {
+      "path": "/assets/index-mRB3zUkF.css",
+      "status": 200,
+      "sha256": "359412fb1398b01ec5320a798068dfdd13cb397835e31882fdaf6204e3ef2d0f"
+    }
+  ]
+}

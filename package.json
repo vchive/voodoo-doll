@@ -20,9 +20,11 @@
     "prerelease": "npm run hex:build && npm run start:world",
     "hex:serve": "npm run hex:build && npm start",
     "test": "node --test",
-    "agents:vendor": "node server/agents/vendor/pi-team/build.mjs"
+    "agents:vendor": "node server/agents/vendor/pi-team/build.mjs",
+    "test:play": "npm run hex:build && node scripts/playtest-single-player.mjs"
   },
   "devDependencies": {
+    "playwright": "^1.62.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.2"
   },

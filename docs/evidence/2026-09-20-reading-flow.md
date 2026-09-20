@@ -1,6 +1,6 @@
 # 2026-09-20 · 阅读、选择列表与输入焦点衔接验证
 
-MW-35 / SP-20 / MW-AC-35 当前桌面范围通过：已取得桌面长句分页、滚轮/合成拖动、方向变化、选项翻动、三路线、面板/pending 回归、导入生命周期及 11 项组合输入/焦点复测证据；微信 iOS/Android 真机仍待测。依赖 MW-34；前轮布局/方向证据保留，但不计为本轮行为验证。执行时间为 2026-09-20 UTC（Asia/Shanghai 已跨至 2026-09-21）。
+MW-35 / SP-20 / MW-AC-35 已归档桌面测试范围通过：已取得桌面长句分页、滚轮/合成拖动、方向变化、选项翻动、三路线、面板/pending 回归、导入生命周期及 11 项组合输入/焦点阶段复测证据；微信 iOS/Android 真机仍待测。补测与生命周期报告对应基线 `94aec65` 源码，11 项 IME 报告在生命周期清理补丁前执行，见下表。依赖 MW-34；前轮布局/方向证据保留，但不计为本轮行为验证。执行时间为 2026-09-20 UTC（Asia/Shanghai 已跨至 2026-09-21）。
 
 ## 本轮范围
 
@@ -24,20 +24,21 @@ MW-35 / SP-20 / MW-AC-35 当前桌面范围通过：已取得桌面长句分页�
 | 测试命令 | `npm test`：104/104；`npm run typecheck`、`npm run build`、`npm run hex:build`、`python3 -m compileall -q backend` 均通过 |
 | 浏览器命令 | `node /tmp/voodoo-reading-flow.mjs`、`node /tmp/voodoo-reading-routes.mjs`、`node /tmp/voodoo-reading-supplement.mjs`、`node /tmp/voodoo-ime-focus-fixed.mjs`、生命周期复测脚本；报告 `errors=[]` |
 | 本轮报告 | 已归档为 `2026-09-20-reading-flow-browser.json`、`-routes.json`、`-supplement.json`、`-ime.json`、`-lifecycle.json`；原始脚本仍保留在 `/tmp` |
-| 源码标识 | 最终报告 hash：`hex/play.ts` `71f59662d00be414104390505b6c636e72c99796e4aa4b13d02b3f4d8d89b778`；`hex/play.css` `3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70`；`hex/play-reading.ts` `a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c` |
+| 补测/生命周期源码标识 | `-supplement.json`、`-lifecycle.json` 的 hash 对应 `94aec65`：`hex/play.ts` `71f59662d00be414104390505b6c636e72c99796e4aa4b13d02b3f4d8d89b778`；`hex/play.css` `3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70`；`hex/play-reading.ts` `a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c` |
+| IME 阶段源码标识 | `-ime.json` 的执行前后 `hex/play.ts` hash 均为 `c5afe260faa3538817f76c92be68add4ec56bf5f1e626b0d6883afd9678bb50a`；CSS/reading hash 同上。11 项结果是清理补丁前的阶段证据，不写成最终源码重跑；其后的四档面板/pending 与生命周期补测范围按各报告记录 |
 | 18766 HTTP | 重新构建后 `curl http://127.0.0.1:18766/healthz` 返回 200、`schemaVersion=4`；仅证明本机 HTTP，不代表公网或微信真机 |
 
 ## 验收矩阵
 
 | 子项 | 实际结果 | 尚未覆盖 |
 | --- | --- | --- |
-| A 长句继续 | 568×320 需 8 次、667×375 需 4 次、844×390 需 4 次继续才滚到底；期间索引保持 0，再一次继续才变为 1。滚轮、拖动、方向/尺寸变化后仍不跳句；世界版本和 POST 数不变 | 真实触摸仍待测 |
+| A 长句继续 | 568×320 需 8 次、667×375 需 4 次、844×390 需 4 次继续才滚到底；期间索引保持 0，再一次继续才变为 1。滚轮、拖动、方向/尺寸变化后仍不跳句；世界版本和 POST 数不变 | 长句未到底时提前行动的独立组合未单列；真实触摸仍待测 |
 | B 滑动不跳句 | 568/667/844 合成 pointerdown/move/up 及滚轮后索引不变，随后独立继续可分页；无请求 | 真实触摸仍待测 |
 | C 更多选项 | 三档短屏翻动均可到末项，提示在底部消失并可回顶部；零新增 intent/confirm，焦点留在 `single-guidance`，返回对白不执行。三条完整路线各 21 次行动只产生各 21 组 intent/confirm | 真实触摸仍待测 |
-| D 组合输入/Enter | 11 项 IME/焦点报告中，`isComposing`、旧键码 229、显式组合状态和 Enter repeat 均零 intent；组合中的 Escape 保持编辑器。组合结束后新 Enter 各发 1 次 intent、0 次 confirm，按住 Enter 不穿透预览 | 微信 iOS/Android 实际中文候选字、软键盘和浏览器事件顺序 |
+| D 组合输入/Enter | 11 项 IME/焦点阶段报告中，`isComposing`、旧键码 229、显式组合状态和 Enter repeat 均零 intent；组合中的 Escape 保持编辑器。组合结束后新 Enter 各发 1 次 intent、0 次 confirm，按住 Enter 不穿透预览；该 11 项报告源码阶段见上表 | 微信 iOS/Android 实际中文候选字、软键盘和浏览器事件顺序 |
 | E 焦点交接 | 568/667/844/390×844 三类面板焦点进入并由 Escape/收起回入口；预览聚焦 `intent-preview`，取消回 `single-dialogue`；pending 旋转/刷新取消保留输入、游标和世界版本。导入 5 次、故事库往返 5 次均只保留一个活动阅读 observer/listener | 微信软键盘仍待测 |
 | 正常故事回归 | 844×390 trust/车站、667×375 protect/厨房、568×320 audit/车站全部到正确结局；共 455 次阅读，读取不发行动 POST。每条 22 个画面状态、21 次世界行动；无横向溢出，阅读/选项底部控件在视口内 | 自动点击耗时不能作为完整真实阅读时长 |
-| 竖屏 | 390×844 本轮正文点击可换至下一句、进入选择不变更世界版本；其多选测试随后主动切到 568×320，不计为 390 多选证据 | 本轮完整竖屏输入/面板/pending 与横竖往返专项 |
+| 竖屏 | 390×844 本轮正文点击可换至下一句、进入选择不变更世界版本；补测覆盖三类面板焦点、自由输入进入预览、pending 横竖往返/长按 Enter/取消保留草稿和游标，intent=1、confirm=0。早期多选测试随后主动切到 568×320，不计为 390 多选证据 | 390 独立多选专项未单列；微信真实软键盘/触摸仍待测 |
 | 微信 iOS/Android 真机 | 待测 | 实际中文候选字 Enter、软键盘、触摸滑动及设备安全区 |
 
 ## 复现、修正与复测
@@ -50,10 +51,10 @@ MW-35 / SP-20 / MW-AC-35 当前桌面范围通过：已取得桌面长句分页�
 
 - `reading-flow/reading-568-long.png`、`reading-flow/reading-844-long.png`：长句滚到底后继续入口。
 - `ime-focus/ime-cancel-568.png`、`ime-focus/ime-cancel-844.png`：取消回正文。
-- `reading-flow/routes-{568,667,844}-choices.png`、`routes-{568,844}-decision.png`：本轮三路线阶段；`supplement-*-options.png` 与 `supplement-*-cancel.png` 为补测截图。
+- `reading-flow/routes-{568,667,844}-choices.png`、`routes-{568,844}-decision.png`：本轮三路线阶段；`reading-flow/supplement-{568,844}-options.png` 与 `reading-flow/supplement-{568,667,844,390}-cancel.png` 为补测截图。
 
-截图为本机临时文件；最终归档路径及人工视觉检查由集成负责人补入。上述 DOM/请求断言是本页通过结论的直接依据。
+上述截图已归档到本页相对路径 `reading-flow/` 和 `ime-focus/` 并纳入 Git。归档本身不代表已完成人工视觉检查；上述 DOM/请求断言是本页通过结论的直接依据。
 
 ## 结论与边界
 
-本轮桌面模拟项目通过，MW-35 在桌面范围完成；真实手机触摸、中文输入法、软键盘和安全区仍待测。公网、长篇故事质量、真实游玩时长及旧 v2 剧情缺陷不属于本轮证据，不据此宣称整体预发布完成。
+本轮已归档桌面模拟项目通过，MW-35 的测试范围与源码阶段按上表记录；长句未到底时提前行动的独立组合未单列，真实手机触摸、中文输入法、软键盘和安全区仍待测。公网、长篇故事质量、真实游玩时长及旧 v2 剧情缺陷不属于本轮证据，不据此宣称整体预发布完成。

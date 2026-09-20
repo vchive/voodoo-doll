@@ -19,6 +19,11 @@ export function applyLocalAction(snapshot: PlaySnapshot, action: LocalAction): {
   let feedback = '你环顾四周。离线时可以移动、开门和等待，完整人物剧情会在重新连接后继续。';
   if (action.action === 'move' && action.payload.roomId) {
     result.roomId = action.payload.roomId;
+    // Keep cached player entities consistent for exports. NPC positions remain
+    // historical and are not advanced by the offline exploration branch.
+    for (const id of ['YOU', 'PLAYER_DOLL']) {
+      if (result.agents?.[id]) result.agents[id].roomId = result.roomId;
+    }
     result.present = ['YOU']; // Cached NPC positions are not a live schedule projection.
     feedback = '你和巫毒娃娃来到了新的地点。本机探索已记录。';
   } else if (action.action === 'use') {

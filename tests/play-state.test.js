@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { appendLocalLogEntry, createTutorialState, emptyLocalState, hasCompletedLocalWorld, nextTutorialStep, normalizeLocalState, parseLocalState, restorePendingStoryDraft } from '../hex/play-state.ts';
+import { appendLocalLogEntry, createLocalSaveEnvelope, createTutorialState, emptyLocalState, hasCompletedLocalWorld, nextTutorialStep, normalizeLocalState, parseLocalState, restorePendingStoryDraft, shouldKeepLocalBranch } from '../hex/play-state.ts';
 
 test('旧的单人记录缺少日志和快照字段时会补齐可玩的默认值', () => {
   const state = normalizeLocalState({ profile: { dollName: '小墨', story: '旧故事', names: { A: '林川' } }, snapshot: { roomId: 'office' } });
@@ -145,6 +145,57 @@ test('刷新后可以恢复尚未确认的故事预览及其原始版本', () =>
     worldVersion: 2,
     preview: { dollName: '小墨', story: '从会客厅开始', names: { A: '林川' }, roomLabels: ['会客厅'] },
   });
+});
+
+test('损坏或空白的 pending 不会保留下来锁死输入与恢复入口', () => {
+  for (const pending of [
+    { kind: 'intent', id: 'turn-1' },
+    { kind: 'intent', id: 'turn-1', text: '   ' },
+    { kind: 'story', id: 'story-1' },
+    { kind: 'story', id: 'story-1', preview: { dollName: '小墨' } },
+    { kind: 'story', id: 'story-1', preview: { dollName: ' '.repeat(32) + '小墨', story: '故事' } },
+    { kind: 'story', id: 'story-1', preview: { dollName: '小墨', story: 42 } },
+  ]) assert.equal(normalizeLocalState({ pending }).pending, undefined);
+
+  const valid = normalizeLocalState({ pending: { kind: 'intent', id: 'turn-1', text: ' 去地铁站 ' } });
+  assert.equal(valid.pending.text, '去地铁站');
+  assert.equal(valid.pending.id, 'turn-1');
+  assert.equal(hasCompletedLocalWorld(normalizeLocalState({ profile: { dollName: '小墨', story: 42 } })), false);
+});
+
+test('重连保留已确认离线探索、离线新故事以及尚未确认的本机预览', () => {
+  const state = emptyLocalState();
+  state.profile = { dollName: '小墨', story: '离线新故事', names: {} };
+  state.snapshot.roomId = 'station';
+  state.snapshot.worldVersion = 9;
+  state.log = [{ who: '你', text: '去地铁站', status: 'accepted', eventId: 'turn:local-1' }];
+  assert.equal(shouldKeepLocalBranch(state), true);
+  state.offline = false;
+  assert.equal(shouldKeepLocalBranch(state), false);
+  state.pending = { kind: 'intent', id: 'local-1', text: '去地铁站' };
+  assert.equal(shouldKeepLocalBranch(state), true, '旧缓存中错误的 online 标记不能改变本机预览的归属');
+  state.pending = { kind: 'story', id: 'local-story-1', preview: { dollName: '小墨', story: '从房间开始', names: {} } };
+  assert.equal(shouldKeepLocalBranch(state), true);
+  state.pending = { kind: 'intent', id: 'server-1', text: '观察周围' };
+  assert.equal(shouldKeepLocalBranch(state), false);
+  assert.equal(shouldKeepLocalBranch(emptyLocalState()), false);
+  assert.equal(shouldKeepLocalBranch(null), false);
+});
+
+test('离线备份恢复与导出保留实际地点、时钟、章节和独立行动记录', () => {
+  const state = emptyLocalState();
+  state.profile = { dollName: '小墨', story: '仍在离线调查', names: {} };
+  state.snapshot = { ...state.snapshot, worldId: 'local-world', worldVersion: 7, roomId: 'station', clock: { day: 2, minute: 650 }, narrative: { templateId: 'signal-rain-v1', step: 'day2-station' } };
+  state.log = [{ who: '你', text: '去地铁站', status: 'accepted', eventId: 'turn:local-1' }];
+  const backup = parseLocalState(JSON.stringify(state));
+  const exported = createLocalSaveEnvelope(backup);
+  state.snapshot.roomId = 'parlor';
+  state.log = [];
+  assert.equal(backup.snapshot.roomId, 'station');
+  assert.deepEqual(backup.snapshot.clock, { day: 2, minute: 650 });
+  assert.equal(backup.log[0].eventId, 'turn:local-1');
+  assert.equal(exported.payload.snapshot.roomId, 'station');
+  assert.equal(exported.payload.narrative.step, 'day2-station');
 });
 
 test('新手章节只在完成当前目标后推进', () => {

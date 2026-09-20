@@ -85,6 +85,38 @@ class SignalStoryTests(unittest.TestCase):
                 for snapshot in self.trace:
                     self.assert_local_dialogue(snapshot)
 
+    def test_offline_move_import_uses_saved_room_over_stale_player_projections(self):
+        for cached_doll in (False, True):
+            with self.subTest(cached_doll=cached_doll):
+                self.start()
+                saved = self.game.export_save()
+                # Older offline builds moved only the top-level room while
+                # retaining YOU's previous public agent projection.
+                saved["snapshot"]["roomId"] = "station"
+                saved["snapshot"]["present"] = ["YOU"]
+                saved["snapshot"]["worldVersion"] += 1
+                self.assertEqual(saved["snapshot"]["agents"]["YOU"]["roomId"], "parlor")
+                if cached_doll:
+                    saved["snapshot"]["agents"]["PLAYER_DOLL"] = {"roomId": "home"}
+
+                restored = self.game.import_save({"sourceKey": "voodoo-single-v1", "payload": saved})["snapshot"]
+                self.assertEqual(restored["roomId"], "station")
+                for actor in ("YOU", "PLAYER_DOLL"):
+                    self.assertEqual(self.kernel.state.agents[actor].room_id, "station")
+                self.assertEqual(restored["narrative"]["step"], "arrival")
+                self.assertFalse(restored["narrative"]["facts"]["passSeen"])
+                self.assertEqual(restored["guidance"]["actions"][0]["id"], "signal-return")
+                self.assertEqual(restored["guidance"]["actions"][0]["intent"], "去客厅")
+                self.assertIn("地铁站", restored["guidance"]["dialogue"][0]["text"])
+
+                returned = self.action("signal-return")["snapshot"]
+                self.assertEqual(returned["roomId"], "parlor")
+                self.assertEqual(returned["narrative"]["step"], "arrival")
+                self.assertFalse(returned["narrative"]["facts"]["passSeen"])
+                final = self.walk_to("complete")
+                self.assertEqual(final["narrative"]["ending"], "trust")
+                self.assertTrue(final["guidance"]["completed"])
+
     def test_open_door_and_small_talk_never_choose_first_or_final_stance(self):
         for target in ("day1-choice", "day3-decision"):
             with self.subTest(target=target):

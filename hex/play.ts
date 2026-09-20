@@ -6,12 +6,13 @@ import { createStage } from './stage.js';
 // @ts-ignore -- legacy renderer module
 import { ROOMS, assignSpots } from './rooms.js';
 import { PlayApiClient, PlayApiError, type IntentDraftResponse, type PlayEvent, type PlayProfile, type PlaySnapshot, type SessionResponse, type StoryDraftResponse, type StoryInput } from './play-api';
-import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompletedLocalWorld, initialPlaySnapshot, normalizeLocalState, PLAY_STORAGE_KEY, restorePendingStoryDraft, type LocalLogEntry, type LocalLogKind, type LocalState } from './play-state';
+import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompletedLocalWorld, initialPlaySnapshot, normalizeLocalState, PLAY_OFFLINE_BACKUP_KEY, PLAY_STORAGE_KEY, restorePendingStoryDraft, shouldKeepLocalBranch, type LocalLogEntry, type LocalLogKind, type LocalState } from './play-state';
 
 import { parseLocalAction, applyLocalAction } from './play-local';
 import { advanceDialogue, dialogueAfterAction, restoreDialogue } from './play-dialogue';
 import { hasMoreToRead, nextReadingScroll, canSubmitInput } from './play-reading';
 import { splitGuidanceActions, type GuidanceAction } from './play-guidance';
+import { latestConfirmedView } from './play-recovery';
 
 const composingInputs = new WeakSet<HTMLInputElement>();
 const readingObservers = new WeakMap<HTMLElement, () => void>();
@@ -149,6 +150,7 @@ function errorMessage(error: unknown, fallback: string): string {
   const messages: Record<string, string> = {
     unsupported_intent: '这句话暂时无法执行。可以点推荐动作、地图，或向在场的人提问。',
     backup_unavailable: '原进度暂时无法备份，本次没有开启新篇章。请检查本机存储后重试。',
+    offline_backup_unavailable: '本机探索暂时无法备份，仍留在离线进度。请先导出保存，再重试。',
     invalid_text: '请写下 1 到 240 个字的行动。',
     invalid_story: '请补充一段有效的开场故事。',
     invalid_dollName: '请给巫毒娃娃填写一个有效的名字。',
@@ -363,7 +365,7 @@ function renderGuidance(ui: Ui, state: LocalState, onIntent: IntentHandler): voi
   const extra = ui.content.querySelector<HTMLElement>('#single-exploration-actions')!;
   extra.replaceChildren();
   if (state.offline) {
-    const notice = document.createElement('p'); notice.textContent = '离线时可以观察、移动、开门和等待；重连后继续故事。'; extra.append(notice);
+    const notice = document.createElement('p'); notice.textContent = '离线时可以观察、移动、开门和等待。联网后，在菜单选择“回到在线故事”；本机探索会先备份。'; extra.append(notice);
   } else {
     const { exploration } = splitGuidanceActions(guide?.actions as GuidanceAction[] | undefined);
     exploration.slice(0, 8).forEach((action) => {
@@ -553,6 +555,7 @@ function applyLocalIntent(ui: Ui, state: LocalState, textValue: string): void {
   const action = parseLocalAction(textValue, ROOM_LABELS);
   if (!action) throw new PlayApiError(422, '离线时暂时无法执行这句话', 'unsupported_intent');
   const before = state.snapshot;
+  state.offline = true;
   const result = applyLocalAction(before, action); state.snapshot = result.snapshot;
   const turnId = state.pending?.id;
   addLog(ui, state, '你', textValue, 'accepted', logContext(before), 'action', turnId ? `turn:${turnId}` : undefined);
@@ -562,14 +565,14 @@ function applyLocalIntent(ui: Ui, state: LocalState, textValue: string): void {
   state.pending = undefined; saveLocal(state);
 }
 
-function renderIntentEvents(ui: Ui, state: LocalState, events: PlayEvent[]): void {
+function renderIntentEvents(ui: Ui, state: LocalState, events: PlayEvent[], snapshot = state.snapshot, profile = state.profile): void {
   events.forEach((event) => {
     // The player's event is already represented by the accepted action entry.
     // Rendering it again from the commit response makes retries look like a
     // second action in the history.
     if (event.actor === 'YOU') return;
     const value = text(event.payload?.text) || (event.action === 'silence' ? '沉默了一会儿，没有回答。' : '');
-    if (value) addLog(ui, state, displayName(text(event.actor, '巫柜'), state.profile), value, undefined, logContext(state.snapshot), 'feedback', event.eventId);
+    if (value) addLog(ui, state, displayName(text(event.actor, '巫柜'), profile), value, undefined, logContext(snapshot), 'feedback', event.eventId);
   });
 }
 
@@ -578,6 +581,7 @@ async function run(): Promise<void> {
   const setState = (message: string) => { ui.state.textContent = message; };
   let serverProfileReady = false;
   let localRecoveryAvailable = false;
+  let keepingLocalBranch = shouldKeepLocalBranch(existingLocal);
   let operationInFlight = false;
   const setToolsEnabled = (enabled: boolean): void => {
     ui.root.querySelectorAll<HTMLButtonElement>('#single-tools button').forEach((item) => { item.disabled = !enabled; });
@@ -585,6 +589,8 @@ async function run(): Promise<void> {
   function syncControls(): void {
     const pending = state.pending;
     const locked = operationInFlight;
+    const reconnect = ui.root.querySelector<HTMLElement>('#single-reconnect');
+    if (reconnect) reconnect.hidden = !state.offline;
     ui.input.disabled = locked || Boolean(pending);
     ui.send.disabled = locked || Boolean(pending);
     ui.root.querySelectorAll<HTMLButtonElement>('[data-quick-action]').forEach((item) => { item.disabled = locked || Boolean(pending); });
@@ -604,13 +610,16 @@ async function run(): Promise<void> {
   try {
     session = await api.getSession();
     serverProfileReady = Boolean(session.profile.dollName && (session.profile.story || session.profile.onboardingPhase === 'names-confirmed'));
-    if (state.snapshot.worldId && state.snapshot.worldId !== session.snapshot.worldId) {
+    if (!keepingLocalBranch && state.snapshot.worldId && state.snapshot.worldId !== session.snapshot.worldId) {
       state.pending = undefined;
       state.tutorial = undefined;
       state.dialogue = undefined;
       state.log = [];
     }
-    if (!serverProfileReady && hasCompletedLocalWorld(existingLocal)) {
+    if (keepingLocalBranch) {
+      state.offline = true;
+      saveLocal(state);
+    } else if (!serverProfileReady && hasCompletedLocalWorld(existingLocal)) {
       localRecoveryAvailable = true;
       state.offline = true;
     } else {
@@ -653,7 +662,7 @@ async function run(): Promise<void> {
         renderIntentPreview(ui, draft, () => { void confirm(); }, () => { void cancel(); });
         syncControls();
       };
-      const confirm = async (): Promise<void> => {
+      const confirm = async (recovering = false): Promise<void> => {
         if (busy || operationInFlight) return;
         busy = true;
         setOperationInFlight(true);
@@ -664,13 +673,18 @@ async function run(): Promise<void> {
             applyLocalIntent(ui, state, value);
           } else {
             const before = state.snapshot;
+            const known = state.offline ? null : { snapshot: state.snapshot, profile: state.profile };
             const committed = await api.confirmIntent(draft.turnId);
+            const current = await api.getSession().catch(() => null);
+            const latest = latestConfirmedView(committed, known, current);
+            const advanced = latest.snapshot.worldVersion > committed.snapshot.worldVersion;
             state.offline = false;
-            applySnapshot(state, committed.snapshot, committed.profile);
+            applySnapshot(state, latest.snapshot, latest.profile);
             state.pending = undefined;
-            addLog(ui, state, '你', value, 'accepted', logContext(before), 'action', `turn:${draft.turnId}`);
-            state.dialogue = dialogueAfterAction(state.snapshot, committed.events || [], state.dialogue);
-            renderIntentEvents(ui, state, committed.events || []);
+            addLog(ui, state, '你', value, 'accepted', logContext(recovering || advanced ? committed.snapshot : before), 'action', `turn:${draft.turnId}`);
+            state.dialogue = advanced ? restoreDialogue(state.snapshot, state.dialogue)
+              : dialogueAfterAction(state.snapshot, committed.events || [], state.dialogue);
+            renderIntentEvents(ui, state, committed.events || [], committed.snapshot, committed.profile);
             saveLocal(state);
           }
           intentOpen = false;
@@ -700,18 +714,41 @@ async function run(): Promise<void> {
         busy = true;
         setOperationInFlight(true);
         setState('正在取消行动…');
-        if (!local) await api.cancelIntent(draft.turnId).catch(() => {});
-        state.pending = undefined;
-        saveLocal(state);
-        ui.content.querySelector('#intent-preview')?.remove();
-        intentOpen = false;
-        busy = false;
-        renderSnapshot(ui, state);
-        setOperationInFlight(false);
-        focusSurface(ui.content.querySelector<HTMLElement>('#single-dialogue'));
+        try {
+          if (!local) await api.cancelIntent(draft.turnId);
+          state.pending = undefined;
+          saveLocal(state);
+          ui.content.querySelector('#intent-preview')?.remove();
+          intentOpen = false;
+          renderSnapshot(ui, state);
+          focusSurface(ui.content.querySelector<HTMLElement>('#single-dialogue'));
+        } catch (error) {
+          if (error instanceof PlayApiError && error.code === 'turn_already_committed') {
+            // Confirmation is idempotent: this retrieves the existing receipt,
+            // including its events, instead of pretending the action was cancelled.
+            busy = false;
+            setOperationInFlight(false);
+            await confirm(true);
+            if (!state.pending) setState('这一步已经执行，已恢复实际结果。');
+            return;
+          }
+          if (isStaleAction(error)) {
+            try {
+              await refreshStaleWorld();
+              setState('这份行动预览已失效，已恢复当前世界。');
+              focusSurface(ui.content.querySelector<HTMLElement>('#single-dialogue'));
+              return;
+            } catch { /* An unavailable session cannot establish a safe replacement. */ }
+          }
+          display();
+          setState(isNetworkFailure(error) ? '取消还未确认，预览已保留。连接恢复后请重试。' : errorMessage(error, '取消没有完成，预览已保留，请重试。'));
+        } finally {
+          busy = false;
+          setOperationInFlight(false);
+        }
       };
       if (direct) await confirm();
-      else { display(); setState('行动预览 · 等待确认'); }
+      else { display(); setState(`${local ? '本地试玩 · ' : ''}行动预览 · 等待确认`); }
     };
     const submitIntent = async (rawValue: string, direct = false): Promise<void> => {
       const value = rawValue.trim();
@@ -794,7 +831,7 @@ async function run(): Promise<void> {
     state.pending = { kind: 'story', id: draft.draftId, preview: draft.preview, worldVersion: draft.worldVersion };
     saveLocal(state);
     setState('故事预览 · 等待确认');
-    renderStoryPreview(ui, draft, async () => {
+    const confirmStory = async (): Promise<void> => {
       if (operationInFlight) return;
       setOperationInFlight(true);
       try {
@@ -814,11 +851,14 @@ async function run(): Promise<void> {
           await localStory(ui, state, draft.preview);
           await showPlay(); return;
         }
+        const known = state.offline ? null : { snapshot: state.snapshot, profile: state.profile };
         const saved = await api.confirmStoryDraft(draft.draftId, draft.worldVersion);
+        const current = await api.getSession().catch(() => null);
+        const latest = latestConfirmedView(saved, known, current);
         state.offline = false;
         serverProfileReady = true;
         localRecoveryAvailable = false;
-        applySnapshot(state, saved.snapshot, saved.profile);
+        applySnapshot(state, latest.snapshot, latest.profile);
         state.log = []; state.tutorial = undefined; state.dialogue = undefined;
         state.pending = undefined;
         saveLocal(state);
@@ -829,17 +869,45 @@ async function run(): Promise<void> {
         setOperationInFlight(false);
         setToolsEnabled(!state.pending);
       }
-    }, async () => {
+    };
+    const cancelStory = async (): Promise<void> => {
       if (operationInFlight) return;
       setOperationInFlight(true);
-      await api.cancelStoryDraft(draft.draftId).catch(() => {});
-      state.pending = undefined;
-      saveLocal(state);
-      setOperationInFlight(false);
-      setToolsEnabled(true);
-      setState('故事还没有写入世界');
-      showOnboarding({ dollName: draft.preview.dollName, story: draft.preview.story, names: draft.preview.names });
-    });
+      try {
+        if (!draft.draftId.startsWith('local-story-')) await api.cancelStoryDraft(draft.draftId);
+        state.pending = undefined;
+        saveLocal(state);
+        setState('故事还没有写入世界');
+        showOnboarding({ dollName: draft.preview.dollName, story: draft.preview.story, names: draft.preview.names });
+      } catch (error) {
+        if (error instanceof PlayApiError && error.code === 'story_already_committed') {
+          setOperationInFlight(false);
+          await confirmStory();
+          if (!state.pending) setState('这个故事已经开始，已恢复实际进度。');
+          return;
+        }
+        if (error instanceof PlayApiError && error.code === 'unknown_world_draft') {
+          try {
+            const current = await api.getSession();
+            if (current.snapshot.worldId !== state.snapshot.worldId) {
+              state.log = []; state.dialogue = undefined; state.tutorial = undefined;
+            }
+            state.profile = clone(current.profile);
+            applySnapshot(state, current.snapshot);
+            state.offline = false;
+            state.pending = undefined;
+            serverProfileReady = Boolean(current.profile.dollName && (current.profile.story || current.profile.onboardingPhase === 'names-confirmed'));
+            saveLocal(state);
+            if (serverProfileReady) await showPlay();
+            else showOnboarding({ dollName: draft.preview.dollName, story: draft.preview.story, names: draft.preview.names });
+            setState(serverProfileReady ? '这份故事预览已失效，已恢复当前故事。' : '这份故事预览已失效，请重新生成预览。');
+            return;
+          } catch { /* Preserve the preview until the current world can be read. */ }
+        }
+        setState(isNetworkFailure(error) ? '撤回还未确认，故事预览已保留。连接恢复后请重试。' : errorMessage(error, '撤回没有完成，故事预览已保留，请重试。'));
+      } finally { setOperationInFlight(false); }
+    };
+    renderStoryPreview(ui, draft, confirmStory, cancelStory);
     if (hasCompletedLocalWorld(state)) {
       const note = document.createElement('p'); note.className = 'single-notice';
       note.textContent = '确认后将在当前世界开启新篇章，时间与章节将重新开始。原进度会保存在本机备份中，可从“旧进度”导出后恢复。';
@@ -851,7 +919,7 @@ async function run(): Promise<void> {
   // therefore selected from profile completeness, not network availability.
   const restoredStoryDraft = restorePendingStoryDraft(state);
   if (restoredStoryDraft) showStoryDraft(restoredStoryDraft);
-  else if (session && !serverProfileReady) { setState(localRecoveryAvailable ? '本机进度已保留 · 可导出后导入当前世界' : '等待你讲第一个故事'); showOnboarding(existingLocal?.profile || state.profile); }
+  else if (session && !serverProfileReady && !keepingLocalBranch) { setState(localRecoveryAvailable ? '本机进度已保留 · 可导出后导入当前世界' : '等待你讲第一个故事'); showOnboarding(existingLocal?.profile || state.profile); }
   else if (!(state.profile.dollName && state.profile.story)) showOnboarding();
   else await showPlay();
   const exportButton = button('导出', async () => { if (operationInFlight || state.pending) return; setOperationInFlight(true); try { download('巫柜保存.json', state.offline ? createLocalSaveEnvelope(state) : await api.exportSave()); } catch { download('巫柜本机保存.json', createLocalSaveEnvelope(state)); } finally { setOperationInFlight(false); } }); exportButton.title = '导出保存';
@@ -890,7 +958,38 @@ async function run(): Promise<void> {
       else setState('还没有新篇章备份，当前进度可用“导出”保存。');
     } catch { setState('备份暂时无法读取，当前世界不受影响。'); }
   });
-  ui.root.querySelector('#single-tools')!.append(libraryButton, exportButton, importButton, backupButton);
+  const reconnectButton = button('回到在线故事', async () => {
+    if (operationInFlight || state.pending || !state.offline) return;
+    setOperationInFlight(true);
+    setState('正在连接在线故事，本机探索仍保留…');
+    try {
+      const current = await api.getSession();
+      try { localStorage.setItem(PLAY_OFFLINE_BACKUP_KEY, JSON.stringify(state)); }
+      catch { throw new PlayApiError(422, '离线备份不可用', 'offline_backup_unavailable'); }
+      state = { profile: clone(current.profile), snapshot: clone(current.snapshot), log: [], offline: false };
+      session = current;
+      keepingLocalBranch = false;
+      localRecoveryAvailable = false;
+      serverProfileReady = Boolean(current.profile.dollName && (current.profile.story || current.profile.onboardingPhase === 'names-confirmed'));
+      saveLocal(state);
+      if (serverProfileReady) await showPlay();
+      else showOnboarding();
+      setState('已回到在线故事。本机探索可从菜单“离线备份”导出。');
+    } catch (error) {
+      setState(isNetworkFailure(error) ? '仍未连上在线故事，本机探索和进度都已保留。' : errorMessage(error, '暂时无法恢复在线故事，本机探索仍保留。'));
+    } finally { setOperationInFlight(false); }
+  });
+  reconnectButton.id = 'single-reconnect';
+  const offlineBackupButton = button('离线备份', () => {
+    try {
+      const raw = localStorage.getItem(PLAY_OFFLINE_BACKUP_KEY);
+      const backup = raw ? normalizeLocalState(JSON.parse(raw)) : null;
+      if (backup) download('巫柜离线探索备份.json', createLocalSaveEnvelope(backup));
+      else setState('还没有离线备份，当前本机进度可用“导出”保存。');
+    } catch { setState('离线备份暂时无法读取，当前进度不受影响。'); }
+  });
+  offlineBackupButton.id = 'single-offline-backup';
+  ui.root.querySelector('#single-tools')!.append(libraryButton, exportButton, importButton, reconnectButton, backupButton, offlineBackupButton);
   ui.root.querySelector('#single-tools')!.addEventListener('click', (event) => {
     if ((event.target as HTMLElement).closest('button')) ui.root.querySelector<HTMLDetailsElement>('.single-menu')!.open = false;
   });

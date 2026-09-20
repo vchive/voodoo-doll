@@ -2,6 +2,7 @@ import type { PlayProfile, PlaySnapshot, StoryDraftResponse } from './play-api';
 import { normalizeDialogueLines, normalizeDialoguePlayback, type DialoguePlayback } from './play-dialogue.ts';
 
 export const PLAY_STORAGE_KEY = 'voodoo-single-player-v1';
+export const PLAY_OFFLINE_BACKUP_KEY = `${PLAY_STORAGE_KEY}-offline-backup`;
 export const PLAY_SAVE_SOURCE = 'voodoo-single-v1';
 export const TUTORIAL_TEMPLATE_ID = 'rainy-office-v1';
 
@@ -131,6 +132,14 @@ export function hasCompletedLocalWorld(state: LocalState | null): boolean {
   return Boolean(state?.profile.dollName?.trim() && state.profile.story?.trim());
 }
 
+/** Reconnecting must not silently replace a playable local branch or its preview. */
+export function shouldKeepLocalBranch(state: LocalState | null): boolean {
+  return Boolean(state && (
+    (state.offline && hasCompletedLocalWorld(state))
+    || state.pending?.id.startsWith('local-')
+  ));
+}
+
 export function restorePendingStoryDraft(state: LocalState): StoryDraftResponse | null {
   const pending = state.pending;
   const preview = record(pending?.preview);
@@ -176,6 +185,7 @@ export function normalizeLocalState(value: unknown): LocalState | null {
     names,
   } as PlayProfile;
   if (typeof rawProfile.story === 'string') profile.story = rawProfile.story.slice(0, 2000);
+  else delete profile.story;
   if (typeof rawProfile.modelEnabled === 'boolean') profile.modelEnabled = rawProfile.modelEnabled;
 
   const defaults = initialPlaySnapshot();
@@ -257,11 +267,16 @@ export function normalizeLocalState(value: unknown): LocalState | null {
   const kind = rawPending?.kind;
   const id = rawPending?.id;
   let pending: LocalState['pending'];
-  if (rawPending && (kind === 'story' || kind === 'intent') && typeof id === 'string' && id.trim()) {
+  const pendingPreview = record(rawPending?.preview);
+  const recoverablePending = kind === 'intent'
+    ? typeof rawPending?.text === 'string' && Boolean(rawPending.text.trim())
+    : kind === 'story' && Boolean(stringValue(pendingPreview?.dollName, '', 32).trim())
+      && Boolean(stringValue(pendingPreview?.story, '', 2000).trim());
+  if (rawPending && recoverablePending && (kind === 'story' || kind === 'intent') && typeof id === 'string' && id.trim()) {
     pending = {
       kind,
-      id: id.slice(0, 160),
-      ...(typeof rawPending.text === 'string' ? { text: rawPending.text.slice(0, 240) } : {}),
+      id: id.trim().slice(0, 160),
+      ...(typeof rawPending.text === 'string' ? { text: rawPending.text.trim().slice(0, 240) } : {}),
       ...(record(rawPending.preview) ? { preview: rawPending.preview as Record<string, unknown> } : {}),
       ...(Number.isInteger(rawPending.worldVersion) ? { worldVersion: Math.max(0, Number(rawPending.worldVersion)) } : {}),
     };

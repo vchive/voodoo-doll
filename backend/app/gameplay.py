@@ -232,7 +232,19 @@ class SinglePlayerGame:
             return self._save_receipt("story", identifier, result)
 
     def cancel_story(self, draft_id: str) -> Dict[str, Any]:
-        return self.kernel.cancel_world_draft(_text(draft_id, "draft_id", 128))
+        identifier = _text(draft_id, "draft_id", 128)
+        with self._lock:
+            try:
+                if (self._receipt("story", identifier) is not None
+                        or self.kernel.world_builder._published_receipt(identifier) is not None):
+                    raise WorldError("committed stories cannot be cancelled", "story_already_committed", 409)
+                return self.kernel.cancel_world_draft(identifier)
+            except WorldError as error:
+                # The store also checks publication in its cancellation
+                # transaction, including commits made by another connection.
+                if error.code == "world_draft_already_published":
+                    raise WorldError("committed stories cannot be cancelled", "story_already_committed", 409) from error
+                raise
 
     def _target_for_text(self, text: str) -> Optional[str]:
         names = self.profile.get("names", {})
@@ -410,7 +422,20 @@ class SinglePlayerGame:
             return self._save_receipt("intent", identifier, result)
 
     def cancel_intent(self, turn_id: str) -> Dict[str, Any]:
-        return self.kernel.cancel_turn(_text(turn_id, "turn_id", 128))
+        identifier = _text(turn_id, "turn_id", 128)
+        with self._lock:
+            committed_reader = getattr(self.kernel.store, "get_turn_result", None)
+            # A process can stop after the atomic turn commit but before the
+            # product receipt is saved. Check both durable records before
+            # deleting a draft, even when the in-memory result cache is empty.
+            if (self._receipt("intent", identifier) is not None
+                    or identifier in self.kernel._turn_results
+                    or (callable(committed_reader)
+                        and committed_reader(self.kernel.state.world_id, identifier) is not None)):
+                raise WorldError("committed turns cannot be cancelled", "turn_already_committed", 409)
+            if identifier not in self.kernel._pending_turns:
+                raise WorldError("turn is not available for cancellation", "unknown_turn", 404)
+            return self.kernel.cancel_turn(identifier)
 
     def export_save(self) -> Dict[str, Any]:
         return {"schemaVersion": 1, "sourceKey": "voodoo-single-v1", "worldId": self.kernel.state.world_id,
@@ -464,6 +489,11 @@ class SinglePlayerGame:
             if not isinstance(raw_agents, Mapping):
                 raise ValidationError("save agents must be an object", "invalid_save_payload")
             for actor_id, raw_agent in raw_agents.items():
+                # Legacy offline moves only updated snapshot.roomId. Cached
+                # player projections must not move YOU or the doll back to
+                # an older room after the authoritative save position is set.
+                if actor_id in ("YOU", "PLAYER_DOLL"):
+                    continue
                 if actor_id not in working.agents or not isinstance(raw_agent, Mapping):
                     continue
                 agent_room = raw_agent.get("roomId")

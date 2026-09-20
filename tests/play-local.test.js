@@ -19,3 +19,15 @@ test('离线等待跨午夜保留日期；探索不修改权威章节或缓存�
   assert.deepEqual(moved.snapshot.present, ['YOU']);
   assert.equal(snapshot.roomId, 'office');
 });
+
+test('离线移动导出的主角与娃娃坐标一致，不替 NPC 推演位置', () => {
+  const snapshot = { worldVersion: 2, roomId: 'parlor', present: ['YOU'], agents: {
+    YOU: { roomId: 'parlor', memory: ['保留'] }, PLAYER_DOLL: { roomId: 'parlor' }, A: { roomId: 'office' },
+  } };
+  const { snapshot: moved } = applyLocalAction(snapshot, parseLocalAction('去地铁站', rooms));
+  assert.equal(moved.agents.YOU.roomId, moved.roomId);
+  assert.equal(moved.agents.PLAYER_DOLL.roomId, moved.roomId);
+  assert.equal(moved.agents.A.roomId, 'office');
+  assert.deepEqual(moved.agents.YOU.memory, ['保留']);
+  assert.equal(snapshot.agents.YOU.roomId, 'parlor');
+});
