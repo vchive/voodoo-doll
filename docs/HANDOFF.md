@@ -8,7 +8,7 @@
 
 `rainy-office-v1/v2`及旧档保留，不自动升级。v2最终决定误触、missed覆盖、离场人物对白、时间/线索文案不一致四类缺陷仍未修。新交互不是这些剧情缺陷的修复证据。
 
-GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53f14fb）；本轮交互改动同步状态见第5节。GitHub代码上传不等于公网部署，密钥、SQLite数据、付费素材与构建产物保持忽略。
+GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53f14fb）；本轮交互提交 `e571291` 已推送到origin/main（返回53f14fb..e571291）。GitHub代码上传不等于公网部署，密钥、SQLite数据、付费素材与构建产物保持忽略。
 
 ## 1. 最新任务与约束
 
@@ -167,7 +167,7 @@ GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53
 ## 5. Git 与工作区
 
 - 工作区：`/Users/liminghan/Documents/voodoo-doll`。
-- 分支：`main`；历史基线 `418c79b` 和证据提交 `57b5fdd` 保留，此前已同步故事提交 `63c12a2` 与证据 `53f14fb`。本轮阅读交互改动待最终提交/推送；以 git log / origin/main 为准。
+- 分支：`main`；历史基线 `418c79b` 和证据提交 `57b5fdd` 保留，此前已同步故事提交 `63c12a2` 与证据 `53f14fb`。本轮阅读交互提交 `e571291` 已推送origin/main，测试证据随同上传；以 git log / origin/main 核对。
 - 远端：`git@github.com:vchive/voodoo-doll.git`。已同步过开发快照；GitHub 上传不等于部署。
 - `node_modules/`、`dist/` 被忽略，均已在本地生成。
 - 其他 agent 应核对当前 HEAD、未提交改动和远端状态后接手；本轮交互修改的提交状态以git为准，不能只读历史标签。
