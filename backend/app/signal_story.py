@@ -314,6 +314,17 @@ def story_response(state: WorldState, actor: str, request: Event) -> Optional[st
     room = state.agents["YOU"].room_id
     if state.agents[actor].room_id != room:
         return None
+    if n.get("completed"):
+        if actor == "C":
+            return "公开的交班簿还在车站。我今天照常按班表值班，休息时就想坐下来喘口气。"
+        if actor == "B":
+            return "那几页记录先收好吧。今天我想把自己的事情慢慢做完，你也歇一会儿。"
+        return {
+            "trust": "共同署名的更正页已经留下了。今天先让我把手边的事情做完，回家还得照顾父亲。",
+            "audit": "公开审计的材料已经交出去了，接下来得等结果。今天我想先处理家里的事情。",
+            "protect": "暂存的文件已经收好。现在还没有新消息，我先顾好父亲。",
+            "missed": "上次没能把话说完，就先留在那里吧。今天我还有自己的安排。",
+        }.get(n.get("ending"), "这件事已经告一段落。今天我还有自己的安排。")
     facts = n.get("facts", {})
     if actor == "C":
         if room == "station" and n.get("day", 1) == 2:
@@ -343,7 +354,12 @@ def _dialogue(state: WorldState, step: str, objective: str) -> dict:
     here = [actor for actor in projected.present if projected.agents[actor].room_id == room]
     n = state.metadata["narrative"]
     rendered = render_scene(step, n, room, here, _names(state))
-    identity = ":".join([step, room, ",".join(here), str(n.get("ending")), ",".join(n.get("missedWindows", []))])
+    # Once finished, this is an archived ending. Exploring another room must
+    # not turn the same conclusion into a fresh authored scene.
+    identity_parts = [step, str(n.get("ending")), ",".join(n.get("missedWindows", []))]
+    if step != "complete":
+        identity_parts[1:1] = [room, ",".join(here)]
+    identity = ":".join(identity_parts)
     return {"dialogueId": f"{SIGNAL_TEMPLATE_ID}:dialogue-v{SIGNAL_TEMPLATE_VERSION}:{identity}", "dialogue": rendered}
 
 
@@ -407,7 +423,7 @@ def scene_actions(state: WorldState) -> list[dict]:
     elif step == "day3-home" and room != "home":
         actions = [_action("signal-final-home", "回家收好最后一页", "回家", 5)]
     elif step == "complete":
-        actions = [_action("observe", "继续自由探索", "观察周围", 2)]
+        actions = [_action("observe", "观察这里", "观察周围", 2)]
     expected_room = SIGNAL_ROOMS.get(step)
     if step == "day2-start" and room != "home":
         actions = [_action("signal-return", "回家查看今日安排", "回家", 5)]
@@ -454,7 +470,7 @@ def guidance(state: WorldState) -> dict:
         "day2-kitchen": ("第二天 · 录音", "在十二点前听沈青的录音。"), "day2-office": ("第二天 · 证据合页", "回办公室把证据放在同一份档案里。"),
         "sleep2": ("第二天 · 明天的决定", "睡觉到第三天九点。"), "day3-archive": ("第三天 · 明日回执", "在办公室查看回执原件。"),
         "day3-hearing": ("第三天 · 林川的解释", "在中午前听完最后一段说明。"), "day3-decision": ("第三天 · 最后一页", "共同署名、公开审计，或保护林川。"),
-        "day3-home": ("第三天 · 雨停以前", "回家收好记录，结束教程。"), "complete": ("教程完成 · 城市继续运转", "继续自由探索，已确认的证据和选择会保留。"),
+        "day3-home": ("第三天 · 雨停以前", "回家收好记录，结束教程。"), "complete": ("教程完成 · 城市继续运转", "本篇已结束，结局已保留。可以打开地图探索场景，或从故事库选择故事。"),
     }
     chapter, objective = titles.get(step, titles["arrival"])
     dialogue = _dialogue(state, step, objective)
@@ -463,8 +479,8 @@ def guidance(state: WorldState) -> dict:
     return {"title": STORY_TITLE, "description": STORY_DESCRIPTION, "chapter": chapter, "objective": objective,
             "passage": passage, **dialogue, "completed": step == "complete",
             "ending": n.get("ending"), "actions": scene_actions(state),
-            "playerRoutine": "今日身份：档案馆校对员 · 故事日程：第" + str(clock.get("day", 1)) + "天",
-            "scheduleHint": f"{a}：第1天 09:00–10:00办公室；{c}：第2天 10:00–11:00车站；{b}：第2天 10:00–12:00厨房；第3天{a} 09:00–12:00办公室。错过谈话会留下失约结尾；公开记录仍可查看。",
+            "playerRoutine": "本篇日程已结束" if step == "complete" else "今日身份：档案馆校对员 · 故事日程：第" + str(clock.get("day", 1)) + "天",
+            "scheduleHint": "当前可移动、观察、操作物件和与在场人物闲聊；本篇没有后续剧情任务。" if step == "complete" else f"{a}：第1天 09:00–10:00办公室；{c}：第2天 10:00–11:00车站；{b}：第2天 10:00–12:00厨房；第3天{a} 09:00–12:00办公室。错过谈话会留下失约结尾；公开记录仍可查看。",
             "journal": journal(n)}
 
 

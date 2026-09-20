@@ -1,0 +1,141 @@
+{
+  "startedAt": "2026-09-20T17:24:03.739Z",
+  "cases": [
+    {
+      "name": "ending-v2-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-afce1b3fe2e44ef3/confirm",
+        "save/import",
+        "intent",
+        "intent/2db48caa-e694-4c77-ad3d-185947263ca2/confirm",
+        "story",
+        "story/story-b4662edee30645a0/cancel",
+        "story",
+        "story/story-a8ab06caa16b46b9/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-568x320",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-7a35a5cabf924ce8/confirm",
+        "save/import",
+        "intent",
+        "intent/2486c834-ac25-4d61-ad0a-c81eb18fdc48/confirm",
+        "story",
+        "story/story-8c0bc9e213144bd2/cancel",
+        "story",
+        "story/story-a779a210cad449bd/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-1c90c296ced048b1/confirm",
+        "save/import",
+        "intent",
+        "intent/2c4bdd01-a32d-4370-a632-281f052b29e7/confirm",
+        "story",
+        "story/story-300e836d75fa4934/cancel",
+        "story",
+        "story/story-8b2d257a18cb45fe/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v1-postscript",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 6,
+      "readClicks": 25,
+      "posts": [
+        "story",
+        "story/story-6ed9d0a9ba8e477f/confirm",
+        "save/import",
+        "intent",
+        "intent/bf84ba3d-c394-4a47-9113-50c7652d74d9/confirm",
+        "intent",
+        "intent/13d19e61-cf40-4948-a334-5aeccf5e11b0/confirm",
+        "intent",
+        "intent/6ac2c97d-9202-4ba3-adca-b71284b63308/confirm",
+        "intent",
+        "intent/2776b56f-1276-49bb-8687-cb26022424fd/confirm",
+        "intent",
+        "intent/ede6e451-34f6-4fea-ae7c-4f4f12d299e7/confirm",
+        "intent",
+        "intent/f773a746-711d-4612-a399-4421c9afb591/confirm"
+      ],
+      "errors": [],
+      "ending": "trust",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "sources": {
+    "scripts/playtest-single-player.mjs": "239513e8938d3fd5f212b76ce6175f331b2c6b1e4fd4219dd766c7e84ac3d076",
+    "hex/play.ts": "9c0a9fa2cf12dbc355be77366c047f69e3ab26764db4f0a24419cc64b359fd93",
+    "hex/play-state.ts": "887b5efc0bf9ede3238ea456e0b6f4c91718c6a39ee2815f3b70bca85d8e08d2",
+    "hex/play-guidance.ts": "36128fbba1217a0e96f8b0dc94d888f5e4d290348221fbaae43faf9ea72e2409",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play-local.ts": "c8bf992779ce8fdaed276d62c1af08bb3d351aa1d25418bf1904958b9864a262",
+    "hex/play-recovery.ts": "fa08a8634ef48f4f1ea69fc4d85ca56040169485c0a45fdfac82abaa12d2c4ee",
+    "hex/play.css": "f45852dee5642af32d97d8d16617666784692987d790d37f9df1fcb41a5e4eaf",
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/narrative.py": "7eba8d245c378da07241384e8b69f5a9c04e4dbae38d7e7220f74e8f51679f39",
+    "backend/app/signal_story.py": "6b7798a2c8a4b0c18339574e2db22cab09ab730f551e9704ec3625704a55cff3",
+    "dist-hex/index.html": "d6583dfc0eedcf05322e409bb47ac5480305e163913376cf29cf894965f93f63"
+  },
+  "baseCommit": "b8cd57aa47c7308e394756d6e0b9698fbabdc059",
+  "browser": "153.0.8010.52",
+  "finishedAt": "2026-09-20T17:24:14.289Z",
+  "passed": true,
+  "database": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/voodoo-playtest-Jw0Bon/world.sqlite3"
+}

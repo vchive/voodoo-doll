@@ -124,6 +124,55 @@ class NarrativeTests(unittest.TestCase):
         self.assertEqual(narrative["route"], "protect")
         self.assertEqual(narrative["ending"], "protect")
 
+    def test_full_completed_story_keeps_actions_live_without_reopening_story(self):
+        """MW-37: the legacy ending is an exit, not an expired quest loop."""
+        for route in ("trust", "audit", "protect"):
+            with self.subTest(route=route):
+                self.setUp()
+                self.full_start()
+                self.full_to_complete(route)
+                completed = copy.deepcopy(self.game.snapshot()["narrative"])
+                view = self.game.snapshot()["guidance"]
+                self.assertIn("本篇已结束", view["objective"])
+                self.assertIn("没有后续剧情任务", view["scheduleHint"])
+                self.assertEqual(view["playerRoutine"], "本篇日程已结束")
+                self.assertTrue(all(line["speakerId"] in ("YOU", "PLAYER_DOLL") for line in view["dialogue"]))
+                self.assertNotIn("傍晚", str(view["dialogue"]))
+
+                for action in view["actions"]:
+                    before = self.game.snapshot()
+                    result = self.turn(action["intent"])
+                    after = result["snapshot"]
+                    self.assertGreater(after["worldVersion"], before["worldVersion"])
+                    self.assertGreater(after["clock"]["minute"], before["clock"]["minute"])
+                    self.assertEqual(after["narrative"], completed)
+                    self.assertEqual(after["guidance"]["dialogueId"], view["dialogueId"])
+                    self.assertFalse(any(event["payload"].get("chapterTransition") for event in result["events"]))
+                    if action["id"] == "talk-B":
+                        answer = next(event["payload"]["text"] for event in result["events"] if event["actor"] == "B")
+                        self.assertNotIn("录音", answer)
+                        self.assertNotIn("中午", answer)
+
+                self.turn("去办公室")
+                result = self.turn("问林川：今天怎么样？")
+                answer = next(event["payload"]["text"] for event in result["events"] if event["actor"] == "A")
+                self.assertIn({"trust": "已经留下", "audit": "已经交出", "protect": "已经收好"}[route], answer)
+                self.assertEqual(result["snapshot"]["narrative"], completed)
+                elsewhere = self.turn("去花园")["snapshot"]
+                self.assertFalse(set(elsewhere["present"]) & {"A", "B", "C"})
+                self.assertTrue(all(line["speakerId"] in ("YOU", "PLAYER_DOLL") for line in elsewhere["guidance"]["dialogue"]))
+                self.assertEqual(elsewhere["guidance"]["dialogueId"], view["dialogueId"])
+                self.assertEqual(elsewhere["guidance"]["dialogue"], view["dialogue"])
+
+                restored = SinglePlayerGame(WorldKernel(world_id="complete-copy-" + route, store=EventStore(":memory:")), "complete-copy")
+                imported = restored.import_save({"sourceKey": "voodoo-single-v1", "payload": self.game.export_save()})
+                self.assertEqual(imported["snapshot"]["narrative"], completed)
+                self.assertEqual(imported["snapshot"]["roomId"], "garden")
+                draft = restored.intent({"text": "去地铁站", "requestId": "complete-move"})
+                moved = restored.confirm_intent(draft["turnId"])["snapshot"]
+                self.assertEqual(moved["roomId"], "station")
+                self.assertEqual(moved["narrative"], completed)
+
     def test_full_template_station_and_kitchen_paths_are_live_at_their_scheduled_times(self):
         for branch, expected_step, fact in (("station", "day2-station", "umbrellaNumber"),
                                              ("kitchen", "day2-kitchen", "recordingHeard")):
@@ -425,6 +474,14 @@ class NarrativeTests(unittest.TestCase):
         self.assertIn("archive-card", postscript["clues"])
         self.assertEqual(self.kernel.state.metadata["narrative"]["ending"], "trust")
         self.assertTrue(self.game.snapshot()["guidance"]["completed"])
+
+        complete_view = self.game.snapshot()["guidance"]
+        self.assertIn("本篇与支线已结束", complete_view["objective"])
+        self.assertEqual(complete_view["playerRoutine"], "本篇日程已结束")
+        elsewhere = self.turn("去花园")["snapshot"]
+        self.assertEqual(elsewhere["guidance"]["dialogueId"], complete_view["dialogueId"])
+        self.assertEqual(elsewhere["guidance"]["dialogue"], complete_view["dialogue"])
+        self.assertEqual(elsewhere["narrative"]["ending"], "trust")
 
     def test_postscript_ready_keeps_current_scene_actions_available(self):
         self.complete_main_story("trust")

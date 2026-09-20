@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-09-20T17:18:03.287Z",
+  "cases": [
+    {
+      "name": "ending-v2-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 3,
+      "posts": [
+        "story",
+        "story/story-60cde1a4a2e84fbe/confirm",
+        "save/import",
+        "intent",
+        "intent/5d34edfc-b25b-472f-a0fc-83ea8bf9639e/confirm"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "本篇已结束，结局已保留。可以打开地图探索场景，或从故事库选择故事。\n\n观察这里约 2 分钟\n开门看看约 2 分钟\n和沈青聊聊约 3 分钟\n等十分钟约 10 分钟",
+      "afterObservationChoices": "本篇已结束，结局已保留。可以打开地图探索场景，或从故事库选择故事。\n\n观察这里约 2 分钟\n开门看看约 2 分钟\n和沈青聊聊约 3 分钟\n等十分钟约 10 分钟",
+      "observationAdvancedMinutes": 2,
+      "passed": false,
+      "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '你打算怎么做？'\n- '这一段故事已结束'\n\n    at file:///Users/liminghan/Documents/voodoo-doll/scripts/playtest-single-player.mjs:243:14\n    at async scenario (file:///Users/liminghan/Documents/voodoo-doll/scripts/playtest-single-player.mjs:202:5)\n    at async file:///Users/liminghan/Documents/voodoo-doll/scripts/playtest-single-player.mjs:224:5"
+    }
+  ],
+  "errors": [
+    "ending-v2-844x390: Expected values to be strictly equal:\n+ actual - expected\n\n+ '你打算怎么做？'\n- '这一段故事已结束'\n"
+  ],
+  "sources": {
+    "scripts/playtest-single-player.mjs": "b81bdbd09e23a859ab3e18a6933405e5bd9023429c9e0eb3774041bfbb86f8f3",
+    "hex/play.ts": "d3d31cc622453abd588293f65cd62fa6dd44998aefe78d34db40144cd470dad8",
+    "hex/play-state.ts": "887b5efc0bf9ede3238ea456e0b6f4c91718c6a39ee2815f3b70bca85d8e08d2",
+    "hex/play-local.ts": "c8bf992779ce8fdaed276d62c1af08bb3d351aa1d25418bf1904958b9864a262",
+    "hex/play-recovery.ts": "fa08a8634ef48f4f1ea69fc4d85ca56040169485c0a45fdfac82abaa12d2c4ee",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/narrative.py": "5e147180e053ec8b52992a4bba3b669cbb18414588cd0b278f983f19878c1bec",
+    "backend/app/signal_story.py": "4905ff390333dd3dc295343565bb632910e454aabd9d2dbb21a6a7026436f6b0",
+    "dist-hex/index.html": "3389bb8a15dbace82bb6d7eedb994eeb9a3a876cedddfd0bb611eea14359def5"
+  },
+  "baseCommit": "b8cd57aa47c7308e394756d6e0b9698fbabdc059",
+  "browser": "153.0.8010.52",
+  "finishedAt": "2026-09-20T17:18:06.587Z",
+  "passed": false,
+  "database": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/voodoo-playtest-V8gING/world.sqlite3"
+}

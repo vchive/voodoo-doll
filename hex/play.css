@@ -181,6 +181,7 @@
   .dialogue-page { font-size:16px !important; line-height:1.7; }
   .dialogue-nameplate { min-height:30px; padding:4px 10px; }
   .single-story-actions .single-button { font-size:13px; }
+  .single-dialogue[data-ending="true"] .single-story-actions { grid-template-columns:repeat(2, minmax(0, 1fr)); }
 }
 
 /* Reading controls expose clipped content without choosing an action. */

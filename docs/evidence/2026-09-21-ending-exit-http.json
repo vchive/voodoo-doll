@@ -1,0 +1,112 @@
+{
+  "base": "http://127.0.0.1:18766",
+  "scope": "local HTTP only",
+  "backup": "/tmp/voodoo-review-before-ending-exit-20260921-012420.sqlite3",
+  "databaseUnchanged": true,
+  "tables": 10,
+  "rows": 3368,
+  "checks": [
+    {
+      "path": "/healthz",
+      "status": 200,
+      "bytes": 50,
+      "matchesBuild": true
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 2331,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/BitmapFont-BFhQr_JB.js",
+      "status": 200,
+      "bytes": 12807,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/BufferResource-CBgknv_H.js",
+      "status": 200,
+      "bytes": 11111,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/CanvasRenderer-BYmcntKj.js",
+      "status": 200,
+      "bytes": 17887,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/Filter-C-YJdhiO.js",
+      "status": 200,
+      "bytes": 904,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/RenderTargetSystem-Di-gPGYs.js",
+      "status": 200,
+      "bytes": 53430,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/WebGLRenderer-CQeeW7Cv.js",
+      "status": 200,
+      "bytes": 72507,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/WebGPURenderer-BZPSDWEH.js",
+      "status": 200,
+      "bytes": 48514,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/app-Di4PIOy8.js",
+      "status": 200,
+      "bytes": 46945,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/browserAll-B5q98q01.js",
+      "status": 200,
+      "bytes": 43129,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-CV4SKRs3.css",
+      "status": 200,
+      "bytes": 23490,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-wXeTr4Hq.js",
+      "status": 200,
+      "bytes": 1171,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/play-CyeY1FPC.js",
+      "status": 200,
+      "bytes": 50764,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/preload-helper-PPVm8Dsz.js",
+      "status": 200,
+      "bytes": 1232,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/stage-CaDC-RV0.js",
+      "status": 200,
+      "bytes": 336016,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/webworkerAll-BrXXx4JP.js",
+      "status": 200,
+      "bytes": 15574,
+      "matchesBuild": true
+    }
+  ]
+}

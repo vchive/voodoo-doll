@@ -1,4 +1,5 @@
-// MW-36 / SP-21 / MW-AC-36. Drive the shipped UI against an isolated world.
+// MW-36 / SP-21 / MW-AC-36 and MW-37 / SP-22 / MW-AC-37.
+// Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
@@ -19,7 +20,7 @@ const output = resolve(root, 'artifacts', 'playtest', stamp);
 const temporary = await mkdtemp(join(tmpdir(), 'voodoo-playtest-'));
 const report = { startedAt: new Date().toISOString(), cases: [], errors: [], sources: {} };
 await mkdir(output, { recursive: true });
-for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
+for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
   report.sources[path] = createHash('sha256').update(await readFile(join(root, path))).digest('hex');
 }
 report.baseCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -150,6 +151,56 @@ async function importSave(page, path) {
   await (await choosing).setFiles(path);
   await settled(page);
 }
+const completedSaves = new Map();
+async function completedTemplateSave(templateId) {
+  if (completedSaves.has(templateId)) return completedSaves.get(templateId);
+  // Build fixtures through the real command boundary, not by inventing save
+  // fields or editing a user's database. Each fixture owns an isolated cookie.
+  const context = await browser.newContext();
+  const request = context.request;
+  async function post(path, data) {
+    const response = await request.post(base + '/api/v4/play/' + path, { data });
+    assert(response.ok(), path + ': ' + await response.text());
+    return response.json();
+  }
+  try {
+    const draft = await post('story', { templateId, dollName: '小墨', names: { A: '林川', B: '沈青', C: '周野' } });
+    let result = await post('story/' + draft.draftId + '/confirm', { expectedVersion: draft.worldVersion });
+    let count = 0;
+    while (!result.snapshot.narrative.completed) {
+      assert(count < 40, '生成旧版结尾存档未能完成');
+      const action = result.snapshot.guidance.actions.find(item => !item.hidden && /^(story|full)-/.test(item.id));
+      assert(action, '旧版剧情缺少推进动作');
+      const turn = await post('intent', { text: action.intent, requestId: 'ending-fixture-' + (++count), expectedVersion: result.snapshot.worldVersion });
+      result = await post('intent/' + turn.turnId + '/confirm');
+    }
+    const response = await request.get(base + '/api/v4/play/save');
+    assert(response.ok());
+    const payload = await response.json();
+    assert.equal(payload.narrative.templateId, templateId);
+    const path = join(temporary, templateId + '-complete.json');
+    await writeFile(path, JSON.stringify(payload));
+    completedSaves.set(templateId, { path, payload, steps: count });
+    return completedSaves.get(templateId);
+  } finally { await context.close(); }
+}
+async function assertEndingChoices(page) {
+  assert.equal(await page.locator('.dialogue-speaker').innerText(), '这一段故事已结束');
+  assert.equal(await page.locator('[data-ending-action="library"]').count(), 1);
+  assert.equal(await page.locator('[data-ending-action="map"]').count(), 1);
+  assert.equal(await page.locator('[data-story-action="true"]').count(), 0);
+  assert.equal(await page.locator('#single-guidance [data-exploration-action="true"]').count(), 0);
+  if (page.viewportSize().width === 568) {
+    assert(await page.locator('#single-guidance').evaluate(el => el.scrollHeight <= el.clientHeight + 1), '短横屏应同时看见结尾说明与两个出口');
+  }
+  for (const action of ['library', 'map']) {
+    const target = page.locator(`[data-ending-action="${action}"]`);
+    await target.scrollIntoViewIfNeeded();
+    const box = await target.boundingBox();
+    const viewport = page.viewportSize();
+    assert(box && box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width + 1 && box.y + box.height <= viewport.height + 1, '结尾入口不可达：' + action);
+  }
+}
 function trackPage(page, metrics) {
   page.setDefaultTimeout(10000);
   page.on('pageerror', error => metrics.errors.push(error.message));
@@ -186,6 +237,111 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[844, 390], [568, 320], [390, 844]]) {
+    await scenario(`ending-v2-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      const fixture = await completedTemplateSave('rainy-office-v2');
+      await importSave(page, fixture.path);
+      await readToChoices(page, metrics);
+      const original = (await state(page)).snapshot;
+      assert.equal(original.narrative.completed, true);
+      assert.equal(original.narrative.ending, 'trust');
+      metrics.fixtureSteps = fixture.steps;
+      metrics.initialChoices = await page.locator('#single-guidance').innerText();
+      await assertEndingChoices(page);
+      await page.reload(); await settled(page);
+      await assertEndingChoices(page);
+      assert.deepEqual(stable((await state(page)).snapshot), stable(original));
+      let beforePosts = metrics.posts.length;
+      await page.locator('[data-ending-action="map"]').click();
+      assert(await page.locator('#single-explore').isVisible());
+      assert(await page.locator('#single-travel').evaluate(el => el.open));
+      assert.equal(metrics.posts.length, beforePosts, '打开地图不能推进行动');
+      assert.deepEqual(stable((await state(page)).snapshot), stable(original));
+      // The map's first click opens destinations; selecting one performs a
+      // real move while keeping the previously earned ending authoritative.
+      const moving = page.waitForResponse(response => response.request().method() === 'POST' && /\/api\/v4\/play\/intent\/[^/]+\/confirm$/.test(new URL(response.url()).pathname));
+      await page.locator('#single-travel').getByRole('button', { name: '地铁站', exact: true }).click();
+      const moveReceipt = await (await moving).json();
+      await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).snapshot.roomId === 'station', cacheKey);
+      await settled(page);
+      const afterMove = await state(page);
+      const responseTexts = moveReceipt.events.flatMap(event => event.actor !== 'YOU' && typeof event.payload?.text === 'string' ? [event.payload.text] : []);
+      assert(afterMove.dialogue.lines.length > 0);
+      assert(afterMove.dialogue.lines.every(line => responseTexts.includes(line.text)), '结束后移动只演出实际反馈，不能重播旧结尾正文');
+      metrics.moveFeedback = afterMove.dialogue.lines.map(line => line.text);
+      await readToChoices(page, metrics);
+      const explored = (await state(page)).snapshot;
+      assert.equal(metrics.posts.length - beforePosts, 2);
+      assert.equal(explored.clock.minute, original.clock.minute + 5);
+      assert.deepEqual(explored.narrative, original.narrative);
+      metrics.actions++;
+      // Ordinary actions remain available in Free Action, not as a fake
+      // next chapter occupying the ending's primary choices.
+      await openFree(page);
+      for (const name of ['观察周围', '开门看看']) assert(await page.locator('#single-quick-actions').getByRole('button', { name, exact: true }).isVisible());
+      await page.getByRole('button', { name: '收起自由行动', exact: true }).click();
+      beforePosts = metrics.posts.length;
+      await page.locator('[data-ending-action="library"]').click();
+      await page.locator('#single-return-story').waitFor();
+      assert.equal(metrics.posts.length, beforePosts, '打开故事库不能新建世界');
+      assert.deepEqual(stable((await session(page)).snapshot), stable(explored));
+      await page.locator('#single-return-story').click(); await settled(page);
+      await assertEndingChoices(page);
+      assert.deepEqual(stable((await state(page)).snapshot), stable(explored));
+      await page.locator('[data-ending-action="library"]').click();
+      await page.getByRole('button', { name: '开始新手故事', exact: true }).click();
+      await page.getByRole('button', { name: '改一改', exact: true }).click(); await settled(page);
+      assert.equal((await state(page)).pending, undefined);
+      await page.locator('#single-return-story').click(); await settled(page);
+      await assertEndingChoices(page);
+      assert.deepEqual(stable((await session(page)).snapshot), stable(explored), '取消新故事不能丢失原结局');
+      await page.locator('[data-ending-action="library"]').click();
+      await page.getByRole('button', { name: '开始新手故事', exact: true }).click();
+      await page.getByRole('button', { name: '确认进入', exact: true }).waitFor();
+      const newDraft = (await state(page)).pending.id;
+      assert.deepEqual(stable((await session(page)).snapshot), stable(explored), '新故事预览不能改世界');
+      await page.getByRole('button', { name: '确认进入', exact: true }).click(); await settled(page);
+      assert.equal((await state(page)).snapshot.narrative.templateId, 'signal-rain-v1');
+      assert.equal((await state(page)).snapshot.narrative.completed, false);
+      const retained = await page.evaluate(key => JSON.parse(localStorage.getItem(key + '-before-story')), cacheKey);
+      assert.equal(retained.draftId, newDraft);
+      assert.deepEqual(retained.save.narrative, explored.narrative);
+      assert.equal(retained.save.snapshot.roomId, 'station');
+      const downloading = page.waitForEvent('download');
+      await menu(page, '旧进度');
+      const backup = await downloading;
+      const backupPath = await backup.path();
+      assert.deepEqual(JSON.parse(await readFile(backupPath, 'utf8')), retained.save);
+      await importSave(page, backupPath); await readToChoices(page, metrics);
+      await assertEndingChoices(page);
+      const restored = (await state(page)).snapshot;
+      assert.deepEqual(restored.narrative, explored.narrative, '备份必须能恢复到原 v2 结局');
+      assert.equal(restored.roomId, explored.roomId, '备份必须能恢复到原探索位置');
+      assert.equal(restored.clock.day, explored.clock.day);
+      assert.equal(restored.clock.minute, explored.clock.minute);
+      assert.equal(restored.clock.clockVersion, explored.clock.clockVersion);
+      metrics.ending = explored.narrative.ending;
+    });
+  }
+  await scenario('ending-v1-postscript', { width: 568, height: 320 }, async (page, context, metrics) => {
+    await importSave(page, (await completedTemplateSave('rainy-office-v1')).path);
+    await readToChoices(page, metrics);
+    const original = (await state(page)).snapshot.narrative;
+    assert.equal(original.completed, true);
+    assert.equal(original.postscript.step, 'ready');
+    assert.equal(await page.locator('[data-ending-action]').count(), 0, '完成主线但仍有支线时不能隐藏支线');
+    assert.match(await page.locator('[data-story-action="true"]').first().innerText(), /开始第二天支线/);
+    for (let count = 0; count < 8 && !(await state(page)).snapshot.narrative.postscript.completed; count++) {
+      await nextStoryAction(page, metrics, 'trust', 'station');
+      await readToChoices(page, metrics);
+    }
+    const after = (await state(page)).snapshot.narrative;
+    assert.equal(after.postscript.completed, true);
+    assert.equal(after.ending, original.ending);
+    await assertEndingChoices(page);
+    await page.reload(); await settled(page); await assertEndingChoices(page);
+    metrics.ending = after.ending;
+  });
   // Each investigation branch must support all three final stances.
   for (const [route, branch, width, height] of [
     ['trust', 'station', 844, 390], ['audit', 'station', 568, 320], ['protect', 'kitchen', 667, 375],
@@ -200,7 +356,13 @@ try {
     assert.equal(current.snapshot.narrative.facts.tapeHeard, branch === 'kitchen');
     assert.equal(current.snapshot.narrative.facts.manualWarning, branch === 'station');
     assert.deepEqual((await session(page)).snapshot.narrative, current.snapshot.narrative);
-    assert.equal(await page.locator('[data-story-action="true"]').count(), 0);
+    await assertEndingChoices(page);
+    const endPosts = metrics.posts.length;
+    await page.locator('[data-ending-action="library"]').click();
+    await page.locator('#single-return-story').click(); await settled(page);
+    await assertEndingChoices(page);
+    assert.equal(metrics.posts.length, endPosts, '结局打开故事库再返回不能执行行动');
+    assert.deepEqual(stable((await state(page)).snapshot), stable(current.snapshot));
     await page.getByRole('button', { name: '手记 · 日程', exact: true }).click();
     assert.match(await page.locator('#single-notebook').innerText(), /教程完成/);
     await page.getByRole('button', { name: '收起手记与日程', exact: true }).click();

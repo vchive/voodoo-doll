@@ -58,7 +58,9 @@ def _elsewhere(step: str, room: str, facts: Mapping[str, Any]) -> list[dict]:
 
 def _ending(n: Mapping[str, Any], room: str, facts: Mapping[str, Any], a: str, b: str, c: str) -> list[dict]:
     ending = n.get("ending") or n.get("finalChoice")
-    place = "家里的灯下" if room == "home" else "此刻停留的地方"
+    # This text recounts the saved conclusion. Its identity and contents stay
+    # stable when the player later explores a different room.
+    place = "收起这份记录的地方"
     evidence, gaps = _evidence(facts), _gaps(facts, b, c)
     if ending == "missed":
         third_day = "day3-hearing" in n.get("missedWindows", [])

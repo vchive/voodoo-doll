@@ -117,6 +117,40 @@ class SignalStoryTests(unittest.TestCase):
                 self.assertEqual(final["narrative"]["ending"], "trust")
                 self.assertTrue(final["guidance"]["completed"])
 
+    def test_completed_story_exploration_and_chat_preserve_result_after_import(self):
+        for route in ("trust", "audit", "protect"):
+            with self.subTest(route=route):
+                self.start()
+                final = self.walk_to("complete", first_choice=route, final_choice=route)
+                completed = copy.deepcopy(final["narrative"])
+                self.assertIn("本篇已结束", final["guidance"]["objective"])
+                self.assertIn("没有后续剧情任务", final["guidance"]["scheduleHint"])
+                self.assertEqual(final["guidance"]["actions"][0]["label"], "观察这里")
+                for text in ("观察周围", "开门", "问沈青：今天怎么样？", "去办公室", "问林川：今天怎么样？", "去酒吧", "问周野：今天怎么样？"):
+                    before = self.game.snapshot()
+                    result = self.turn(text)
+                    self.assertGreater(result["snapshot"]["worldVersion"], before["worldVersion"])
+                    self.assertGreater(result["snapshot"]["clock"]["minute"], before["clock"]["minute"])
+                    self.assertEqual(result["snapshot"]["narrative"], completed)
+                    self.assertEqual(result["snapshot"]["guidance"]["dialogueId"], final["guidance"]["dialogueId"])
+                    self.assertEqual(result["snapshot"]["guidance"]["dialogue"], final["guidance"]["dialogue"])
+                    self.assertFalse(any(event["payload"].get("chapterTransition") for event in result["events"]))
+                    if text.startswith("问沈青"):
+                        answer = next(event["payload"]["text"] for event in result["events"] if event["actor"] == "B")
+                        self.assertNotIn("录音", answer)
+                        self.assertNotIn("午饭", answer)
+                    if text.startswith("问林川"):
+                        answer = next(event["payload"]["text"] for event in result["events"] if event["actor"] == "A")
+                        self.assertIn({"trust": "已经留下", "audit": "已经交出", "protect": "已经收好"}[route], answer)
+
+                restored = SinglePlayerGame(WorldKernel(world_id="signal-complete-copy-" + route, store=EventStore(":memory:")), "complete-copy")
+                imported = restored.import_save({"sourceKey": "voodoo-single-v1", "payload": self.game.export_save()})
+                self.assertEqual(imported["snapshot"]["narrative"], completed)
+                draft = restored.intent({"text": "去花园", "requestId": "complete-move"})
+                moved = restored.confirm_intent(draft["turnId"])["snapshot"]
+                self.assertEqual(moved["roomId"], "garden")
+                self.assertEqual(moved["narrative"], completed)
+
     def test_open_door_and_small_talk_never_choose_first_or_final_stance(self):
         for target in ("day1-choice", "day3-decision"):
             with self.subTest(target=target):

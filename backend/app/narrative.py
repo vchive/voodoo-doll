@@ -360,7 +360,8 @@ def _story_dialogue(state: WorldState, step: str, ending: Optional[str], objecti
     branch = ending or n.get("choice") or "common"
     postscript = n.get("postscript") or {"step": "ready", "clues": [], "completed": False}
     post_step = postscript.get("step", "ready")
-    identifier = f"{TEMPLATE_ID}:dialogue-v1:{step}:{branch}:{room}:{post_step}"
+    place = "ending" if step == "complete" and post_step == "complete" else room
+    identifier = f"{TEMPLATE_ID}:dialogue-v1:{step}:{branch}:{place}:{post_step}"
     stages = {"observe": "parlor", "open": "parlor", "station": "parlor", "station-door": "station",
               "office": "station", "work": "office", "talk": "office", "choice": "office",
               "home": "office", "home-door": "home"}
@@ -562,7 +563,7 @@ def guidance(state: WorldState) -> dict:
                        else [_action("postscript-home", "带记录回家", "回家", 5)])
         elif post_step == "complete":
             chapter = "教程支线 · 暂告一段落"
-            objective = "教程支线已完成，继续自由生活或重新体验另一条主线。"
+            objective = "本篇与支线已结束，结局已保留。可以打开地图探索场景，或从故事库选择故事。"
             passage = "伞、卡片和更正页被放进同一个文件夹。你还不知道答案，但已经有了下一次回到档案馆的理由。"
             actions = fallback
     else:
@@ -579,11 +580,12 @@ def guidance(state: WorldState) -> dict:
             actions = [action] if action else []
         actions += [item for item in fallback if item["intent"] not in {a["intent"] for a in actions}]
     remaining = max(0, 600 - clock["minute"]) if clock["day"] == n.get("startedDay", 1) else 0
+    at_end = step == "complete" and (n.get("postscript") or {}).get("step") == "complete"
     return {"title": "雨停以前", "chapter": chapter, "objective": objective, "passage": passage,
             **_story_dialogue(state, step, ending, objective),
             "completed": step == "complete", "ending": ending, "actions": actions,
-            "playerRoutine": "今日身份：档案馆校对员 · 今日校对：" + ("已完成" if n.get("workDone") else "待完成（办公室，十分钟）"),
-            "scheduleHint": f"{name}：09:00–10:00 办公室，之后回家。今天的谈话窗口剩余 {remaining} 分钟。"}
+            "playerRoutine": "本篇日程已结束" if at_end else "今日身份：档案馆校对员 · 今日校对：" + ("已完成" if n.get("workDone") else "待完成（办公室，十分钟）"),
+            "scheduleHint": "当前可移动、观察、操作物件和与在场人物闲聊；本篇没有后续剧情任务。" if at_end else f"{name}：09:00–10:00 办公室，之后回家。今天的谈话窗口剩余 {remaining} 分钟。"}
 
 
 def validate_saved_narrative(value: Any) -> dict:
@@ -817,6 +819,22 @@ def _full_story_response(state: WorldState, actor: str, request: Event) -> Optio
         return None
     n = state.metadata["narrative"]
     room = state.agents["YOU"].room_id
+    if state.agents[actor].room_id != room:
+        return None
+    if n.get("completed"):
+        # Free exploration does not reopen an authored window or decision.
+        # In particular, B stays home on day three; her old recording invitation
+        # would send a player to a kitchen encounter that can no longer happen.
+        if actor == "C":
+            return "站里的告示还在原处。我今天照常按班表值班，休息时就想坐下来喘口气。"
+        if actor == "B":
+            return "那几页记录先收好吧。今天我想把自己的事情慢慢做完，你也歇一会儿。"
+        return {
+            "trust": "共同署名的那一页已经留下了。今天先让我把手边的事情做完，回家还得照顾父亲。",
+            "audit": "审计材料已经交出去了，接下来得等结果。今天我想先处理家里的事情。",
+            "protect": "暂存的文件已经收好。现在还没有新消息，我先顾好父亲。",
+            "missed": "上次没能把话说完，就先留在那里吧。今天我还有自己的安排。",
+        }.get(n.get("ending"), "这件事已经告一段落。今天我还有自己的安排。")
     text = request.payload.get("text", "") or ""
     if actor == "C":
         if room == "station":
@@ -869,6 +887,17 @@ def _full_dialogue(state: WorldState, step: str, objective: str) -> dict:
         "day3-home": [("ENV", "narration", "你把更正页和通行证放进同一个文件夹，回到家。"), ("YOU", "thought", "明天已经发生过一次，而这一次的记录由我留下。")],
     }
     lines = scripts.get(step, scripts["arrival"])
+    if step == "complete":
+        # The ending is a recorded result, not a new conversation with an
+        # absent character or a claim that the current morning became night.
+        result = {
+            "trust": "共同署名的更正页已经收好，司机的名字也留在了记录里。",
+            "audit": "公开审计的决定已经留下。你交出的材料和承担的责任都不会被下一次闲聊改写。",
+            "protect": "文件已经暂存。你选择先保护林川，空白仍留在待审记录里。",
+            "missed": "没赶上的那次谈话，已经留成了这份记录里的空白。",
+        }.get(n.get("ending"), "这段故事已经告一段落，走过的路和作出的选择都留在记录里。")
+        lines = [("PLAYER_DOLL", "speech", result),
+                 ("YOU", "thought", "这一页已经写完。我可以去别处走走，也可以换一段故事。")]
     if step == "day3-home" and n.get("ending") in {"trust", "audit", "protect", "missed"}:
         lines = {
             "trust": [
@@ -891,7 +920,8 @@ def _full_dialogue(state: WorldState, step: str, objective: str) -> dict:
                 ("YOU", "thought", "城市不会因为我迟到而暂停。下一次，我会先把自己的时间也当成线索。"),
             ],
         }[n["ending"]]
-    return {"dialogueId": f"{FULL_TEMPLATE_ID}:dialogue-v2:{step}:{n.get('route') or 'open'}:{state.agents['YOU'].room_id}",
+    place = "ending" if step == "complete" else state.agents["YOU"].room_id
+    return {"dialogueId": f"{FULL_TEMPLATE_ID}:dialogue-v2:{step}:{n.get('ending') or n.get('route') or 'open'}:{place}",
             "dialogue": [{"speakerId": s, "kind": k, "text": t} for s, k, t in lines]}
 
 
@@ -995,12 +1025,13 @@ def _full_guidance(state: WorldState) -> dict:
                   "protect": ("结局 · 暂存的空白", "你保护了林川，暂时保住他的工作，却把司机姓名留在待审记录里。通行证被收回，未来仍等着有人补上最后一行。"),
                   "missed": ("结局 · 错过窗口", "你错过第一天的谈话，仍靠公开物件查到部分真相，但林川没有再把未寄出的信交给你。")}
         chapter, passage = labels.get(ending, labels["missed"])
-        objective = "故事已完成。你可以继续自由生活，或从故事库重新体验另一条路线。"
+        objective = "本篇已结束，结局已保留。可以打开地图探索场景，或从故事库选择故事。"
         actions = fallback
     return {"title": "雨停以前：明天已经发生", "chapter": chapter, "objective": objective, "passage": passage,
-            **_full_dialogue(state, step if step != "complete" else "day3-home", objective), "completed": step == "complete",
-            "ending": ending, "actions": actions, "playerRoutine": "今日身份：档案馆校对员 · 故事日程：第" + str(n.get("day", 1)) + "天",
-            "scheduleHint": f"{a}、{b}、{c}都有自己的时间表；错过窗口后，公开物件仍可能留下替代线索。"}
+            **_full_dialogue(state, step, objective), "completed": step == "complete",
+            "ending": ending, "actions": actions,
+            "playerRoutine": "本篇日程已结束" if step == "complete" else "今日身份：档案馆校对员 · 故事日程：第" + str(n.get("day", 1)) + "天",
+            "scheduleHint": "当前可移动、观察、操作物件和与在场人物闲聊；本篇没有后续剧情任务。" if step == "complete" else f"{a}、{b}、{c}都有自己的时间表；错过窗口后，公开物件仍可能留下替代线索。"}
 
 
 def _full_validate_saved_narrative(value: Any) -> dict:

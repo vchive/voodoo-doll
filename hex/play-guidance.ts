@@ -24,3 +24,8 @@ export function splitGuidanceActions(actions: GuidanceAction[] | undefined): {
     exploration: visible.filter((action) => !isStoryAction(action)),
   };
 }
+
+// A completed main chapter can still have an authored postscript to play.
+export function isAtStoryEnd(guide: PlayGuidance | undefined): boolean {
+  return guide?.completed === true && splitGuidanceActions(guide.actions).story.length === 0;
+}

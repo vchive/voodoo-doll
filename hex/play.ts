@@ -11,7 +11,7 @@ import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompl
 import { parseLocalAction, applyLocalAction } from './play-local';
 import { advanceDialogue, dialogueAfterAction, restoreDialogue } from './play-dialogue';
 import { hasMoreToRead, nextReadingScroll, canSubmitInput } from './play-reading';
-import { splitGuidanceActions, type GuidanceAction } from './play-guidance';
+import { isAtStoryEnd, splitGuidanceActions, type GuidanceAction } from './play-guidance';
 import { latestConfirmedView } from './play-recovery';
 
 const composingInputs = new WeakSet<HTMLInputElement>();
@@ -26,7 +26,7 @@ const TRAVEL_ROOMS = ['parlor', 'bedroom', 'hall', 'office', 'home', 'bar', 'kit
 
 type IntentHandler = (value: string, direct?: boolean) => void;
 
-type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: IntentHandler };
+type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: IntentHandler; onLibrary?: () => void };
 
 function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T; }
 function text(value: unknown, fallback = ''): string { return typeof value === 'string' ? value : fallback; }
@@ -231,8 +231,9 @@ function renderDialogue(ui: Ui, state: LocalState): void {
   const line = playback.lines[playback.index];
   host.dataset.kind = line.kind;
   host.dataset.choices = String(playback.choicesOpen);
+  host.dataset.ending = String(!state.offline && isAtStoryEnd(state.snapshot.guidance));
   host.innerHTML = `<div class="dialogue-nameplate"><span class="dialogue-speaker"></span><small class="dialogue-kind"></small></div><button type="button" class="dialogue-page" aria-label="继续阅读"><span class="dialogue-text" aria-live="polite"></span><span class="dialogue-next" aria-hidden="true">▾</span></button><section id="single-guidance" class="single-guidance" aria-label="选择行动"></section><div class="dialogue-footer"><span class="dialogue-position"></span><div class="dialogue-controls"></div></div>`;
-  host.querySelector('.dialogue-speaker')!.textContent = playback.choicesOpen ? '你打算怎么做？' : displayName(line.kind === 'narration' ? 'PLAYER_DOLL' : line.speakerId, state.profile);
+  host.querySelector('.dialogue-speaker')!.textContent = playback.choicesOpen ? (!state.offline && isAtStoryEnd(state.snapshot.guidance) ? '这一段故事已结束' : '你打算怎么做？') : displayName(line.kind === 'narration' ? 'PLAYER_DOLL' : line.speakerId, state.profile);
   host.querySelector('.dialogue-kind')!.textContent = playback.choicesOpen ? '' : line.kind === 'thought' ? '心声' : line.kind === 'narration' || line.speakerId === 'PLAYER_DOLL' ? '巫毒娃娃' : '对白';
   host.querySelector('.dialogue-text')!.textContent = line.kind === 'speech' ? `「${line.text}」` : line.kind === 'thought' ? `（${line.text}）` : line.text;
   const page = host.querySelector<HTMLButtonElement>('.dialogue-page')!;
@@ -320,11 +321,26 @@ function renderDialogue(ui: Ui, state: LocalState): void {
 function renderChoices(ui: Ui, state: LocalState, host: HTMLElement): void {
   const guide = state.snapshot.guidance;
   const { story, exploration } = splitGuidanceActions(guide?.actions as GuidanceAction[] | undefined);
+  const atEnd = !state.offline && isAtStoryEnd(guide);
   const objective = document.createElement('p'); objective.className = 'single-objective';
-  objective.textContent = state.offline ? '离线探索 · 故事进度已保留' : guide?.objective || '从这里出发。';
+  objective.textContent = state.offline ? '离线探索 · 故事进度已保留' : atEnd ? '结局已保留。换个故事，或去别处走走。' : guide?.objective || '从这里出发。';
   host.append(objective);
   const actions = document.createElement('div'); actions.className = 'single-story-actions';
-  if (!state.offline) (story.length ? story : exploration).slice(0, 4).forEach((action) => {
+  if (atEnd) {
+    const library = button('打开故事库', () => ui.onLibrary?.(), true);
+    library.dataset.endingAction = 'library';
+    const map = button('打开地图', () => {
+      openPlayPanel(ui, 'single-explore');
+      const travel = ui.content.querySelector<HTMLDetailsElement>('#single-travel');
+      if (travel) {
+        travel.open = true;
+        travel.scrollIntoView({ block: 'nearest' });
+        travel.querySelector('summary')?.focus({ preventScroll: true });
+      }
+    });
+    map.dataset.endingAction = 'map';
+    actions.append(library, map);
+  } else if (!state.offline) (story.length ? story : exploration).slice(0, 4).forEach((action) => {
     const item = quickButton(action.label, action.intent, ui.onIntent!); item.classList.add('primary');
     item.dataset[story.length ? 'storyAction' : 'explorationAction'] = 'true';
     if (typeof action.minutes === 'number') {
@@ -389,7 +405,7 @@ function renderQuickActions(ui: Ui, state: LocalState, onIntent: IntentHandler):
   });
   immediate.append(quickButton('开门看看', '开门', onIntent));
   host.append(immediate);
-  const details = document.createElement('details');
+  const details = document.createElement('details'); details.id = 'single-travel';
   const summary = document.createElement('summary'); summary.textContent = '地图 · 去别处'; details.append(summary);
   const travel = document.createElement('div'); travel.className = 'single-action-row';
   TRAVEL_ROOMS.filter((room) => room !== state.snapshot.roomId).forEach((room) => {
@@ -682,8 +698,12 @@ async function run(): Promise<void> {
             applySnapshot(state, latest.snapshot, latest.profile);
             state.pending = undefined;
             addLog(ui, state, '你', value, 'accepted', logContext(recovering || advanced ? committed.snapshot : before), 'action', `turn:${draft.turnId}`);
+            // Visiting another room after the ending should play this action's
+            // feedback, not perform the ending again. Keep room-aware reading
+            // keys so other tabs cannot reuse dialogue from a different place.
+            const continuingAfterEnd = before.worldId === state.snapshot.worldId && isAtStoryEnd(before.guidance) && isAtStoryEnd(state.snapshot.guidance);
             state.dialogue = advanced ? restoreDialogue(state.snapshot, state.dialogue)
-              : dialogueAfterAction(state.snapshot, committed.events || [], state.dialogue);
+              : dialogueAfterAction(state.snapshot, committed.events || [], state.dialogue, !continuingAfterEnd);
             renderIntentEvents(ui, state, committed.events || [], committed.snapshot, committed.profile);
             saveLocal(state);
           }
@@ -826,6 +846,13 @@ async function run(): Promise<void> {
       setToolsEnabled(!state.pending);
     }
     }, legacyAvailable, localRecoveryAvailable);
+    if (hasCompletedLocalWorld(state)) {
+      const back = button('回到当前故事', () => {
+        if (!operationInFlight && !state.pending) void showPlay();
+      });
+      back.id = 'single-return-story';
+      ui.content.querySelector('.single-library')!.before(back);
+    }
   }
   function showStoryDraft(draft: StoryDraftResponse): void {
     state.pending = { kind: 'story', id: draft.draftId, preview: draft.preview, worldVersion: draft.worldVersion };
@@ -915,6 +942,12 @@ async function run(): Promise<void> {
     }
     syncControls();
   }
+  ui.onLibrary = () => {
+    if (operationInFlight || state.pending) return;
+    openPlayPanel(ui);
+    showOnboarding();
+    focusSurface(ui.content.querySelector('.single-card h1'));
+  };
   // A reachable session can still be a brand-new world.  The story form is
   // therefore selected from profile completeness, not network availability.
   const restoredStoryDraft = restorePendingStoryDraft(state);
@@ -946,11 +979,7 @@ async function run(): Promise<void> {
     };
     file.click();
   }); importButton.title = '导入保存';
-  const libraryButton = button('故事库', () => {
-    if (operationInFlight || state.pending) return;
-    showOnboarding();
-    if (hasCompletedLocalWorld(state)) ui.content.querySelector('#tutorial-entry')!.append(button('回到当前故事', () => { void showPlay(); }));
-  });
+  const libraryButton = button('故事库', ui.onLibrary);
   const backupButton = button('旧进度', () => {
     try {
       const raw = localStorage.getItem(`${STORAGE_KEY}-before-story`);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isStoryAction, splitGuidanceActions } from '../hex/play-guidance.ts';
+import { isAtStoryEnd, isStoryAction, splitGuidanceActions } from '../hex/play-guidance.ts';
 
 const action = (id) => ({ id, label: id, intent: id });
 
@@ -24,4 +24,12 @@ test('自由世界没有主线动作时仍保留场景动作', () => {
   const result = splitGuidanceActions([action('observe'), action('open-door')]);
   assert.equal(result.story.length, 0);
   assert.deepEqual(result.exploration.map(({ id }) => id), ['observe', 'open-door']);
+});
+
+test('完成态只在没有可玩后记时显示结尾出口', () => {
+  assert.equal(isAtStoryEnd(undefined), false);
+  assert.equal(isAtStoryEnd({ completed: false, actions: [action('observe')] }), false);
+  assert.equal(isAtStoryEnd({ completed: true, actions: [action('observe'), action('talk-A')] }), true);
+  assert.equal(isAtStoryEnd({ completed: true, actions: [action('postscript-start'), action('observe')] }), false);
+  assert.equal(isAtStoryEnd({ completed: true, actions: [{ ...action('postscript-start'), hidden: true }, action('observe')] }), true);
 });
