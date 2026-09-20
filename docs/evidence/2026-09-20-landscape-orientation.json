@@ -1,0 +1,250 @@
+{
+  "checkedAt": "2026-09-20T15:33:05.297Z",
+  "base": "http://127.0.0.1:18771",
+  "browser": "153.0.8010.52",
+  "scope": "Desktop Chrome viewport/orientation simulation. Reduced viewport height simulates keyboard space only; this is not real-device keyboard/WeChat coverage.",
+  "viewports": [
+    {
+      "width": 844,
+      "height": 390,
+      "checks": [
+        {
+          "name": "orientation_preserves_reading_and_sends_no_action",
+          "status": "pass",
+          "index": 2,
+          "postActions": 0
+        },
+        {
+          "name": "orientation_and_keyboard_space_preserve_unsent_draft",
+          "status": "pass",
+          "draft": "去地铁站",
+          "simulatedKeyboardViewport": {
+            "width": 844,
+            "height": 240
+          },
+          "inputRect": {
+            "x": 227,
+            "y": 60,
+            "width": 518,
+            "height": 46
+          },
+          "previewRect": {
+            "x": 753,
+            "y": 60,
+            "width": 64,
+            "height": 46
+          },
+          "postActions": 0
+        },
+        {
+          "name": "rotation_with_pending_keeps_one_preview_and_cancel_is_inert",
+          "status": "pass",
+          "turnId": "ad20c7f5-810d-4d5a-a2d0-3df4df5ff392",
+          "previewPosts": 1,
+          "cancelPosts": 1,
+          "worldVersion": 2
+        },
+        {
+          "name": "map_schedule_and_backlog_scroll_inside_closable_panels",
+          "status": "pass",
+          "panels": [
+            {
+              "id": "single-explore",
+              "clientHeight": 231,
+              "scrollHeight": 243,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 12
+            },
+            {
+              "id": "single-notebook",
+              "clientHeight": 231,
+              "scrollHeight": 237,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 6
+            },
+            {
+              "id": "single-history",
+              "clientHeight": 231,
+              "scrollHeight": 682,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 451
+            }
+          ],
+          "postActions": 0
+        }
+      ],
+      "posts": [
+        "http://127.0.0.1:18771/api/v4/play/story",
+        "http://127.0.0.1:18771/api/v4/play/story/story-2b7bead05d3a4fa8/confirm",
+        "http://127.0.0.1:18771/api/v4/play/intent",
+        "http://127.0.0.1:18771/api/v4/play/intent/ad20c7f5-810d-4d5a-a2d0-3df4df5ff392/cancel"
+      ]
+    },
+    {
+      "width": 667,
+      "height": 375,
+      "checks": [
+        {
+          "name": "orientation_preserves_reading_and_sends_no_action",
+          "status": "pass",
+          "index": 2,
+          "postActions": 0
+        },
+        {
+          "name": "orientation_and_keyboard_space_preserve_unsent_draft",
+          "status": "pass",
+          "draft": "去地铁站",
+          "simulatedKeyboardViewport": {
+            "width": 667,
+            "height": 225
+          },
+          "inputRect": {
+            "x": 50,
+            "y": 60,
+            "width": 518,
+            "height": 46
+          },
+          "previewRect": {
+            "x": 576,
+            "y": 60,
+            "width": 64,
+            "height": 46
+          },
+          "postActions": 0
+        },
+        {
+          "name": "rotation_with_pending_keeps_one_preview_and_cancel_is_inert",
+          "status": "pass",
+          "turnId": "8ca56714-7b09-45e0-bb5d-b6a457caa584",
+          "previewPosts": 1,
+          "cancelPosts": 1,
+          "worldVersion": 2
+        },
+        {
+          "name": "map_schedule_and_backlog_scroll_inside_closable_panels",
+          "status": "pass",
+          "panels": [
+            {
+              "id": "single-explore",
+              "clientHeight": 216,
+              "scrollHeight": 243,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 27
+            },
+            {
+              "id": "single-notebook",
+              "clientHeight": 216,
+              "scrollHeight": 237,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 21
+            },
+            {
+              "id": "single-history",
+              "clientHeight": 216,
+              "scrollHeight": 682,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 466
+            }
+          ],
+          "postActions": 0
+        }
+      ],
+      "posts": [
+        "http://127.0.0.1:18771/api/v4/play/story",
+        "http://127.0.0.1:18771/api/v4/play/story/story-91047238a8d74cca/confirm",
+        "http://127.0.0.1:18771/api/v4/play/intent",
+        "http://127.0.0.1:18771/api/v4/play/intent/8ca56714-7b09-45e0-bb5d-b6a457caa584/cancel"
+      ]
+    },
+    {
+      "width": 568,
+      "height": 320,
+      "checks": [
+        {
+          "name": "orientation_preserves_reading_and_sends_no_action",
+          "status": "pass",
+          "index": 2,
+          "postActions": 0
+        },
+        {
+          "name": "orientation_and_keyboard_space_preserve_unsent_draft",
+          "status": "pass",
+          "draft": "去地铁站",
+          "simulatedKeyboardViewport": {
+            "width": 568,
+            "height": 220
+          },
+          "inputRect": {
+            "x": 27,
+            "y": 60,
+            "width": 442,
+            "height": 46
+          },
+          "previewRect": {
+            "x": 477,
+            "y": 60,
+            "width": 64,
+            "height": 46
+          },
+          "postActions": 0
+        },
+        {
+          "name": "rotation_with_pending_keeps_one_preview_and_cancel_is_inert",
+          "status": "pass",
+          "turnId": "110dfc82-cc93-401b-8429-95286c364620",
+          "previewPosts": 1,
+          "cancelPosts": 1,
+          "worldVersion": 2
+        },
+        {
+          "name": "map_schedule_and_backlog_scroll_inside_closable_panels",
+          "status": "pass",
+          "panels": [
+            {
+              "id": "single-explore",
+              "clientHeight": 161,
+              "scrollHeight": 294,
+              "scrollTop": 23,
+              "overflowY": "auto",
+              "afterScroll": 133
+            },
+            {
+              "id": "single-notebook",
+              "clientHeight": 161,
+              "scrollHeight": 261,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 100
+            },
+            {
+              "id": "single-history",
+              "clientHeight": 161,
+              "scrollHeight": 706,
+              "scrollTop": 0,
+              "overflowY": "auto",
+              "afterScroll": 545
+            }
+          ],
+          "postActions": 0
+        }
+      ],
+      "posts": [
+        "http://127.0.0.1:18771/api/v4/play/story",
+        "http://127.0.0.1:18771/api/v4/play/story/story-6f21b5885a8a43be/confirm",
+        "http://127.0.0.1:18771/api/v4/play/intent",
+        "http://127.0.0.1:18771/api/v4/play/intent/110dfc82-cc93-401b-8429-95286c364620/cancel"
+      ]
+    }
+  ],
+  "errors": [],
+  "sourceSha256": {
+    "hex/play.ts": "dd519a03dc69a95d07ccd30f854f0128f976b33d5c2bd413c700220f149d0e2b",
+    "hex/play.css": "e012d7cb68130c22f38c9c854216fd0e58d56f229eb52907654e1856cbfad4f4"
+  }
+}

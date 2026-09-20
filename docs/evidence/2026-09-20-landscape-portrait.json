@@ -1,0 +1,8 @@
+{
+  "errors": [],
+  "checks": [
+    "portrait reading, nonblocking hint, story library roundtrip preserves input/canvas, preview/cancel, error recovery, panel close",
+    "simulated left44/right34/top12/bottom16 safe-area insets leave stage, toolbar, panel within bounds",
+    "long text fixture internally scrolls, footer44 remains visible, action reachable"
+  ]
+}

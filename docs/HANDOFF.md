@@ -1,5 +1,9 @@
 # 巫柜 · SDD 交接入口
 
+> 最新更新：用户要求手机以横屏游玩为主。MW-34 / SP-19 / MW-AC-34本机范围已完成：左侧完整舞台、右侧对话/选项，横屏一屏阅读操作，长内容与次级面板内部滚动；竖屏保留，旋转不丢阅读/草稿/pending。844×390、667×375、568×320三路线通关、12项方向/面板专项与390竖屏/安全区/矮屏补测通过，Node99/99、类型和双构建通过。真实微信/软键盘待测，见[横屏证据](evidence/2026-09-20-landscape-play.md)。仅前端更新，无后端/存档迁移。
+
+本机18766已提供新构建，健康、首页与JS/CSS均200；沿用原服务/数据库，不清用户进度。本轮横屏代码同步状态以git/main为准。以下是上一轮阅读界面与剧情的历史基线。
+
 > 更新日期：2026-09-20（Asia/Shanghai）。最新任务为用户反馈“文字太多、不知道看哪里、交互不便，旁白应是巫毒娃娃”。MW-33 / SP-18 / MW-AC-33 本机范围已实现并验证：同一对话窗在阅读与行动间切换，旁白用娃娃名并调整叙述口吻，日程/笔记/回看收起，推荐一次点击，自由输入仍可预览确认。Node99/99、Python159/159；390/320/680三路线通关、两档键盘恢复及12项故障/多标签恢复通过，见[交互证据](evidence/2026-09-20-dialogue-focus.md)。不宣称长篇、微信真机、公网或整体预发布完成。
 
 本机18766已更新并重启，沿用实际原数据库 `/tmp/voodoo-review.sqlite3`，更新前备份 `/tmp/voodoo-review-before-focus-20260920.sqlite3`。服务PID91578、会话19759仅为本次启动记录，接手时核对实际进程。用户旧进度未清空，刷新即可看到新界面；当前段落的旧文字仍可能来自保存的阅读缓存，叙述身份会升级，进入下一段取得新稿。
@@ -12,7 +16,7 @@ GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53
 
 ## 1. 最新任务与约束
 
-用户要求采用 SDD，逐步完成单人可用的开放世界对话 Galgame，并把教程做成完整可玩故事。用户认为旧短篇质量与交互不足，已完成公共领域短篇结构改编，本轮最新要求收敛阅读焦点、改善操作并让娃娃承担旁白。当前选材狄更斯《The Signal-Man》、新标题及三日具体规则是实现默认；完整多人物生活、长篇内容和实测长时体验仍待完成。推荐动作与自由输入并存，主角有工作职责，NPC 窗口按服务端统一时间关闭。当前主线对应 MW-28–31 / SP-11–16 / MW-AC-28–31，验证未完成前不标整项通过。单人入口仍为 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`，Node/Pi legacy-v2 仅保留回滚。
+用户要求采用 SDD，逐步完成单人可用的开放世界对话 Galgame，并把教程做成完整可玩故事。用户认为旧短篇质量与交互不足，已完成公共领域短篇结构改编，前轮已收敛阅读焦点、改善操作并让娃娃承担旁白，本轮要求手机横屏主设计。当前选材狄更斯《The Signal-Man》、新标题及三日具体规则是实现默认；完整多人物生活、长篇内容和实测长时体验仍待完成。推荐动作与自由输入并存，主角有工作职责，NPC 窗口按服务端统一时间关闭。当前主线对应 MW-28–31 / SP-11–16 / MW-AC-28–31，验证未完成前不标整项通过。单人入口仍为 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`，Node/Pi legacy-v2 仅保留回滚。
 
 最新任务是按 [004 · 多 Agent 世界内核与角色交互](specs/004-multi-agent-world/spec.md) 迁移到 **TypeScript 前端 + Python FastAPI World Kernel**，再承载多目标关系、开放世界和可选成人表现层。纯 TypeScript 的本地单机模式可以作为离线试玩和无模型回退，但不替代正式世界的服务端权威；“语言统一”与“无服务化”按[决策 0008](decisions/0008-typescript-and-service-boundary.md)分开管理。用户确认 DeepSeek Harness 指 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)；框架比较和 Pi 选型仍作为 Agent Adapter 参考，不能把开发协作 agent 与线上角色运行时混为一谈。
 
@@ -201,4 +205,4 @@ GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53
 
 ## 8. 可直接复制给下一位 agent 的任务
 
-> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手。先读 AGENTS.md、本文、004 四份规格、tutorial-story.md、研究 2026-09-20-signal-man-adaptation.md 和本轮 evidence/2026-09-20-signal-story.md。默认是 TypeScript/PixiJS + Python FastAPI World Kernel，教程 templateId=signal-rain-v1/version=1《红灯下的第三次回声》，以狄更斯《The Signal-Man》结构改写三日调查。第一日10:00或第三日12:00未完成关键选择直接complete+missed，第二日只取得实际调查路线的证据；最终ask/tell明确选择，普通动作不替玩家选。回家不跳日，在home明确睡觉才开始第二/三日。新故事与旧rainy-office-v1/v2分离，旧档保留但v2四类已知缺陷未修。MW-28–31对应SP-11–16及MW-AC-28–31，当前专项验证以证据页实际填写为准；文本量不代表长篇或实测时长。微信真机、公网、完整故障矩阵未完成。使用独立测试环境，保留用户数据、版本CAS、可见性、无模型路径和legacy-v2回滚；不把代码同步GitHub当成部署。本轮已完成阅读/行动界面收敛与实际试玩，先读交互证据及MW-33。下一步以用户实际反馈评估可读性，再推进故事质量、角色生活和真机验证。
+> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手。先读 AGENTS.md、本文、004 四份规格、tutorial-story.md、研究 2026-09-20-signal-man-adaptation.md 和本轮 evidence/2026-09-20-signal-story.md。默认是 TypeScript/PixiJS + Python FastAPI World Kernel，教程 templateId=signal-rain-v1/version=1《红灯下的第三次回声》，以狄更斯《The Signal-Man》结构改写三日调查。第一日10:00或第三日12:00未完成关键选择直接complete+missed，第二日只取得实际调查路线的证据；最终ask/tell明确选择，普通动作不替玩家选。回家不跳日，在home明确睡觉才开始第二/三日。新故事与旧rainy-office-v1/v2分离，旧档保留但v2四类已知缺陷未修。MW-28–31对应SP-11–16及MW-AC-28–31，当前专项验证以证据页实际填写为准；文本量不代表长篇或实测时长。微信真机、公网、完整故障矩阵未完成。使用独立测试环境，保留用户数据、版本CAS、可见性、无模型路径和legacy-v2回滚；不把代码同步GitHub当成部署。本轮已完成横屏布局与实际试玩，先读横屏证据及MW-34；MW-33阅读交互证据保留。下一步以用户实际反馈评估可读性，再推进故事质量、角色生活和真机验证。

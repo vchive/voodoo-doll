@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "held Enter at final line never commits",
+    "pending orientation roundtrip then explicit confirm executes once",
+    "unknown input closes covering panel, recommendations recover in short landscape"
+  ],
+  "errors": []
+}

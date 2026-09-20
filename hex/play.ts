@@ -50,8 +50,27 @@ function displayName(id: string, profile: PlayProfile): string { return id === '
 function buildUi(): Ui {
   document.body.innerHTML = '<main id="single-player-root" class="single-player"></main>';
   const root = document.querySelector<HTMLElement>('#single-player-root')!;
-  root.innerHTML = `<header class="single-top"><div class="single-brand">✶ 巫柜</div><details class="single-menu"><summary>菜单</summary><div id="single-tools" class="single-tools"></div></details><div id="single-state" class="single-state" role="status">正在打开房间…</div></header><section id="single-content"></section><section id="single-history" class="single-secondary" aria-label="回看" hidden><div id="single-backlog"></div><h2>行动记录</h2><section id="single-log" class="single-log"></section></section><div class="single-compose single-hidden" id="single-compose"><input id="single-input" class="single-input" maxlength="240" aria-label="自由行动或对话" placeholder="说出想做的事…" autocomplete="off"><button id="single-send" class="single-button primary" type="button">预览</button></div>`;
+  root.innerHTML = `<header class="single-top"><div class="single-brand">✶ 巫柜</div><details class="single-menu"><summary>菜单</summary><div id="single-tools" class="single-tools"></div></details><div id="single-state" class="single-state" role="status">正在打开房间…</div></header><section id="single-content"></section><section id="single-history" class="single-secondary" aria-label="回看" hidden><div class="single-panel-heading"><h2>回看</h2></div><div class="single-panel-body"><div id="single-backlog"></div><h2>行动记录</h2><section id="single-log" class="single-log"></section></div></section><div class="single-compose single-hidden" id="single-compose"><input id="single-input" class="single-input" maxlength="240" aria-label="自由行动或对话" placeholder="说出想做的事…" autocomplete="off"><button id="single-send" class="single-button primary" type="button">预览</button></div>`;
+  trackPlayViewport(root);
   return { root, state: root.querySelector('#single-state')!, content: root.querySelector('#single-content')!, log: root.querySelector('#single-log')!, stage: root, input: root.querySelector('#single-input')!, send: root.querySelector('#single-send')! };
+}
+
+// Browser chrome and software keyboards can resize the visible viewport without
+// changing world state or rebuilding the canvas / input / reading cursor.
+function trackPlayViewport(root: HTMLElement): void {
+  const update = (): void => {
+    const viewport = window.visualViewport;
+    root.style.setProperty('--play-viewport-height', `${viewport?.height || innerHeight}px`);
+    root.style.setProperty('--play-viewport-top', `${viewport?.offsetTop || 0}px`);
+    const editing = document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement;
+    root.classList.toggle('keyboard-open', editing && ((viewport?.height || innerHeight) < innerHeight - 80 || innerHeight < 280));
+  };
+  window.addEventListener('resize', update);
+  window.visualViewport?.addEventListener('resize', update);
+  window.visualViewport?.addEventListener('scroll', update);
+  root.addEventListener('focusin', update);
+  root.addEventListener('focusout', () => { requestAnimationFrame(update); });
+  update();
 }
 
 function button(label: string, onClick: () => void, primary = false): HTMLButtonElement { const el = document.createElement('button'); el.className = `single-button${primary ? ' primary' : ''}`; el.textContent = label; el.type = 'button'; el.addEventListener('click', onClick); return el; }
@@ -166,9 +185,24 @@ function openPlayPanel(ui: Ui, panel?: string): void {
     const node = ui.root.querySelector<HTMLElement>(`#${id}`);
     if (node) node.hidden = id !== panel;
   }
+  ui.root.dataset.openPanel = panel || '';
+  const theater = ui.content.querySelector<HTMLElement>('.single-theater');
+  if (theater) theater.inert = Boolean(panel);
   ui.root.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach((item) => {
     item.setAttribute('aria-expanded', String(item.dataset.panel === panel));
   });
+}
+
+function addPanelClose(ui: Ui, id: string): void {
+  const panel = ui.root.querySelector<HTMLElement>(`#${id}`);
+  const heading = panel?.querySelector('.single-panel-heading');
+  if (!heading || heading.querySelector('button')) return;
+  const close = button('收起', () => {
+    openPlayPanel(ui);
+    ui.root.querySelector<HTMLButtonElement>(`[data-panel="${id}"]`)?.focus({ preventScroll: true });
+  });
+  close.setAttribute('aria-label', `收起${panel?.getAttribute('aria-label') || '面板'}`);
+  heading.append(close);
 }
 
 function renderDialogue(ui: Ui, state: LocalState): void {
@@ -244,7 +278,7 @@ function renderChoices(ui: Ui, state: LocalState, host: HTMLElement): void {
 
 function renderGuidance(ui: Ui, state: LocalState, onIntent: IntentHandler): void {
   renderDialogue(ui, state);
-  const host = ui.content.querySelector<HTMLElement>('#single-notebook');
+  const host = ui.content.querySelector<HTMLElement>('#single-notebook-body');
   if (!host) return;
   const guide = state.snapshot.guidance;
   host.replaceChildren();
@@ -304,7 +338,8 @@ function renderQuickActions(ui: Ui, state: LocalState, onIntent: IntentHandler):
 function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: IntentHandler): void {
   // Keep the input node (and any unsent draft) when rebuilding the play surface.
   const compose = ui.input.parentElement!;
-  ui.content.innerHTML = `<section class="single-play-scene"><div class="single-theater"><div id="single-meta" class="single-meta"></div><div id="single-stage-host" class="single-stage"></div><section id="single-dialogue" class="single-dialogue" aria-label="故事对话窗"></section></div><nav id="single-play-tools" class="single-play-tools" aria-label="其他玩法"></nav><section id="single-explore" class="single-secondary" aria-label="自由行动" hidden><h2>自由行动</h2><div id="single-compose-slot"></div><div id="single-exploration-actions" class="single-action-row"></div><div id="single-quick-actions"></div></section><section id="single-notebook" class="single-secondary" aria-label="手记与日程" hidden></section></section>`;
+  ui.root.classList.add('is-playing');
+  ui.content.innerHTML = `<section class="single-play-scene"><p class="single-rotate-hint">横过手机，场景看得更完整</p><div class="single-theater"><div id="single-meta" class="single-meta"></div><div id="single-stage-host" class="single-stage"></div><section id="single-dialogue" class="single-dialogue" aria-label="故事对话窗"></section></div><nav id="single-play-tools" class="single-play-tools" aria-label="其他玩法"></nav><section id="single-explore" class="single-secondary" aria-label="自由行动" hidden><div class="single-panel-heading"><h2>自由行动</h2></div><div class="single-panel-body"><div id="single-compose-slot"></div><div id="single-exploration-actions" class="single-action-row"></div><div id="single-quick-actions"></div></div></section><section id="single-notebook" class="single-secondary" aria-label="手记与日程" hidden><div class="single-panel-heading"><h2>手记 · 日程</h2></div><div id="single-notebook-body" class="single-panel-body"></div></section></section>`;
   ui.content.querySelector('#single-compose-slot')!.append(compose);
   compose.classList.remove('single-hidden');
   const canvas = stage?.app?.canvas as HTMLCanvasElement | undefined;
@@ -322,6 +357,13 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
     item.dataset.panel = id; item.setAttribute('aria-controls', id); item.setAttribute('aria-expanded', 'false'); tools.append(item);
   }
   ui.log.hidden = false;
+  for (const id of ['single-explore', 'single-notebook', 'single-history']) addPanelClose(ui, id);
+  ui.root.onkeydown = (event) => {
+    if (event.key !== 'Escape' || !ui.root.dataset.openPanel) return;
+    const id = ui.root.dataset.openPanel;
+    openPlayPanel(ui);
+    ui.root.querySelector<HTMLButtonElement>(`[data-panel="${id}"]`)?.focus({ preventScroll: true });
+  };
   openPlayPanel(ui);
   const menu = ui.root.querySelector<HTMLDetailsElement>('.single-menu'); if (menu) menu.open = false;
   ui.onIntent = onIntent;
@@ -334,6 +376,7 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
 function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: string }, submit: (data: StoryInput) => Promise<void> | void, legacyAvailable = false, localRecoveryAvailable = false): void {
   const legacyHint = legacyAvailable ? '<p class="single-notice">发现旧模式的本机记录。它不会被自动覆盖；如需查看，请用地址后面的 <code>?legacy=1</code> 打开旧模式，再导出后从右上角导入。</p>' : '';
   const recoveryHint = localRecoveryAvailable ? '<p class="single-notice">发现这台设备上的试玩进度，但当前浏览器会话是一个新世界。旧进度仍保留；可先从右上角导出，再导入到当前世界，或重新确认下面的故事。</p>' : '';
+  ui.root.classList.remove('is-playing');
   ui.root.append(ui.input.parentElement!);
   ui.content.innerHTML = `<section class="single-card"><h1>从一个故事开始</h1><p>先玩一段有结局的故事，学会行动、交谈和安排自己的一天。</p><article class="single-library"><small>完整短篇 · 三日 · 三种立场</small><h2>红灯下的第三次回声</h2><p>一张写着明天日期的通行证，把你带进三天的档案工作、地铁值班、警报录音和公开选择。每个人都有自己的时间表；错过当面机会后，世界会留下公开记录，但不会替你补造证词。</p><div id="tutorial-entry"></div></article><details id="custom-world"><summary>自己设计世界</summary><p>按这五项描述：开场地点、你的处境、关键角色、各自诉求、即将发生的事件。也可以套用示例后修改。</p><div id="story-example"></div>${legacyHint}${recoveryHint}<label for="doll-name" class="single-label">给娃娃取个名字</label><input id="doll-name" class="single-input" maxlength="12" value="${escapeHtml(initial.dollName || '')}" placeholder="比如：小墨"><label for="story" class="single-label">世界从哪里开始</label><textarea id="story" class="single-textarea" maxlength="600" placeholder="比如：我在办公室遇见了一个总在加班的人…">${escapeHtml(initial.story || '')}</textarea><label for="name-a" class="single-label">角色 A 的名字</label><input id="name-a" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.A || '')}" placeholder="林川"><label for="name-b" class="single-label">角色 B 的名字</label><input id="name-b" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.B || '')}" placeholder="沈青"><label for="name-c" class="single-label">角色 C 的名字</label><input id="name-c" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.C || '')}" placeholder="周野"><div class="single-actions" id="onboarding-actions"></div></details><p class="single-error single-hidden" id="onboarding-error" role="alert"></p></section>`;
   ui.log.hidden = true; ui.root.querySelector<HTMLElement>('#single-history')!.hidden = true;
@@ -361,6 +404,7 @@ function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: stri
 }
 
 function renderStoryPreview(ui: Ui, draft: StoryDraftResponse, confirm: () => Promise<void> | void, cancel: () => Promise<void> | void): void {
+  ui.root.classList.remove('is-playing');
   ui.log.hidden = true; ui.root.querySelector<HTMLElement>('#single-history')!.hidden = true;
   ui.content.innerHTML = `<section class="single-card"><h2>它听成了这样</h2><p>这是预览。你确认后，房间、时间表和角色才会进入正式世界。</p><div class="single-preview"></div><div class="single-actions" id="story-actions"></div></section>`;
   ui.content.querySelector('.single-preview')!.textContent = `娃娃：${draft.preview.dollName}\n故事：${draft.preview.story}\n角色：${Object.values(draft.preview.names || {}).join('、')}\n地点：${Object.values(draft.preview.roomLabels || {}).join('、') || '从卧室开始'}`;
@@ -378,6 +422,8 @@ function renderStoryPreview(ui: Ui, draft: StoryDraftResponse, confirm: () => Pr
   actions.append(button('确认进入', () => { void run(confirm, '正在进入世界…'); }, true), button('改一改', () => { void run(cancel, '正在撤回预览…'); }));
 }
 function renderIntentPreview(ui: Ui, draft: IntentDraftResponse, confirm: () => void, cancel: () => void): void {
+  ui.input.blur();
+  openPlayPanel(ui);
   ui.content.querySelector('#intent-preview')?.remove();
   const host = ui.content.querySelector<HTMLElement>('#single-dialogue');
   if (host) Array.from(host.children).forEach((node) => { (node as HTMLElement).hidden = true; });
@@ -390,6 +436,8 @@ function renderIntentPreview(ui: Ui, draft: IntentDraftResponse, confirm: () => 
 }
 
 function renderIntentErrorRecovery(ui: Ui, message: string): void {
+  ui.input.blur();
+  openPlayPanel(ui);
   ui.content.querySelector('#intent-error')?.remove();
   const notice = document.createElement('section');
   notice.id = 'intent-error';

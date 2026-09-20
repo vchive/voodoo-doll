@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/healthz",
+    "status": 200,
+    "bytes": 50
+  },
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 2331
+  },
+  {
+    "path": "./assets/index-BdoGHi4E.js",
+    "status": 200,
+    "bytes": 1171
+  },
+  {
+    "path": "./assets/preload-helper-PPVm8Dsz.js",
+    "status": 200,
+    "bytes": 1232
+  },
+  {
+    "path": "./assets/index-BVUfWMfX.css",
+    "status": 200,
+    "bytes": 23069
+  },
+  {
+    "path": "assets/play-ByaZaAl4.js",
+    "status": 200,
+    "bytes": 44103
+  }
+]
