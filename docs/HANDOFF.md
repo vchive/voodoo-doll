@@ -1,18 +1,18 @@
 # 巫柜 · SDD 交接入口
 
-> 更新日期：2026-09-20（Asia/Shanghai）。当前默认新教程为 `templateId=signal-rain-v1`、`version=1`《红灯下的第三次回声》。本轮按用户“去网上找短篇小说融进去”的要求，实际下载并阅读狄更斯《The Signal-Man》英文原文，改写为三日档案调查；约 135 句/4,372 汉字、20 个步骤。新故事Python159/159、Node96/96与构建通过；HTTP220请求覆盖四结局，桌面Chrome三路线通关，实际结果见[本轮证据](evidence/2026-09-20-signal-story.md)。不按字数推算时长，不宣称长篇标杆或预发布已完成。
+> 更新日期：2026-09-20（Asia/Shanghai）。最新任务为用户反馈“文字太多、不知道看哪里、交互不便，旁白应是巫毒娃娃”。MW-33 / SP-18 / MW-AC-33 本机范围已实现并验证：同一对话窗在阅读与行动间切换，旁白用娃娃名并调整叙述口吻，日程/笔记/回看收起，推荐一次点击，自由输入仍可预览确认。Node99/99、Python159/159；390/320/680三路线通关、两档键盘恢复及12项故障/多标签恢复通过，见[交互证据](evidence/2026-09-20-dialogue-focus.md)。不宣称长篇、微信真机、公网或整体预发布完成。
 
-本机18766已更新至新代码，沿用实际原数据库 `/tmp/voodoo-review.sqlite3`；SQLite备份在 `/tmp/voodoo-review-before-signal-20260920.sqlite3`，用户旧故事未清空。刷新后从“故事库”选择新篇；该入口仅本机HTTP。
+本机18766已更新并重启，沿用实际原数据库 `/tmp/voodoo-review.sqlite3`，更新前备份 `/tmp/voodoo-review-before-focus-20260920.sqlite3`。服务PID91578、会话19759仅为本次启动记录，接手时核对实际进程。用户旧进度未清空，刷新即可看到新界面；当前段落的旧文字仍可能来自保存的阅读缓存，叙述身份会升级，进入下一段取得新稿。
 
-默认架构仍为 TypeScript/PixiJS 前端 + Python FastAPI World Kernel。新状态机在 `backend/app/signal_story.py`，文稿在 `signal_content.py`，`narrative.py` 派发模板，`gameplay.py` 接入耗时、显式睡觉及道具存档恢复。来源与改编边界见[研究记录](research/2026-09-20-signal-man-adaptation.md)，实际规则见[教程规格](specs/004-multi-agent-world/tutorial-story.md)。
+默认新教程仍为 `signal-rain-v1/version=1`《红灯下的第三次回声》，来源为狄更斯公共领域短篇《The Signal-Man》，三日20步骤。前轮[故事证据](evidence/2026-09-20-signal-story.md)、[研究记录](research/2026-09-20-signal-man-adaptation.md)、[故事规格](specs/004-multi-agent-world/tutorial-story.md)保留。架构仍为TypeScript/PixiJS前端 + Python FastAPI权威世界内核。
 
-`rainy-office-v1/v2` 文稿和存档路径保留，不自动升级。v2 的最终决定误触、missed 被覆盖、离场人物对白、时间/线索文案不一致四类缺陷仍未修复；兼容保留不等于验收通过。历史 Python 145/145、Node 95/95 和旧浏览器证据不代替新模板评测。微信真机、公网 HTTPS、完整故障矩阵、完整阅读实测时长未完成。
+`rainy-office-v1/v2`及旧档保留，不自动升级。v2最终决定误触、missed覆盖、离场人物对白、时间/线索文案不一致四类缺陷仍未修。新交互不是这些剧情缺陷的修复证据。
 
-GitHub `vchive/voodoo-doll` 的 `main` 已上传本轮新故事提交 `63c12a2`；推送返回 `558f8d7..63c12a2 main -> main`。这是开发快照同步，不是公网部署。`.env`、SQLite 数据、构建产物和付费素材保持忽略。
+GitHub `vchive/voodoo-doll` 的main此前已上传故事与证据（63c12a2、53f14fb）；本轮交互改动同步状态见第5节。GitHub代码上传不等于公网部署，密钥、SQLite数据、付费素材与构建产物保持忽略。
 
 ## 1. 最新任务与约束
 
-用户要求采用 SDD，逐步完成单人可用的开放世界对话 Galgame，并把教程做成完整可玩故事。用户认为旧短篇质量与交互不足，最新追加要求从网上找短篇小说融入。当前选材狄更斯《The Signal-Man》、新标题及三日具体规则是实现默认；完整多人物生活、长篇内容和实测长时体验仍待完成。推荐动作与自由输入并存，主角有工作职责，NPC 窗口按服务端统一时间关闭。当前主线对应 MW-28–31 / SP-11–16 / MW-AC-28–31，验证未完成前不标整项通过。单人入口仍为 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`，Node/Pi legacy-v2 仅保留回滚。
+用户要求采用 SDD，逐步完成单人可用的开放世界对话 Galgame，并把教程做成完整可玩故事。用户认为旧短篇质量与交互不足，已完成公共领域短篇结构改编，本轮最新要求收敛阅读焦点、改善操作并让娃娃承担旁白。当前选材狄更斯《The Signal-Man》、新标题及三日具体规则是实现默认；完整多人物生活、长篇内容和实测长时体验仍待完成。推荐动作与自由输入并存，主角有工作职责，NPC 窗口按服务端统一时间关闭。当前主线对应 MW-28–31 / SP-11–16 / MW-AC-28–31，验证未完成前不标整项通过。单人入口仍为 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`，Node/Pi legacy-v2 仅保留回滚。
 
 最新任务是按 [004 · 多 Agent 世界内核与角色交互](specs/004-multi-agent-world/spec.md) 迁移到 **TypeScript 前端 + Python FastAPI World Kernel**，再承载多目标关系、开放世界和可选成人表现层。纯 TypeScript 的本地单机模式可以作为离线试玩和无模型回退，但不替代正式世界的服务端权威；“语言统一”与“无服务化”按[决策 0008](decisions/0008-typescript-and-service-boundary.md)分开管理。用户确认 DeepSeek Harness 指 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)；框架比较和 Pi 选型仍作为 Agent Adapter 参考，不能把开发协作 agent 与线上角色运行时混为一谈。
 
@@ -56,7 +56,7 @@ GitHub `vchive/voodoo-doll` 的 `main` 已上传本轮新故事提交 `63c12a2`�
 
 ### 规格 002（新增）
 
-用户在同一工作区追加了第二个方向，已写成 [002 · 巫柜夜场](specs/002-hex-theater/spec.md)。核心循环：**讲述 → 澄清 → 造景 → 预演 → 确认 → 报复 → 写进娃娃记忆 → 影响下次造景**。巫毒娃娃不是旁白而是同谋：玩家讲故事，娃娃把故事搭成舞台，玩家布场，娃娃动手演出报复。
+用户在同一工作区追加了第二个方向，已写成 [002 · 巫柜夜场](specs/002-hex-theater/spec.md)。核心循环：**讲述 → 澄清 → 造景 → 预演 → 确认 → 报复 → 写进娃娃记忆 → 影响下次造景**。历史002中巫毒娃娃作为同谋；当前004已按用户最新要求增加旁白职责。历史流程：玩家讲故事，娃娃把故事搭成舞台，玩家布场，娃娃动手演出报复。
 
 形态已定为**俯视像素小房间**（娃娃屋的平面版），不是"电子蛐蛐"：玩家是俯身看进盒子的人，主角必须是场景内有位置与状态的像素小人，娃娃本体也在房间里、是玩家伸进这个世界的唯一一只手。场景由**内置可拼接元件**组装，创作层只负责组装与写台词，不自由生成视觉。
 
@@ -160,17 +160,17 @@ GitHub `vchive/voodoo-doll` 的 `main` 已上传本轮新故事提交 `63c12a2`�
 
 2026-09-19 架构复核补充：对比 AI Town、Colyseus、boardgame.io、LangGraph、Bevy、Nakama 和 MCP 后，当前模块化单体方向保持不变；新增研究记录 [开源项目架构对比](research/2026-09-19-open-source-architecture-comparison.md)。输入队列/generation fence、JSON Schema 工具目录、工具拒绝审计和 SSE cursor 已补入最小实现；Registry 与 Runtime State 分离、领域事件与展示事件分离、持久 Agent 工作流、分层记忆和预算记录仍需补强。没有将第三方框架直接加入依赖，也没有把第三方 README 当作本项目验收证据。
 
-尚未完成：默认 signal-rain-v1 尚需专项自动化和实际浏览器证据，真实完整阅读时长、微信 iOS/Android 真机、公网 HTTPS 和完整故障矩阵未验证；v1/v2 历史证据不覆盖新模板，v2 四类已知缺陷未修。MW-28/29 的长篇内容、多日生活、多人物路线、真实试玩时长和丰富演出仍待补齐。MW-31/32 的浏览器与真机证据、MW-27 的完整 viewer/session/private 越权矩阵和生产配置也未完成。WorldObserver 完整不变量、低频模型与受限修复、持久异步 worker/完整 provider 超时矩阵、多 worker 下的 Kernel/会话一致性协调、003 多目标结算/撤回/成人 gate 与 Python 接管、Python 真实 provider transport、由高能力模型动态生成完整世界和分享仍待完成。当前预发布建议单 worker。ToolCompiler 的基础组合动作预演已有证据；例外日期、非零日程容差、私密日程、图可达性和更复杂分支组合仍未实现，不支持的声明会明确拒绝。交通仍缺完整班次、后台到达、坐标范围和从领域事件独立重建；随机遭遇仍需关系条件和跨进程重连矩阵；日程冲突审计与后台节拍待补。原始 001 全屏/音频/传感器仍未做系统回归。
+尚未完成：默认 signal-rain-v1 已有专项和本轮浏览器证据；真实完整阅读时长、微信 iOS/Android 真机、公网 HTTPS 和完整故障矩阵未验证；v1/v2 历史证据不覆盖新模板，v2 四类已知缺陷未修。MW-28/29 的长篇内容、多日生活、多人物路线、真实试玩时长和丰富演出仍待补齐。MW-31/32 的浏览器与真机证据、MW-27 的完整 viewer/session/private 越权矩阵和生产配置也未完成。WorldObserver 完整不变量、低频模型与受限修复、持久异步 worker/完整 provider 超时矩阵、多 worker 下的 Kernel/会话一致性协调、003 多目标结算/撤回/成人 gate 与 Python 接管、Python 真实 provider transport、由高能力模型动态生成完整世界和分享仍待完成。当前预发布建议单 worker。ToolCompiler 的基础组合动作预演已有证据；例外日期、非零日程容差、私密日程、图可达性和更复杂分支组合仍未实现，不支持的声明会明确拒绝。交通仍缺完整班次、后台到达、坐标范围和从领域事件独立重建；随机遭遇仍需关系条件和跨进程重连矩阵；日程冲突审计与后台节拍待补。原始 001 全屏/音频/传感器仍未做系统回归。
 
 界面中的试玩状态可能仍保留在开发浏览器。不要为了测试直接清除用户已有站点数据，使用独立测试环境/上下文。
 
 ## 5. Git 与工作区
 
 - 工作区：`/Users/liminghan/Documents/voodoo-doll`。
-- 分支：`main`；历史基线 `418c79b` 和证据提交 `57b5fdd` 保留，已上传开发快照为 `558f8d7`。新故事改动是否提交/推送须以本轮集成结果为准。
+- 分支：`main`；历史基线 `418c79b` 和证据提交 `57b5fdd` 保留，此前已同步故事提交 `63c12a2` 与证据 `53f14fb`。本轮阅读交互改动待最终提交/推送；以 git log / origin/main 为准。
 - 远端：`git@github.com:vchive/voodoo-doll.git`。已同步过开发快照；GitHub 上传不等于部署。
 - `node_modules/`、`dist/` 被忽略，均已在本地生成。
-- 其他 agent 应核对当前 HEAD、未提交改动和远端状态后接手；本轮 signal 改动可能尚在工作区，不能只读历史标签。
+- 其他 agent 应核对当前 HEAD、未提交改动和远端状态后接手；本轮交互修改的提交状态以git为准，不能只读历史标签。
 - 后续可以从本地基线创建独立工作树并行派工；合并前仍需核对 SDD 状态、测试证据和未提交用户改动。
 
 ## 6. 服务器交接（已停止部署）
@@ -201,4 +201,4 @@ GitHub `vchive/voodoo-doll` 的 `main` 已上传本轮新故事提交 `63c12a2`�
 
 ## 8. 可直接复制给下一位 agent 的任务
 
-> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手。先读 AGENTS.md、本文、004 四份规格、tutorial-story.md、研究 2026-09-20-signal-man-adaptation.md 和本轮 evidence/2026-09-20-signal-story.md。默认是 TypeScript/PixiJS + Python FastAPI World Kernel，教程 templateId=signal-rain-v1/version=1《红灯下的第三次回声》，以狄更斯《The Signal-Man》结构改写三日调查。第一日10:00或第三日12:00未完成关键选择直接complete+missed，第二日只取得实际调查路线的证据；最终ask/tell明确选择，普通动作不替玩家选。回家不跳日，在home明确睡觉才开始第二/三日。新故事与旧rainy-office-v1/v2分离，旧档保留但v2四类已知缺陷未修。MW-28–31对应SP-11–16及MW-AC-28–31，当前专项验证以证据页实际填写为准；文本量不代表长篇或实测时长。微信真机、公网、完整故障矩阵未完成。使用独立测试环境，保留用户数据、版本CAS、可见性、无模型路径和legacy-v2回滚；不把代码同步GitHub当成部署。下一步先完成新稿实际试玩和问题修复，再以用户反馈判断内容扩写。
+> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手。先读 AGENTS.md、本文、004 四份规格、tutorial-story.md、研究 2026-09-20-signal-man-adaptation.md 和本轮 evidence/2026-09-20-signal-story.md。默认是 TypeScript/PixiJS + Python FastAPI World Kernel，教程 templateId=signal-rain-v1/version=1《红灯下的第三次回声》，以狄更斯《The Signal-Man》结构改写三日调查。第一日10:00或第三日12:00未完成关键选择直接complete+missed，第二日只取得实际调查路线的证据；最终ask/tell明确选择，普通动作不替玩家选。回家不跳日，在home明确睡觉才开始第二/三日。新故事与旧rainy-office-v1/v2分离，旧档保留但v2四类已知缺陷未修。MW-28–31对应SP-11–16及MW-AC-28–31，当前专项验证以证据页实际填写为准；文本量不代表长篇或实测时长。微信真机、公网、完整故障矩阵未完成。使用独立测试环境，保留用户数据、版本CAS、可见性、无模型路径和legacy-v2回滚；不把代码同步GitHub当成部署。本轮已完成阅读/行动界面收敛与实际试玩，先读交互证据及MW-33。下一步以用户实际反馈评估可读性，再推进故事质量、角色生活和真机验证。

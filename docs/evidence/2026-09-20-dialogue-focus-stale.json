@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-20",
+  "browser": "153.0.8010.52",
+  "base": "http://127.0.0.1:18771",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "results": [
+    {
+      "name": "two_tabs_stale_preview_refreshes_world_then_explicit_reselection_continues",
+      "status": "pass",
+      "staleStatus": 409,
+      "firstStep": "depart",
+      "recoveredStep": "station",
+      "automaticConfirmRequests": 0
+    },
+    {
+      "name": "two_tabs_stale_confirmation_refreshes_without_executing_pending_action",
+      "status": "pass",
+      "pendingId": "93c6fe6a-7fe9-4f45-b6a4-24c143d1e52b",
+      "staleStatus": 409,
+      "unchangedMinutes": 0,
+      "recoveredStep": "station"
+    },
+    {
+      "name": "stale_confirm_refresh_failure_keeps_pending_readable_and_retryable",
+      "status": "pass",
+      "pendingPreserved": true,
+      "subsequentRefreshRecovered": true
+    },
+    {
+      "name": "enter_in_free_input_opens_preview_only_and_recommendation_preserves_unsent_input",
+      "status": "pass",
+      "enterConfirmed": false,
+      "unsentInput": "去地铁站"
+    }
+  ],
+  "pageErrors": [],
+  "sourceSha256": {
+    "hex/play.ts": "9e9bbb85ccffae8df5c4dd9e902515f04ede825a6edb07373aa265dd5a99df79",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play.css": "2d810d61017d9167c806f77617441ece0d097e31d9e3213b18b7c86c9e88f5a9"
+  },
+  "scope": "Desktop Chrome headless 390x844, independent temporary SQLite and local HTTP 18771; no WeChat/real-device/public deployment evidence."
+}

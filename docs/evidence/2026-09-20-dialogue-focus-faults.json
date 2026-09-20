@@ -1,0 +1,207 @@
+{
+  "date": "2026-09-20",
+  "base": "http://127.0.0.1:18771",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "browser": "153.0.8010.52",
+  "results": [
+    {
+      "name": "rapid_double_click_executes_one_action_without_second_confirmation",
+      "status": "pass",
+      "deltaMinutes": 2,
+      "requests": [
+        {
+          "url": "http://127.0.0.1:18771/api/v4/play/intent",
+          "body": {
+            "text": "观察周围",
+            "requestId": "9e84a2c4-54ce-4018-a081-a6a93f04aa44",
+            "expectedVersion": 2
+          }
+        },
+        {
+          "url": "http://127.0.0.1:18771/api/v4/play/intent/9e84a2c4-54ce-4018-a081-a6a93f04aa44/confirm",
+          "body": null
+        }
+      ]
+    },
+    {
+      "name": "committed_confirm_lost_response_retry_is_idempotent",
+      "status": "pass",
+      "turnId": "b842575c-ae18-4a45-8eb3-3127988617c4",
+      "deltaMinutes": 2,
+      "worldVersion": 4,
+      "eventHead": "6a9ee9d9-e27f-59ac-a15b-0c6b0a709178"
+    },
+    {
+      "name": "free_input_preview_cancel_preserves_input_and_world",
+      "status": "pass",
+      "preservedInput": "去地铁站",
+      "clock": {
+        "day": 1,
+        "minute": 544,
+        "timezone": "Asia/Shanghai",
+        "speed": 1,
+        "clockVersion": 2,
+        "anchorEpoch": 1789917544.9108312,
+        "anchorDay": 1,
+        "anchorMinute": 544
+      },
+      "step": "station"
+    },
+    {
+      "name": "unsupported_input_preserves_world_and_exposes_visible_recommendation",
+      "status": "pass",
+      "input": "召唤一艘不存在的飞船",
+      "visibleRecommendation": "去地铁站\n约 5 分钟",
+      "error": "这句话暂时无法执行。可以点推荐动作、地图，或向在场的人提问。 这次没有执行。\n\n看推荐动作\n清空这句话"
+    },
+    {
+      "name": "refresh_unconfirmed_preview_restores_cancel_and_original_input",
+      "status": "pass",
+      "pendingId": "5734fdb0-d4ae-4ffc-8e5d-798e3afe0a69",
+      "input": "去地铁站"
+    },
+    {
+      "name": "refresh_after_committed_lost_response_retries_same_turn_once",
+      "status": "pass",
+      "deltaMinutes": 5,
+      "pendingId": "a0c6d4d9-b8f3-4450-98fa-074863b8c047",
+      "step": "signal-clue"
+    },
+    {
+      "name": "stale_version_preview_rejection_never_sends_confirm",
+      "status": "pass",
+      "error": "世界刚刚发生了变化，请重新选择这一步。 这次没有执行。\n\n看推荐动作\n清空这句话",
+      "confirmRequests": 0
+    },
+    {
+      "name": "failed_preview_offline_mode_hides_stale_story_actions",
+      "status": "pass",
+      "uiStatus": "连接暂时不可用，已保留进度。离线可观察、移动、开门和等待。",
+      "storyCount": 0,
+      "offline": true
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/story",
+      "body": {
+        "templateId": "signal-rain-v1",
+        "dollName": "小墨",
+        "names": {
+          "A": "林川",
+          "B": "沈青",
+          "C": "周野"
+        },
+        "story": "红灯下的第三次回声。三天里，你要完成档案馆的工作，追查地铁站第三次警报与 06-17 交班记录，听见沈青保存的录音，再决定和林川共同署名、公开审计，还是先保护仍在照护父亲的他。"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/story/story-e243275662874f4f/confirm",
+      "body": {
+        "expectedVersion": 0
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "观察周围",
+        "requestId": "9e84a2c4-54ce-4018-a081-a6a93f04aa44",
+        "expectedVersion": 2
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/9e84a2c4-54ce-4018-a081-a6a93f04aa44/confirm",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "开门",
+        "requestId": "b842575c-ae18-4a45-8eb3-3127988617c4",
+        "expectedVersion": 3
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/b842575c-ae18-4a45-8eb3-3127988617c4/confirm",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/b842575c-ae18-4a45-8eb3-3127988617c4/confirm",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "去地铁站",
+        "requestId": "d323bfa5-1337-490c-90b4-8bd538ab13b7",
+        "expectedVersion": 4
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/d323bfa5-1337-490c-90b4-8bd538ab13b7/cancel",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "召唤一艘不存在的飞船",
+        "requestId": "3db4f0b4-ed36-44a5-9982-630aae3a8c88",
+        "expectedVersion": 4
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "去地铁站",
+        "requestId": "5734fdb0-d4ae-4ffc-8e5d-798e3afe0a69",
+        "expectedVersion": 4
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/5734fdb0-d4ae-4ffc-8e5d-798e3afe0a69/cancel",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "去地铁站",
+        "requestId": "a0c6d4d9-b8f3-4450-98fa-074863b8c047",
+        "expectedVersion": 4
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/a0c6d4d9-b8f3-4450-98fa-074863b8c047/confirm",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent/a0c6d4d9-b8f3-4450-98fa-074863b8c047/confirm",
+      "body": null
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "看看交班簿",
+        "requestId": "e5f273c6-5eab-4070-8682-77a1506dd373",
+        "expectedVersion": 5
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18771/api/v4/play/intent",
+      "body": {
+        "text": "问周野：今天怎么样？",
+        "requestId": "d2b93af0-473b-4d2c-ba20-b9322b03281e",
+        "expectedVersion": 5
+      }
+    }
+  ],
+  "sourceSha256": {
+    "hex/play.ts": "9e9bbb85ccffae8df5c4dd9e902515f04ede825a6edb07373aa265dd5a99df79",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play.css": "2d810d61017d9167c806f77617441ece0d097e31d9e3213b18b7c86c9e88f5a9"
+  },
+  "scope": "Desktop Chrome headless 390x844, independent temporary SQLite and local HTTP 18771; no WeChat/real-device/public deployment evidence."
+}

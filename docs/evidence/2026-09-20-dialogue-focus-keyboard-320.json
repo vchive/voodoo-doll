@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "故事库往返",
+      "passed": true,
+      "draftPreserved": true,
+      "canvasCount": 1
+    },
+    {
+      "name": "读完时按住 Enter",
+      "passed": true,
+      "focus": {
+        "tag": "SECTION",
+        "id": "single-guidance"
+      },
+      "worldVersionBefore": 2,
+      "worldVersionAfter": 2
+    },
+    {
+      "name": "提前行动时按住 Enter",
+      "passed": true
+    },
+    {
+      "name": "推荐动作保留草稿",
+      "passed": true,
+      "value": "保留我的未发送草稿"
+    },
+    {
+      "name": "自由文本预览取消",
+      "passed": true
+    },
+    {
+      "name": "非法动作恢复",
+      "passed": true
+    },
+    {
+      "name": "待确认刷新及取消",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

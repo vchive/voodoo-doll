@@ -47,7 +47,7 @@ def _elsewhere(step: str, room: str, facts: Mapping[str, Any]) -> list[dict]:
                    else "厨房" if step == "day2-kitchen"
                    else "家里" if step in {"sleep1", "day2-start"} else "原来的地点")
     return _scene(
-        ("ENV", "narration", f"你停在{labels.get(room, '此处')}。城市的声音没有因为你离开那张桌子而停下。"),
+        ("ENV", "narration", f"我们停在{labels.get(room, '此处')}。城市的声音没有因为离开那张桌子而停下。"),
         ("YOU", "thought", "走开一会儿是我的选择。但别人的一天也会照常往前走。"),
         ("PLAYER_DOLL", "speech", f"那件事还留在{destination}。我们得到了那里，才能继续做。"),
         ("ENV", "narration", "你确认随身的记录，已核验与尚待查证的两栏仍然分得清楚。"),
@@ -130,7 +130,7 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
 
     if step == "arrival":
         return _scene(
-            ("ENV", "narration", "闹钟停在九点。你用拇指擦掉杯沿的水，分不清是昨夜漏进来的雨，还是忘了喝的温水。"),
+            ("ENV", "narration", "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。"),
             ("YOU", "thought", "入职第三天。昨天把“汛期”校成“讯期”，今天最好别再让同事替我返工。"),
             ("ENV", "narration", "工作包旁多了一张硬纸片。它卡在门缝吹进来的便笺下面，边角仍潮着。"),
             ("PLAYER_DOLL", "speech", "你昨晚收包的时候，这里没有它。"),
@@ -145,11 +145,11 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
             ("PLAYER_DOLL", "speech", "门就在前面。你可以先把今天过好，再问明天为什么跑到这里。"),
             ("ENV", "narration", "你找到钥匙，又从衣架上取下那把伞骨有些歪的黑伞。早点铺的蒸汽从门缝钻进来。"),
             ("YOU", "thought", "我还得上班。哪怕有人给我寄来了明天的东西，也不等于今天可以旷工。"),
-            ("ENV", "narration", "门把手有凉意。只要把它压下去，屋外的时间就会重新围上来。"),
+            ("ENV", "narration", "你的手搭上门把手。只要把它压下去，屋外的时间就会重新围上来。"),
         )
     if step == "station":
         return _scene(
-            ("ENV", "narration", "门已经打开。你还站在原处，雨声比刚才清楚，通勤路线在脑中一站一站亮起来。" if room == "parlor" else "你停下脚步，确认去地铁站的方向。雨没有催你，今天的工作时间却会过去。"),
+            ("ENV", "narration", "门已经打开。我们还站在原处，雨声比刚才清楚，去地铁站的路就在前面。" if room == "parlor" else "我们停下脚步，确认去地铁站的方向。雨没有催你，今天的工作时间却会过去。"),
             ("YOU", "thought", "开门只是开门。得由我决定真正去哪里。"),
             ("PLAYER_DOLL", "speech", "先去地铁站。通行证背面的灯，和那里告示上的图案很像。" if facts.get("passSeen") else "先去地铁站，再到档案馆。你今天仍要通勤。"),
             ("ENV", "narration", "你摸了摸包扣，钥匙、工牌和纸张都没有落下。"),
@@ -180,7 +180,7 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
             ("ENV", "narration", f"{a}把一件折好的外套压在椅背上，袖口补过一针。他没有马上抬头。" if "A" in here else f"{a}不在办公室。靠窗的座位空着，桌上的公开档案仍可核验。"),
             ("YOU", "thought", "先把自己的工作做好。带着猜测追问，只会让他更容易用一句“你看错了”结束谈话。"),
             ("PLAYER_DOLL", "speech", "把事故档案夹摊开。原稿、修改栏和收件信息，都要读到。"),
-            ("ENV", "narration", "桌上有一块旧橡皮，擦屑被整齐地拨到纸袋里。你忽然觉得，这里的人很擅长收拾痕迹。"),
+            ("ENV", "narration", "桌上有一块旧橡皮，擦屑被整齐地拨到纸袋里。我猜，这里的人很擅长收拾痕迹。"),
             ("YOU", "thought", "擅长收拾，不一定等于想把什么藏起来。我得看完再说。"),
         )
     if step == "meeting":
@@ -232,13 +232,13 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
             ("ENV", "narration", "今天的立场已经记录。你收好自己的校对笔，桌上的纸没有因此变轻。" if room == "office" else "你重新检查自己的笔记，今天的立场已经记录，明天的核验仍在等着。"),
             ("YOU", "thought", response),
             ("PLAYER_DOLL", "speech", "先回家。今天听到的，和明天要亲自确认的，分开记。"),
-            ("ENV", "narration", "包里的饭盒还是早晨那只。你直到这时才想起，自己一直没打开它。"),
+            ("ENV", "narration", "包里的饭盒还是早晨那只。我记得，从出门到现在，你一直没打开它。"),
             ("YOU", "thought", "别人的生活不是供我查阅的档案。我想知道真相，也得学会按他们的时间敲门。"),
             ("PLAYER_DOLL", "speech", "我们明天再出发。今天的雨，先让它留在门外。"),
         )
     if step == "sleep1":
         return _scene(
-            ("ENV", "narration", "你把饭盒洗净，倒扣在水槽边。小墨坐在干毛巾上，认真避开每一滴溅起来的水。"),
+            ("ENV", "narration", "你把饭盒洗净，倒扣在水槽边。我坐在干毛巾上，认真避开每一滴溅起来的水。"),
             ("YOU", "thought", "白天的决定还没长成结局。它只是让我明天不能再假装没看见。"),
             ("ENV", "narration", "你在纸上写两行：车站，十一点前；厨房，中午前。下面留了很大一块空白。"),
             ("PLAYER_DOLL", "speech", "可以先去一个地方。没有去到的那条路，就记成没去到。"),
@@ -251,7 +251,7 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
             ("ENV", "narration", "第二天十点。雨变细了，玻璃上的水痕却比昨天更多。你把昨夜列的行程摊在早餐旁。"),
             ("PLAYER_DOLL", "speech", f"{c}在车站交班前还有一段时间；{b}中午前在厨房。两个人都不会替我们把一天停住。"),
             ("YOU", "thought", "一个可能告诉我手怎样推下去，一个可能让我听见声音怎样传来。"),
-            ("ENV", "narration", "面包烤过头的边缘有些苦。你一边咬，一边把车站和厨房的方向分别圈出来。"),
+            ("ENV", "narration", "面包的边缘烤过了头，看起来就有些苦。你一边咬，一边把车站和厨房的方向分别圈出来。"),
             ("PLAYER_DOLL", "speech", "这次先查一条线，查完回办公室整理。另一条没有验证过，就留作缺口。"),
             ("YOU", "thought", "我要带回能核验的一页，不是凑够一个故事想要的所有道具。"),
             ("ENV", "narration", "你收起纸，钥匙在掌心留下一道浅印。今天从选择往哪走开始。"),
@@ -328,15 +328,15 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
     if step == "sleep2":
         if room != "home":
             return _scene(
-                ("ENV", "narration", "今天的整理已经保存。你把笔帽扣紧，才发现指尖被笔夹压红了一点。"),
+                ("ENV", "narration", "今天的整理已经保存。你把笔帽扣紧，我才看见你的指尖被笔夹压红了一点。"),
                 ("YOU", "thought", "纸上能解释的已经记下，解释不了的也没有被擦掉。"),
                 ("PLAYER_DOLL", "speech", "先回家。明天九点再到办公室，看看那张回执的原件。"),
-                ("ENV", "narration", "你把未核验项留在醒目的位置。它们不再像疏忽，倒像必须看守的边界。"),
+                ("ENV", "narration", "你把未核验项留在醒目的位置。在我看来，它们不像疏忽，倒像必须看守的边界。"),
                 ("YOU", "thought", "今天剩下的时间，可以留给自己的生活。明天的决定不会因为我多盯一会儿桌子就变得容易。"),
                 ("PLAYER_DOLL", "speech", "床不在这里。回去再睡。"),
             )
         return _scene(
-            ("ENV", "narration", "回到家，你把湿袜子挂在椅背。灯罩下的小飞虫撞了两次，又安静下来。"),
+            ("ENV", "narration", "我们回到家，你把湿袜子挂在椅背。灯罩下的小飞虫撞了两次，又安静下来。"),
             ("YOU", "thought", f"今天留下了{_evidence(facts)}。还有空白，但没有伪造的圆满。"),
             ("PLAYER_DOLL", "speech", gaps),
             ("ENV", "narration", "那张日期早到了一天的通行证仍夹在笔记里。纸干了，压痕却没有消失。"),
@@ -370,7 +370,7 @@ def render_scene(step: str, n: Mapping[str, Any], room: str, present: Iterable[s
         )
         if "A" in here:
             lines += _scene(
-                ("ENV", "narration", f"{a}把袖口往下拉了拉。你看见他一直用指腹压着那处补线。"),
+                ("ENV", "narration", f"{a}把袖口往下拉了拉。我看见他一直用指腹压着那处补线。"),
                 ("A", "speech", "你查到登记原件了。还有什么想问，趁我走之前问完。"),
                 ("YOU", "thought", "我想问的不是“你是不是好人”。那样的问题太容易藏住真正的回答。"),
             )
