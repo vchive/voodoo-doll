@@ -30,7 +30,15 @@
 .single-log:empty { min-height:0; padding-top:0; }
 .single-line { padding:7px 0; border-bottom:1px solid rgba(214,204,195,.07); line-height:1.55; font-size:14px; }
 .single-line small { display:block; color:var(--copper,#c9af8d); font-size:10px; margin-bottom:2px; }
+.single-line .single-log-context { color:var(--dim,#85818c); font-size:10px; margin-bottom:4px; }
+.single-line .single-log-context[hidden] { display:none; }
 .single-line.system small { color:var(--dim,#85818c); }
+.single-line.accepted { border-left:2px solid #8cb59a; padding-left:8px; }
+.single-line.accepted .single-log-who { color:#b2d6ba; }
+.single-line.rejected { border-left:2px solid #d88478; padding-left:8px; }
+.single-line.rejected small { color:#e7a39a; }
+.single-line.notice { border-left:2px solid #c9af8d; padding-left:8px; }
+.single-line.notice small { color:var(--copper-bright,#eed4ac); }
 .single-compose { display:flex; gap:8px; margin-top:10px; }
 .single-compose .single-input { min-width:0; flex:1; }
 .single-error { color:#f0a69b; font-size:12px; line-height:1.5; }
@@ -45,3 +53,63 @@
 #single-quick-actions > .single-action-row:first-child .single-button { border-color:rgba(201,175,141,.48); background:rgba(201,175,141,.1); }
 .single-hidden { display:none !important; }
 @media (max-width: 360px) { .single-player { padding-left:12px; padding-right:12px; } .single-card { padding:13px; } .single-card h1 { font-size:21px; } }
+.single-guidance { margin:16px 0; }
+.single-chapter { display:block; color:var(--copper,#c9af8d); margin-bottom:8px; line-height:1.5; }
+.single-guidance h2 { font-size:20px; line-height:1.4; }
+.single-passage { white-space:pre-wrap; color:var(--paper,#eee8dc) !important; }
+.single-story-actions { display:grid; gap:8px; margin-top:14px; }
+.single-story-actions .single-button { width:100%; text-align:left; white-space:normal; line-height:1.5; }
+.single-story-actions small { display:block; color:var(--muted,#aaa8ad); font-size:12px; font-weight:400; margin-top:3px; }
+.single-action-heading { margin:16px 0 4px; font-size:13px; font-weight:600; color:var(--paper,#eee8dc); }
+.single-action-hint { margin:4px 0 0 !important; color:var(--muted,#aaa8ad); font-size:12px; line-height:1.5; }
+.single-error-panel { margin-top:12px; padding:10px 12px; border-left:2px solid #d88478; background:rgba(216,132,120,.08); }
+.single-error-panel .single-error { margin:0; }
+.single-error-actions { margin-top:8px; }
+.single-error-actions .single-button { min-height:40px; font-size:12px; }
+.single-library { border-left:2px solid var(--copper,#c9af8d); padding:8px 0 8px 14px; margin:20px 0; }
+.single-library small { color:var(--copper,#c9af8d); }
+.single-library h2 { margin:8px 0; }
+.single-player details { margin-top:12px; }
+.single-player summary { cursor:pointer; min-height:44px; padding:10px 0; color:var(--copper-bright,#eed4ac); }
+.single-action-row { flex-wrap:wrap; overflow-x:visible; }
+.single-action-row .single-button { flex:0 1 auto; min-height:44px; white-space:normal; overflow-wrap:anywhere; }
+.single-notice { font-size:12px; padding-left:10px; border-left:2px solid rgba(201,175,141,.4); }
+.single-tools { flex-wrap:wrap; }
+.single-card, .single-guidance, .single-preview { overflow-wrap:anywhere; }
+.single-button:focus-visible, summary:focus-visible { outline:2px solid #eed4ac; outline-offset:3px; }
+
+/* Galgame reading surface: the name sits on the frame, the scene stays above it. */
+.single-player [hidden] { display:none !important; }
+.single-theater { position:relative; margin-top:14px; border-radius:18px; background:#1b2230; box-shadow:0 12px 40px #0003; }
+.single-theater .single-stage { border-radius:18px 18px 0 0; border-color:#a5b6cd38; padding-bottom:24px; }
+.single-theater .single-stage canvas { max-height:340px; object-fit:contain; }
+.single-dialogue { position:relative; margin-top:-24px; padding:26px 18px 10px; border:1px solid #a9bed477; border-radius:5px 5px 18px 18px; background:linear-gradient(130deg,#202d40f5,#192030f5); box-shadow:inset 0 0 0 3px #b7c8dd0a; color:#f2efe7; scroll-margin-top:32px; scroll-margin-bottom:16px; }
+.dialogue-nameplate { position:absolute; top:-19px; left:16px; display:flex; align-items:center; gap:14px; min-width:120px; max-width:calc(100% - 32px); padding:8px 18px; background:linear-gradient(120deg,#344760,#26354b); border:1px solid #a9bed496; border-radius:6px; box-shadow:0 3px 10px #0003; }
+.dialogue-speaker { font-size:15px; font-weight:650; letter-spacing:.05em; overflow-wrap:anywhere; }
+.dialogue-kind { font-size:11px; color:#c2cfdd; white-space:nowrap; }
+.dialogue-page { display:block; position:relative; width:100%; min-height:112px; padding:8px 0 26px; border:0; color:inherit; background:transparent; text-align:left; cursor:pointer; line-height:1.95; font-size:17px !important; letter-spacing:.025em; }
+.dialogue-text { white-space:pre-wrap; overflow-wrap:anywhere; }
+.dialogue-next { position:absolute; right:2px; bottom:1px; color:#d8c093; font-size:19px; }
+.single-dialogue[data-kind="thought"] .dialogue-text { color:#d2d9ec; }
+.single-dialogue[data-kind="thought"] .dialogue-nameplate { border-color:#c5b7e0; }
+.single-dialogue[data-kind="narration"] .dialogue-kind { color:#b8c6d2; }
+.dialogue-page:focus-visible { outline:2px solid #eed4ac; outline-offset:3px; border-radius:5px; }
+.dialogue-footer { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:5px; border-top:1px solid #b5c4d524; padding-top:6px; }
+.dialogue-position { color:#bbc5d4; font-size:11px; }
+.dialogue-controls { display:flex; flex-wrap:wrap; gap:6px; margin-left:auto; }
+.dialogue-controls .single-button { font-size:12px; min-height:44px; padding:6px 10px; border-radius:6px; }
+.dialogue-backlog { border-top:1px solid #b5c4d524; margin-top:6px !important; }
+.dialogue-backlog summary { font-size:12px; min-height:44px; }
+.dialogue-backlog p { padding:10px 0; border-top:1px solid #b5c4d524; line-height:1.8; font-size:14px; }
+.dialogue-backlog strong { display:block; font-size:12px; color:#d8c093; margin-bottom:3px; }
+.single-play-plan .single-guidance { margin:0; }
+.single-play-plan .single-guidance h2 { font-size:16px; }
+.single-play-plan .single-chapter { font-size:12px; }
+.single-history { border-top:1px solid #b5c4d524; }
+.single-history > summary { font-size:12px; }
+@media (max-width:360px) {
+  .single-dialogue { padding:24px 13px 8px; }
+  .dialogue-page { font-size:16px !important; min-height:130px; }
+  .dialogue-nameplate { left:12px; padding:7px 13px; }
+  .dialogue-controls { gap:5px; }
+}

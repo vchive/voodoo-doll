@@ -1,12 +1,51 @@
 import type { PlayProfile, PlaySnapshot, StoryDraftResponse } from './play-api';
+import { normalizeDialogueLines, normalizeDialoguePlayback, type DialoguePlayback } from './play-dialogue.ts';
 
 export const PLAY_STORAGE_KEY = 'voodoo-single-player-v1';
 export const PLAY_SAVE_SOURCE = 'voodoo-single-v1';
+export const TUTORIAL_TEMPLATE_ID = 'rainy-office-v1';
+
+export type TutorialStep = 'story' | 'observe' | 'move' | 'talk' | 'choice' | 'complete';
+export type TutorialState = {
+  templateId: typeof TUTORIAL_TEMPLATE_ID;
+  step: TutorialStep;
+  worldId?: string;
+  choice?: 'trust' | 'question';
+  dismissed?: boolean;
+};
+
+export type LocalLogStatus = 'accepted' | 'rejected' | 'notice';
+export type LocalLogKind = 'action' | 'feedback' | 'error';
+export type LocalLogClock = { day: number; minute: number };
+export type LocalLogEntry = {
+  who: string;
+  text: string;
+  /** Stable identity for an authoritative event or turn. Old logs may omit it. */
+  eventId?: string;
+  status?: LocalLogStatus;
+  kind?: LocalLogKind;
+  /** Optional context for new entries; old saves intentionally remain sparse. */
+  roomId?: string;
+  clock?: LocalLogClock;
+  worldVersion?: number;
+};
+
+/**
+ * Append a local log entry once. Authoritative events can be replayed after a
+ * retry or reconnect, so entries carrying an eventId must remain idempotent.
+ * Older entries without an id keep their historical behavior.
+ */
+export function appendLocalLogEntry(state: LocalState, entry: LocalLogEntry): boolean {
+  if (!entry.text.trim()) return false;
+  if (entry.eventId && state.log.some((item) => item.eventId === entry.eventId)) return false;
+  state.log = [...state.log, entry].slice(-100);
+  return true;
+}
 
 export type LocalState = {
   profile: PlayProfile;
   snapshot: PlaySnapshot;
-  log: Array<{ who: string; text: string }>;
+  log: LocalLogEntry[];
   pending?: {
     kind: 'story' | 'intent';
     id: string;
@@ -14,13 +53,15 @@ export type LocalState = {
     preview?: StoryDraftResponse['preview'] | Record<string, unknown>;
     worldVersion?: number;
   };
+  tutorial?: TutorialState;
+  dialogue?: DialoguePlayback;
   offline: boolean;
 };
 
 export type LocalSaveEnvelope = {
   schemaVersion: 1;
   sourceKey: typeof PLAY_SAVE_SOURCE;
-  payload: Pick<LocalState, 'profile' | 'snapshot'>;
+  payload: Pick<LocalState, 'profile' | 'snapshot'> & { narrative?: unknown };
 };
 
 const ROOM_IDS = new Set(['parlor', 'bedroom', 'hall', 'garden', 'attic', 'office', 'home', 'kitchen', 'street', 'station', 'bar']);
@@ -52,7 +93,7 @@ export function initialPlaySnapshot(): PlaySnapshot {
     agents: {},
     relationships: {},
     environment: { light: 'warm', weather: 'clear' },
-    clock: { day: 1, minute: 0 },
+    clock: { day: 1, minute: 540 },
   };
 }
 
@@ -60,11 +101,29 @@ export function emptyLocalState(): LocalState {
   return { profile: { dollName: '', names: {} }, snapshot: initialPlaySnapshot(), log: [], offline: true };
 }
 
+export function createTutorialState(step: TutorialStep = 'story'): TutorialState {
+  return { templateId: TUTORIAL_TEMPLATE_ID, step };
+}
+
+export function nextTutorialStep(tutorial: TutorialState | undefined, preview: Record<string, unknown>): TutorialState | undefined {
+  if (!tutorial || tutorial.dismissed || tutorial.step === 'story' || tutorial.step === 'complete') return tutorial;
+  const action = typeof preview.action === 'string' ? preview.action : '';
+  const payload = record(preview.payload) || {};
+  if (tutorial.step === 'observe' && action === 'observe') return { ...tutorial, step: 'move' };
+  if (tutorial.step === 'move' && action === 'move' && payload.roomId === 'office') return { ...tutorial, step: 'talk' };
+  if (tutorial.step === 'talk' && action === 'ask') return { ...tutorial, step: 'choice' };
+  if (tutorial.step === 'choice' && action === 'ask') {
+    const text = typeof preview.text === 'string' ? preview.text : '';
+    return { ...tutorial, step: 'complete', choice: text.includes('相信') ? 'trust' : 'question' };
+  }
+  return tutorial;
+}
+
 export function createLocalSaveEnvelope(state: LocalState): LocalSaveEnvelope {
   return {
     schemaVersion: 1,
     sourceKey: PLAY_SAVE_SOURCE,
-    payload: { profile: state.profile, snapshot: state.snapshot },
+    payload: { profile: state.profile, snapshot: state.snapshot, ...(state.snapshot.narrative ? { narrative: state.snapshot.narrative } : {}) },
   };
 }
 
@@ -141,13 +200,53 @@ export function normalizeLocalState(value: unknown): LocalState | null {
     clock: { ...rawClock, day, minute },
   };
 
-  const log = Array.isArray(source.log)
+  const guide = record(rawSnapshot.guidance);
+  if (guide && typeof guide.title === 'string' && typeof guide.chapter === 'string') {
+    snapshot.guidance = {
+      title: stringValue(guide.title), chapter: stringValue(guide.chapter),
+      objective: stringValue(guide.objective), passage: stringValue(guide.passage, '', 8000),
+      dialogueId: stringValue(guide.dialogueId), dialogue: normalizeDialogueLines(guide.dialogue),
+      completed: guide.completed === true,
+      ending: stringValue(guide.ending), playerRoutine: stringValue(guide.playerRoutine), scheduleHint: stringValue(guide.scheduleHint),
+      actions: Array.isArray(guide.actions) ? guide.actions.flatMap((item) => {
+        const action = record(item);
+        if (!action || typeof action.id !== 'string' || typeof action.label !== 'string' || typeof action.intent !== 'string') return [];
+        return [{ id: action.id, label: action.label, intent: action.intent, ...(typeof action.minutes === 'number' ? { minutes: action.minutes } : {}), reason: stringValue(action.reason) }];
+      }).slice(0, 12) : [],
+    };
+  } else delete snapshot.guidance;
+
+  const parsedLog = Array.isArray(source.log)
     ? source.log.flatMap((item) => {
         const line = record(item);
         if (!line || typeof line.who !== 'string' || typeof line.text !== 'string' || !line.text.trim()) return [];
-        return [{ who: line.who.slice(0, 32), text: line.text.slice(0, 2000) }];
-      }).slice(-100)
+        const status: LocalLogStatus | undefined = line.status === 'accepted' || line.status === 'rejected' || line.status === 'notice' ? line.status : undefined;
+        const kind: LocalLogKind | undefined = line.kind === 'action' || line.kind === 'feedback' || line.kind === 'error' ? line.kind : undefined;
+        const eventId = typeof line.eventId === 'string' && line.eventId.trim() ? line.eventId.slice(0, 240) : undefined;
+        const roomId = typeof line.roomId === 'string' && ROOM_IDS.has(line.roomId) ? line.roomId : undefined;
+        const rawClock = record(line.clock);
+        const clock = rawClock && Number.isInteger(rawClock.day) && Number.isFinite(rawClock.minute)
+          ? { day: Math.max(1, Math.min(100000, Number(rawClock.day))), minute: Math.max(0, Math.min(1439, Math.trunc(Number(rawClock.minute)))) }
+          : undefined;
+        const worldVersion = Number.isInteger(line.worldVersion) ? Math.max(0, Number(line.worldVersion)) : undefined;
+        const entry: LocalLogEntry = {
+          who: line.who.slice(0, 32),
+          text: line.text.slice(0, 2000),
+          ...(eventId ? { eventId } : {}),
+          ...(status ? { status } : {}),
+          ...(kind ? { kind } : {}),
+          ...(roomId ? { roomId } : {}),
+          ...(clock ? { clock } : {}),
+          ...(worldVersion !== undefined ? { worldVersion } : {}),
+        };
+        return [entry];
+      })
     : [];
+  // A response can be replayed after a lost network response. Keep one local
+  // copy of authoritative events while preserving old entries without IDs.
+  const log = parsedLog.filter((entry, index, entries) => (
+    !entry.eventId || entries.findIndex((candidate) => candidate.eventId === entry.eventId) === index
+  )).slice(-100);
 
   const rawPending = record(source.pending);
   const kind = rawPending?.kind;
@@ -163,11 +262,26 @@ export function normalizeLocalState(value: unknown): LocalState | null {
     };
   }
 
+  const rawTutorial = record(source.tutorial);
+  const tutorialSteps = new Set<TutorialStep>(['story', 'observe', 'move', 'talk', 'choice', 'complete']);
+  let tutorial: TutorialState | undefined;
+  if (rawTutorial?.templateId === TUTORIAL_TEMPLATE_ID && tutorialSteps.has(rawTutorial.step as TutorialStep)) {
+    tutorial = {
+      templateId: TUTORIAL_TEMPLATE_ID,
+      step: rawTutorial.step as TutorialStep,
+      ...(typeof rawTutorial.worldId === 'string' ? { worldId: rawTutorial.worldId.slice(0, 160) } : {}),
+      ...(rawTutorial.choice === 'trust' || rawTutorial.choice === 'question' ? { choice: rawTutorial.choice } : {}),
+      ...(typeof rawTutorial.dismissed === 'boolean' ? { dismissed: rawTutorial.dismissed } : {}),
+    };
+  }
+
   return {
     profile,
     snapshot,
     log,
     ...(pending ? { pending } : {}),
+    ...(tutorial ? { tutorial } : {}),
+    ...(normalizeDialoguePlayback(source.dialogue) ? { dialogue: normalizeDialoguePlayback(source.dialogue) } : {}),
     offline: typeof source.offline === 'boolean' ? source.offline : true,
   };
 }

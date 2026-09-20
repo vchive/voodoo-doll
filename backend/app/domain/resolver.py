@@ -47,21 +47,37 @@ class RuleAgent:
         elif action == "counter":
             text = "你为什么只问我，不问问自己？"
         elif action == "refuse":
-            text = "我现在不想谈这个。"
+            text = "我现在不想谈这个。你可以换个话题，或者等我忙完。"
+        elif action == "silence":
+            text = "他停下手里的动作，看了一眼墙上的钟，暂时没有回答。也许换个话题会好些。"
+        elif action == "accept":
+            text = "好，我愿意听你继续说。"
         return AgentProposal(actor, action, "YOU", text)
 
 
 class EnvironmentResolver:
-    version = "local-1"
+    version = "local-2"
 
     def feedback(self, request: Event, state: WorldState, seed: int) -> Dict[str, Any]:
         action = request.action
         if action == "move":
-            return {"text": "脚步在房间里回响。", "ambient": "footsteps"}
+            from ..narrative import ROOM_LABELS
+            room = state.agents["YOU"].room_id
+            return {"text": "你来到" + ROOM_LABELS.get(room, room) + "。可以先观察这里，或打开面前的门。", "ambient": "footsteps"}
         if action in ("use", "use_object", "toggle"):
             object_id = request.payload.get("object", request.payload.get("objectId", "object"))
             verb = request.payload.get("verb", "touch")
-            return {"text": "你对" + str(object_id) + "做了" + str(verb) + "。", "object": object_id, "verb": verb}
+            definition = state.objects.get(object_id, {})
+            labels = {"lamp": "台灯", "bell": "铃铛", "altar": "置物台", "window": "窗户", "table": "桌子",
+                      "desk": "办公桌", "kettle": "水壶", "streetlight": "路灯"}
+            label = definition.get("label", labels.get(object_id, "这件物品"))
+            reveals = definition.get("reveals", "你仔细查看了它的表面。")
+            descriptions = {"open": f"{label}打开了。{reveals}", "close": f"你关上了{label}。",
+                            "knock": f"你轻敲{label}，声音在附近回响。", "look": reveals,
+                            "on": f"你打开了{label}，它开始运作。", "off": f"你关闭了{label}。",
+                            "touch": f"你伸手碰了碰{label}。", "ring": f"{label}响起了清脆的声音。",
+                            "use": f"你坐到{label}前，处理完手边的工作。"}
+            return {"text": descriptions.get(verb, f"你操作了{label}。"), "object": object_id, "verb": verb}
         if action == "look":
             return {"text": "你看见周围的物件和在场者。", "ambient": "look"}
         if action == "wait":
@@ -80,5 +96,10 @@ class EnvironmentResolver:
                 text = f"你驾驶{kind}前往{mobility.get('toRoom', '目的地')}。"
             return {"text": text, "ambient": mode, "mobility": mobility}
         if action == "observe":
-            return {"text": "房间保持安静，所有在场者都能看见彼此。", "ambient": "still"}
+            if request.payload.get("waitMinutes"):
+                return {"text": f"你等了{request.payload['waitMinutes']}分钟。角色会按照各自的日程继续生活。", "ambient": "wait"}
+            from ..narrative import DOOR_IDS, ROOM_LABELS
+            room = state.agents["YOU"].room_id
+            reveals = state.objects.get(DOOR_IDS.get(room), {}).get("reveals", "你可以留意这里的物件与在场人物。")
+            return {"text": ROOM_LABELS.get(room, room) + "里，" + reveals + "你可以开门探索，也可以选择推荐行动。", "ambient": "look"}
         return {"text": "空气轻轻一动。", "ambient": "subtle"}

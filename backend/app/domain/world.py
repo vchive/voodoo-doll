@@ -24,6 +24,7 @@ from ..world.operation_queue import OperationQueue, OperationReceipt
 from ..tools.registry import PrimitiveRegistry, PublishedRegistry
 from ..tools.mobility import resolve_mobility
 from ..world_builder import WorldBuilder
+from ..narrative import advance_story, expire_story, reconcile_story, spend_minutes, story_response
 
 
 class WorldKernel:
@@ -118,6 +119,10 @@ class WorldKernel:
         working: WorldState,
     ) -> Any:
         """Run one provider call behind the FIFO generation-fenced queue."""
+        authored = story_response(working, target, legacy_request)
+        if authored is not None:
+            from .resolver import AgentProposal
+            return AgentProposal(target, "answer", "YOU", authored)
         self._sync_operation_fence()
         fence = self._agent_operation_fence(target)
         snapshot = self.operation_queue.fence.snapshot()
@@ -384,6 +389,8 @@ class WorldKernel:
             verb = event.payload.get("verb", "touch")
             if object_id in state.objects:
                 state.objects[object_id]["lastAction"] = verb
+                if verb in ("open", "close"):
+                    state.objects[object_id]["isOpen"] = verb == "open"
                 if object_id == "lamp" and verb in ("on", "off"):
                     state.environment["light"] = "bright" if verb == "on" else "off"
         if event.actor in state.agents and event.action == "leave":
@@ -499,8 +506,16 @@ class WorldKernel:
         lifecycle = reconcile_leases(working, clock, now, reason="lease_expired" if reason == "tick" else "projection_changed")
         events: List[Event] = []
         lifecycle_turn_id = f"clock-{clock['clockVersion']}-v{previous_version + 1}"
+        expired_passage = expire_story(working, clock)
+        if expired_passage:
+            events.append(self._lifecycle_event("chapter_completed", lifecycle_turn_id, previous_version + 1,
+                                                {"ending": "missed", "text": expired_passage}, len(events)))
+        reconciliation = reconcile_story(working, clock)
+        if reconciliation:
+            events.append(self._lifecycle_event("chapter_reconciled", lifecycle_turn_id, previous_version + 1,
+                                                reconciliation, len(events)))
         if clock_changed:
-            events.append(self._lifecycle_event("clock_advanced", lifecycle_turn_id, previous_version + 1, {"clock": clock, "reason": reason}))
+            events.append(self._lifecycle_event("clock_advanced", lifecycle_turn_id, previous_version + 1, {"clock": clock, "reason": reason}, len(events)))
         if changed:
             for index, item in enumerate(changed, start=len(events)):
                 events.append(self._lifecycle_event("presence_projected", lifecycle_turn_id, previous_version + 1, item, index))
@@ -637,7 +652,11 @@ class WorldKernel:
         return a == b
 
     def submit_turn(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        proposal = normalize_player_action(raw, self.state)
+        validation_state = self.state
+        if isinstance(raw.get("payload"), dict) and "gameMinutes" in raw["payload"]:
+            validation_state = self.state.clone()
+            project_presence(validation_state, clock_snapshot(validation_state.metadata))
+        proposal = normalize_player_action(raw, validation_state)
         self._sync_operation_fence()
         key = proposal.idempotency_key
         if key:
@@ -740,6 +759,25 @@ class WorldKernel:
                 env_event = make_event(turn_id, new_version, len(events) + len(env_events), "ENV", "feedback", event.target, "environment", feedback, self._room_audience(working, room_id), "environment", stable_seed(turn_id, "ENV"))
                 env_events.append(env_event)
         events.extend(env_events)
+        minutes = proposal.payload.get("gameMinutes")
+        if type(minutes) is int and 0 < minutes <= 120:
+            started_clock = clock_snapshot(working.metadata)
+            clock = spend_minutes(working, minutes)
+            passage = advance_story(working, events[0], started_clock)
+            _, presence_changes = project_presence(working, clock)
+            lifecycle = reconcile_leases(working, clock, reason="projection_changed")
+            events.append(self._lifecycle_event("clock_advanced", turn_id, new_version,
+                                               {"clock": clock, "reason": "player_action", "minutes": minutes}, len(events)))
+            for item in presence_changes:
+                events.append(self._lifecycle_event("presence_projected", turn_id, new_version, item, len(events)))
+            for item in lifecycle.get("started", []):
+                events.append(self._lifecycle_event("activation_started", turn_id, new_version, item, len(events)))
+            for item in lifecycle.get("transitions", []):
+                events.append(self._lifecycle_event("activation_quiescing", turn_id, new_version, item, len(events)))
+                events.append(self._lifecycle_event("activation_stopped", turn_id, new_version, item, len(events)))
+            if passage:
+                events.append(make_event(turn_id, new_version, len(events), "ENV", "feedback", None, "environment",
+                                         {"text": passage, "chapterTransition": True}, ["YOU", "PLAYER_DOLL"], "local"))
         working.world_version = new_version
         working.event_head = events[-1].event_id if events else None
         write_memories(working, events)

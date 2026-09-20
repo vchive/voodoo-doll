@@ -182,6 +182,11 @@ class AgentState:
         }
 
 
+def default_objects() -> Dict[str, Dict[str, Any]]:
+    from ..narrative import scene_objects
+    return {**copy.deepcopy(OBJECT_REGISTRY), **scene_objects()}
+
+
 @dataclass
 class WorldState:
     world_id: str = "local-world"
@@ -191,7 +196,7 @@ class WorldState:
     agents: Dict[str, AgentState] = field(default_factory=dict)
     relationships: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     environment: Dict[str, Any] = field(default_factory=lambda: {"light": "warm", "weather": "clear"})
-    objects: Dict[str, Dict[str, Any]] = field(default_factory=lambda: copy.deepcopy(OBJECT_REGISTRY))
+    objects: Dict[str, Dict[str, Any]] = field(default_factory=default_objects)
     event_head: Optional[str] = None
     # Profile and migration data are server-owned metadata.  Keeping it on the
     # authoritative snapshot lets the Python world preserve the old browser
@@ -246,7 +251,7 @@ class WorldState:
             agents=agents,
             relationships=copy.deepcopy(value.get("relationships", {})),
             environment=copy.deepcopy(value.get("environment", {"light": "warm", "weather": "clear"})),
-            objects=copy.deepcopy(value.get("objects", OBJECT_REGISTRY)),
+            objects={**default_objects(), **copy.deepcopy(value.get("objects", {}))},
             event_head=value.get("event_head"),
             metadata=copy.deepcopy(value.get("metadata", {})),
         )

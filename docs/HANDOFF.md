@@ -1,10 +1,14 @@
 # 巫柜 · SDD 交接入口
 
-> 更新日期：2026-09-20（Asia/Shanghai）。当前阶段：**TypeScript/PixiJS 前端已经接入 Python FastAPI World Kernel，作为新的单人预发布入口；Node/Pi `legacy-v2` 保留为回滚路径。本机单人预发布候选已收口：单人故事确认、移动、人物交互、会话隔离、刷新恢复和 current/v5/v1 存档导入已接通；SP-07–10 的旧/损坏缓存恢复、快捷行动、请求防重复、中文错误、本机进度保护和故事预览恢复也已实现，并取得 Chrome 390×844 实际浏览器证据。Python 103/103、Node 79/79 通过；此前 320×568、390×844、430×932 三档桌面 Chrome 移动视口闭环仍有效。** MW-27 保持部分完成；微信 iOS/Android 真机、公网/HTTPS、完整越权矩阵、生产配置、试玩内容丰富度、完整世界搭建、WorldObserver 受限修复、多 worker 协调和 003 Python 策略仍待完成。详见[单人预发布证据](evidence/2026-09-19-single-player-prerelease.md)与[世界搭建验证记录](evidence/2026-09-19-world-builder-verification.md)。
+> 更新日期：2026-09-20（Asia/Shanghai）。当前阶段：**默认新手故事已收口为 `rainy-office-v2`《雨停以前》三日主线：第一日通行证、通勤、校对与限时谈话；第二日地铁站/厨房双入口；第三日回执、听证和最终决定。`trust`、`audit`、`protect` 三条路线及 `missed` 迟到结果已写入服务端状态机，并复用 Galgame 对话窗、推荐动作、自由输入和统一时钟。** Python 145/145、Node 95/95、类型检查及 Hex 构建通过；当前 v2 只有后端/无模型基础回归，尚未取得独立的完整浏览器、微信真机、公网和故障矩阵证据。`rainy-office-v1` 五章短篇及旧伞支线只作为旧档兼容和历史回归模板，不能替代 v2 的完整故事验收。详见[完整故事规格](specs/004-multi-agent-world/tutorial-story.md)、[对话窗证据](evidence/2026-09-20-galgame-dialogue.md)和[教程扩展记录](evidence/2026-09-20-tutorial-extension.md)。
+
+本次已将本地开发快照同步到 GitHub `vchive/voodoo-doll` 的 `main` 分支。此次上传包含教程、对话窗、推荐行动、Python World Kernel 和 SDD 文档；`.env`、SQLite 数据、构建产物和付费素材仍按 `.gitignore` 排除。独立 HTTP 试玩还发现 v2 的四条路线存在待修问题：最终决定前的普通动作可能误选 `trust`，`missed` 可能被覆盖，离场角色仍可能出现在对白中，部分时间/线索文案与实际状态不一致。它们已记录为下一轮修复项，本次同步是可审阅的开发快照，不代表预发布验收通过。
+
+当前自动化快照：`npm test` 95/95、Python 145/145；正文中的旧测试数量仅为历史记录。
 
 ## 1. 最新任务与约束
 
-用户要求：**采用 SDD（Specification-Driven Development，规格驱动开发），按已确认的 TypeScript/Python 方案继续重写或分段迁移，先达到单人可用的预发布状态。** 当前工作区已新增 004 的规格、技术方案、任务清单和验收清单；Python World Kernel、SQLite 事件存储、单人 FastAPI 产品接口和 TypeScript/PixiJS 单人前端已经落地。新的本地单人预发布入口是 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`；Node/Pi `legacy-v2` 继续保留以便回滚。后续 agent 仍须先读本文与任务证据再接手；本文不代表微信 iOS/Android 真机或公网/HTTPS 上线。
+用户要求：**采用 SDD（Specification-Driven Development，规格驱动开发），按已确认的 TypeScript/Python 方案继续重写或分段迁移，先达到单人可用的预发布状态。最新用户目标是制作一部可长时间游玩、完整通关的教程游戏，偏好 Fate/stay night 的日常、异常、结盟与立场冲突结构，并通过制作故事完善交互。当前默认教程是原创 `rainy-office-v2` 三日闭环，后续扩写多日生活和多人物路线；`rainy-office-v1` 五章短篇只保留旧存档兼容。推荐行动与自由输入并存，主角有工作职责，NPC机会按统一时钟关闭。** 当前工作区已新增 004 的规格、技术方案、任务清单和验收清单；Python World Kernel、SQLite 事件存储、单人 FastAPI 产品接口和 TypeScript/PixiJS 单人前端已经落地。新的本地单人预发布入口是 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`；Node/Pi `legacy-v2` 继续保留以便回滚。后续 agent 仍须先读本文与任务证据再接手；本文不代表微信 iOS/Android 真机或公网/HTTPS 上线。
 
 最新任务是按 [004 · 多 Agent 世界内核与角色交互](specs/004-multi-agent-world/spec.md) 迁移到 **TypeScript 前端 + Python FastAPI World Kernel**，再承载多目标关系、开放世界和可选成人表现层。纯 TypeScript 的本地单机模式可以作为离线试玩和无模型回退，但不替代正式世界的服务端权威；“语言统一”与“无服务化”按[决策 0008](decisions/0008-typescript-and-service-boundary.md)分开管理。用户确认 DeepSeek Harness 指 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)；框架比较和 Pi 选型仍作为 Agent Adapter 参考，不能把开发协作 agent 与线上角色运行时混为一谈。
 
@@ -21,7 +25,19 @@
 - 大模型可做仪式编剧/旁白；应保留没有模型也可玩的本地脚本。
 - 用户追加开放世界与 R18 元素。[003 · 开放关系世界与成人表现层](specs/003-open-world-adult/spec.md) 在 legacy-v2 已有部分注册表、关系、target-set 和 policy gate 代码；默认 SFW，mature 由服务端年龄/渠道策略控制，只允许成年虚构角色的非露骨成熟表达。完整多目标结算、分享降级与 Python 接管仍需按 003 任务实现。
 - 用户确认的新运行时边界见 [决策 0006](decisions/0006-python-world-kernel.md)：`PLAYER_DOLL` 与 `YOU` 共用一个执行 Agent；A–Y 是独立长期人物槽位，当前 A/B/C 主要、Z 为可复用临时角色；ENV 只做规则反馈；玩家不能直控 A–Y/Z。004 明确覆盖 0002 中“娃娃与玩家身体分开为两个 agent”的旧实现建议。
+- 用户确认 Galgame 是对话型开放世界：NPC 各有统一世界时间下的工作/生活表；教程必须展示公开行程和可交互时间窗，未按时进入场景会错过当前机会或改变剧情分支。该判定由服务端 WorldClock、公开日程和 PresenceProjection 完成，不能只做前端倒计时。
 - 用户提供了服务器 `115.190.174.39`，SSH 用户 `root`，尚无域名。后续工作已配置模型网关（见 002 状态）；本轮没有读取或更改密钥。
+
+
+### 本轮开发与下一步（2026-09-20）
+
+- 最新用户要求：参照其图片的 Galgame 对话窗组织文字，明确“谁在说话/思考”。已新增 `MW-30 / SP-15 / MW-AC-30`：后端公开 `dialogueId/dialogue`，前端 `hex/play-dialogue.ts` 保存独立阅读游标，`hex/play.ts`/`play.css` 渲染名字牌与逐句窗口。思考只公开主角 YOU 的心声，不泄露 NPC 私有状态。阅读不额外结算行动，也不暂停服务端时钟。见[本轮实际证据](evidence/2026-09-20-galgame-dialogue.md)。
+- 本轮修复：离线移动不再重播原地点 NPC 对白；已知人物回应返回纯台词，动作留给旁白；320宽度自动滚动保留完整名字牌。另修复旧版本非线性教程存档：保留三次真实“去开门”历史事件，按已确认事实将章节纠偏到地铁站目标，写入幂等 `chapter_reconciled` 审计事件；短句接话会校验唯一/最近同场对象，多对象或离场对象要求重新选择。下一步在这个演出底座上扩写多日后果、线索与人物支线，避免重新制作已可用的对话窗。
+- 实际来源核对已落盘：[开源与剧情资料研究](research/2026-09-20-playable-galgame-sources.md)。已下载固定版本 inkjs、AI Town、Generative Agents 并读关键源码/许可，阅读 Fate/STEINS;GATE 官方资料；未运行上游或实玩商业作品。此前对话提到的 `docs/evidence/2026-09-20-open-source-galgame-research.md` 与 `research-decisions.md` 并未落盘，不能作为证据。
+- 入口 `http://127.0.0.1:18766/`：首次点“开始新手故事”，旧玩家点“故事库”。确认新篇章前保留一次原存档备份，可从“旧进度”导出。数据库仍为 `data/world.sqlite3`，未删旧档。仅本机HTTP，不代表公网发布。
+- 本轮接口级回归使用独立临时数据库和 `18767` 端口：新会话创建模板、确认后返回 `dialogueId` 与旁白/心声/对白，随后预览并确认“观察周围”，服务端返回环境反馈、下一段对话和推荐动作；本轮未修改用户的 `18766` 数据库。失败输入的原文与提示会持久保留在行动记录中，但不会创建成功行动、推进时钟/地点/章节或生成世界事件。当前 Codex 浏览器连接因宿主 Mac 锁定且认证方式不可用，未新增截图试玩证据，仍以已有对话窗/短篇证据为准。
+- 关键文件：`backend/app/narrative.py`（章节/反馈/推荐/时间）、`gameplay.py`（自然语言和生命周期）、`hex/play.ts`（故事库/目标/动作/备份），见[完整故事规格](specs/004-multi-agent-world/tutorial-story.md)。
+- 剧情底座验证以[短篇证据](evidence/2026-09-20-playable-tutorial.md)为准，对话窗、MW-31 和 MW-32 增量以对应证据为准；下文 123/83、103/79 等数字是历史基线。行动记录新条目显示发生时的日期、时间、地点和执行状态，并以 turn/event id 防止确认或事件回放重复追加；未知输入固定显示“你 · 未执行”和“巫柜 · 提示”，失败不推进时钟、地点、章节或世界版本；旧日志保持兼容，不补造历史上下文。行动记录仍是本机展示/恢复数据，服务端快照、时钟和事件才是权威。下一步优先做第二天支线的浏览器/真机验收，再扩写章节中的多轮对话、可收集线索与人物路线；完整模型/ToolCompiler/观察者按原依赖推进，不把短篇或支线成功等同世界架构全部完成。
 
 ## 2. 阅读顺序
 
@@ -116,11 +132,12 @@
 ### 004 单人预发布当前证据（更新至 2026-09-20）
 
 - Git 根基线已建立，并以本地标签 `prerelease-local-2026-09-20` 标识本机单人预发布候选；没有推送或部署到外部环境。
-- `PYTHONPATH=. python3 -m unittest discover -s backend/tests -v`：103/103 通过。除 Kernel、生命周期、ToolCompiler、草稿事务和回放外，还覆盖 cookie 会话隔离、故事/行动预览与确认/取消、跨会话草稿拒绝、SQLite 重启恢复、current/v5/v1 导入、非法导入原子性、Origin、1 MiB 默认请求体上限、管理令牌，以及静态服务对敏感文件、父目录穿越和目录列表的拒绝。
+- `PYTHONPATH=. python3 -m unittest discover -s backend/tests -v`：当前 138/138 通过。除 Kernel、生命周期、ToolCompiler、草稿事务和回放外，还覆盖 cookie 会话隔离、故事/行动预览与确认/取消、跨会话草稿拒绝、SQLite 重启恢复、current/v5/v1 导入、非法导入原子性、Origin、1 MiB 默认请求体上限、管理令牌，以及静态服务对敏感文件、父目录穿越和目录列表的拒绝。
 - `python3 -m compileall -q backend`：通过。
 - `PYTHONPATH=. python3 backend/run.py` 后，`curl http://127.0.0.1:8000/healthz` 返回 200；`POST /api/v4/turns` 的 A/B 多目标请求返回一个 worldVersion=1 的原子回合，A 与 B 各自产生回应。该证据仅证明本机 HTTP，不代表公网部署。
 - `npm run typecheck`、`npm run build`、`npm run hex:build`：通过。`hex/play-api.ts`、`hex/play-state.ts` 与 `hex/play.ts` 已接入 Python 单人产品接口；Python FastAPI 是新的单人预发布入口，Node/Pi `legacy-v2` 保留回滚。
 - 本地启动：先安装 `backend[api]`，再执行 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`。该命令构建 Hex 前端并由 FastAPI 同源提供静态资源和产品 API；默认监听 `0.0.0.0:8000`，可用 `WORLD_HOST`、`WORLD_PORT` 和 `WORLD_DB_PATH` 调整。
+- 本轮已验证的临时预发布实例为 `http://127.0.0.1:18768/`，使用独立临时 SQLite；`8000` 仍只是默认端口，不代表当前运行实例。
 - 产品公开面仅为 `/api/v4/session` 与 `/api/v4/play/*`。其余 `/api/v4/*` Kernel 调试接口和 `/internal/*` 需要 `WORLD_ADMIN_TOKEN`；未配置令牌时返回 404，错误令牌返回 403。写请求校验 `Origin`，请求体默认限制为 1 MiB，可分别用 `WORLD_ALLOWED_ORIGINS` 和 `WORLD_MAX_BODY_BYTES` 配置。正式 HTTPS 环境需设置 `WORLD_COOKIE_SECURE=1`。
 
 2026-09-17 初版交接时执行并通过（历史记录，非本轮重测）：
@@ -135,24 +152,24 @@
 
 2026-09-20 在 Chrome 153 的 390×844 视口补测 SP-07–10：旧格式和损坏缓存均能恢复或回到可重试入口；当前地点、在场角色、观察/等待和全部 11 个地点均可直接触控，逐个地点的精确移动通过；即时行动会换行显示，角色交谈按钮不会藏在横向滚动区；快速重复触发只产生一个预览/确认链；服务端错误显示为中文产品文案；取消行动不推进 `worldVersion`、不移动且不留下 pending；本机离线导出再在线导入完成往返。离线保存现带明确 `sourceKey=voodoo-single-v1` 和 `schemaVersion=1`，旧的裸 `LocalState` 文件仍会推断为单人存档。进一步模拟坏 JSON 导入、故事确认已在服务端成功但浏览器丢失响应，以及导出请求挂起后失败回退：首次进入表单恢复可用，刷新后清理过期 story pending 并恢复导入/导出，导出期间输入被锁定且原文不丢失。截图为 `/tmp/voodoo-prerelease-actions.png`、`/tmp/voodoo-prerelease-all-locations.png`、`/tmp/voodoo-prerelease-offline-imported.png` 和 `/tmp/voodoo-prerelease-recovery.png`。这些仍是桌面 Chrome 移动视口证据。
 
-2026-09-20 本轮 Python 103/103、Node 79/79、`compileall`、类型检查、两个前端构建及 `node --check app.js` 均在当前代码上通过。`tool-compiler-2` 验证实体类型/动作/路线、公开日程和遭遇候选，确认事务一次提交定义、事件、回执并删除草稿。取消与确认竞态不会复活草稿，重复确认在重启和跨连接下返回首次结果。观察者以数据库唯一约束按 worldId+reportHash 去重，升级旧库保留历史。OperationQueue 已接入同步角色提案路径，world/activation 变化后的拒绝写入审计；队列本身与 worker 尚未持久化。SSE 支持 `afterEventId` 补拉。[验证记录](evidence/2026-09-19-world-builder-verification.md) 保存世界搭建任务的测试与源码校验值。
+2026-09-20 本轮 Python 103/103、Node 79/79、`compileall`、类型检查、两个前端构建及 `node --check app.js` 均在当前代码上通过。`tool-compiler-3` 除实体类型/动作/路线、公开日程和遭遇候选外，已支持自行车单步与地铁 `board -> travel -> alight` 组合动作预演，并拒绝未上车、未下车、范围外实体、未知实体/工具和错误 affordance。确认事务一次提交定义、事件、回执并删除草稿；取消与确认竞态不会复活草稿，重复确认在重启和跨连接下返回首次结果。观察者以数据库唯一约束按 worldId+reportHash 去重，升级旧库保留历史。OperationQueue 已接入同步角色提案路径，world/activation 变化后的拒绝写入审计；队列本身与 worker 尚未持久化。SSE 支持 `afterEventId` 补拉。[验证记录](evidence/2026-09-19-world-builder-verification.md) 保存世界搭建任务的测试与源码校验值。
 
 历史真实网关自测为 3 幕、19 次请求，重启后夜数恢复且一名角色使用 fallback；本轮未重测真实模型，不能把该记录写成全角色成功或性能承诺。
 
 2026-09-19 架构复核补充：对比 AI Town、Colyseus、boardgame.io、LangGraph、Bevy、Nakama 和 MCP 后，当前模块化单体方向保持不变；新增研究记录 [开源项目架构对比](research/2026-09-19-open-source-architecture-comparison.md)。输入队列/generation fence、JSON Schema 工具目录、工具拒绝审计和 SSE cursor 已补入最小实现；Registry 与 Runtime State 分离、领域事件与展示事件分离、持久 Agent 工作流、分层记忆和预算记录仍需补强。没有将第三方框架直接加入依赖，也没有把第三方 README 当作本项目验收证据。
 
-尚未完成：MW-27 的完整 viewer/session/private 越权矩阵、生产配置、微信 iOS/Android 真机和公网/HTTPS；当前试玩内容丰富度仍薄。WorldObserver 完整不变量、低频模型与受限修复、持久异步 worker/完整 provider 超时矩阵、多 worker 下的 Kernel/会话一致性协调、003 多目标结算/撤回/成人 gate 与 Python 接管、Python 真实 provider transport、由高能力模型动态生成完整世界和分享仍待完成。当前预发布建议单 worker。ToolCompiler 的例外日期、非零日程容差、私密日程、图可达性和组合动作预演仍有限制，不支持的声明会明确拒绝。交通仍缺完整班次、后台到达和坐标范围；随机遭遇仍需关系条件和跨进程重连矩阵；日程冲突审计与后台节拍待补。原始 001 全屏/音频/传感器仍未做系统回归。
+尚未完成：`rainy-office-v2` 的三日完整故事仍缺独立浏览器通关、微信 iOS/Android 真机、公网 HTTPS 和断网/丢响应/存储失败故障矩阵证据；`rainy-office-v1` 的后端回归和历史浏览器证据只证明旧档兼容，不能把 v2 标为完成。MW-28/29 的长篇内容、多日生活、多人物路线、真实试玩时长和丰富演出仍待补齐。MW-31/32 的浏览器与真机证据、MW-27 的完整 viewer/session/private 越权矩阵和生产配置也未完成。WorldObserver 完整不变量、低频模型与受限修复、持久异步 worker/完整 provider 超时矩阵、多 worker 下的 Kernel/会话一致性协调、003 多目标结算/撤回/成人 gate 与 Python 接管、Python 真实 provider transport、由高能力模型动态生成完整世界和分享仍待完成。当前预发布建议单 worker。ToolCompiler 的基础组合动作预演已有证据；例外日期、非零日程容差、私密日程、图可达性和更复杂分支组合仍未实现，不支持的声明会明确拒绝。交通仍缺完整班次、后台到达、坐标范围和从领域事件独立重建；随机遭遇仍需关系条件和跨进程重连矩阵；日程冲突审计与后台节拍待补。原始 001 全屏/音频/传感器仍未做系统回归。
 
 界面中的试玩状态可能仍保留在开发浏览器。不要为了测试直接清除用户已有站点数据，使用独立测试环境/上下文。
 
 ## 5. Git 与工作区
 
 - 工作区：`/Users/liminghan/Documents/voodoo-doll`。
-- 分支：`main`，**没有任何提交**；源码全部仍为未跟踪文件。
-- 远端：`git@github.com:vchive/voodoo-doll.git`，未 push。
+- 分支：`main`；单人预发布基线为 `418c79b`，当前证据提交为 `57b5fdd`，本地标签 `prerelease-local-2026-09-20` 指向该提交。
+- 远端：`git@github.com:vchive/voodoo-doll.git`。当前文档只证明本地 Git 基线和标签，不证明这些提交已经 push 或部署。
 - `node_modules/`、`dist/` 被忽略，均已在本地生成。
-- 其他 agent 如果只 clone GitHub，会拿不到当前实现和本文；应使用当前工作区，或由用户安排将当前源码/规格交给它。不要把远端仓库误当成已同步。
-- 后续工作树/分支依赖基线提交，先处理源码基线，再并行派工。
+- 其他 agent 应从当前工作区或已确认包含 `57b5fdd` 的远端分支工作；在没有核对远端提交前，不要把 GitHub 仓库误当成已同步。
+- 后续可以从本地基线创建独立工作树并行派工；合并前仍需核对 SDD 状态、测试证据和未提交用户改动。
 
 ## 6. 服务器交接（已停止部署）
 
@@ -170,7 +187,7 @@
 
 ## 7. 接手时优先关注
 
-1. 以 `WORLD_STATIC_DIR=./dist-hex npm run prerelease` 作为新的单人预发布入口继续验收；保留 Node/Pi `legacy-v2` 回滚，不再把它写成默认产品入口。
+1. 教程标杆当前以 `rainy-office-v2` 三日主线为默认：第一日通行证/便笺、地铁告示、档案馆校对和林川限时谈话；第二日周野地铁站或沈青厨房录音双入口；第三日未来回执、听证和 `trust/audit/protect/missed` 结果。Python 138/138、Node 93/93、类型检查和 Hex 构建通过，但这些自动化结果和 v1 历史证据不能代替 v2 的独立浏览器、真机、公网和故障矩阵验收。`rainy-office-v1` 五章与旧伞支线仅用于旧存档兼容。`npm run prerelease` 的 Python 启动器已修复，并完成本机 HTTP 入口验证，详见[预发布启动记录](evidence/2026-09-20-prerelease-startup.md)。后续内容扩写按 `docs/specs/004-multi-agent-world/plan.md` 的 Phase 2/3 推进，增加多轮对话、可收集线索、多日生活和人物路线。运行入口为 `WORLD_STATIC_DIR=./dist-hex npm run prerelease`。保留 Node/Pi `legacy-v2` 回滚，不再把它写成默认产品入口。
 2. `PLAYER_DOLL` 与 `YOU` 必须共用一个执行 Agent；玩家只能推动 `YOU` 的行动，不能出现直接控制 A–Y/Z 的客户端按钮或服务端命令。
 3. `file:///.../index.html` 不适合作为运行或分享入口；模块脚本与浏览器策略可能使交互失效，使用 HTTP 开发服务/正式静态服务。
 4. 现有全局单娃娃字段需要迁移为带稳定 ID 的实体和事件；不能通过直接复制 DOM 就宣称支持多目标或多 Agent。
@@ -182,4 +199,4 @@
 
 ## 8. 可直接复制给下一位 agent 的任务
 
-> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手巫柜项目。先读 `AGENTS.md`、`docs/HANDOFF.md`、004 四份文档、[决策 0006](decisions/0006-python-world-kernel.md)，再读 001/002/003 的相关规格和 `docs/decisions/0004-agent-runtime-selection.md`、`0005-adult-content-boundary.md`。当前单人预发布入口是 TypeScript/PixiJS 前端配 Python FastAPI World Kernel，使用 `WORLD_STATIC_DIR=./dist-hex npm run prerelease` 启动；`hex/server/shared` Node/Pi `legacy-v2` 保留回滚。SP-01–10 的单人故事、移动、角色回应、会话隔离、缓存恢复、快捷行动、防重复、中文错误、存档导入和基础 HTTP 安全边界已有实现与本地证据；MW-27 仍缺完整越权矩阵、生产配置、微信真机、公网 HTTPS 和更丰富的试玩内容。完整动态世界搭建、WorldObserver 修复、多 worker 和 003 Python 策略也未完成。按 `004/tasks.md` 和 `004/acceptance.md` 推进，保留私密性、版本 CAS、旧档迁移、无模型可玩性和 `legacy-v2` 回滚；成人向内容按 003 的服务端策略、注册表和非露骨默认边界实现，不给模型文件/Shell 权限。本次具体执行范围以我另外分配的任务为准。
+> 请在 `/Users/liminghan/Documents/voodoo-doll` 接手巫柜项目。先读 `AGENTS.md`、`docs/HANDOFF.md`、004 四份文档、[决策 0006](decisions/0006-python-world-kernel.md)，再读 001/002/003 的相关规格和 `docs/decisions/0004-agent-runtime-selection.md`、`0005-adult-content-boundary.md`。当前单人预发布入口是 TypeScript/PixiJS 前端配 Python FastAPI World Kernel，使用 `WORLD_STATIC_DIR=./dist-hex npm run prerelease` 启动；`hex/server/shared` Node/Pi `legacy-v2` 保留回滚。SP-01–10 的基础单人流程已有本地证据；MW-27 仍缺完整越权矩阵、生产配置、微信真机和公网 HTTPS。Phase 1 的默认教程是原创《雨停以前》`rainy-office-v2`：三日主线、第一日通勤/工作/限时谈话、第二日地铁站/厨房双入口、第三日回执/听证/最终决定，路线为 `trust/audit/protect` 并含迟到 `missed`；当前 Python 138/138、Node 93/93 通过，v2 后端与无模型代码证据已具备，独立浏览器/真机、公网和完整故障矩阵仍待验收。`rainy-office-v1` 五章和旧伞支线只作旧档兼容回归，不能用 v1 证据替代 v2。先读 `docs/specs/004-multi-agent-world/plan.md` 的阶段目标和 `docs/specs/004-multi-agent-world/tutorial-story.md`，后续按 Phase 2 扩写长篇内容、多日生活与人物路线。完整动态世界搭建、WorldObserver 修复、多 worker 和 003 Python 策略也未完成。按 `004/tasks.md` 和 `004/acceptance.md` 推进，保留私密性、版本 CAS、旧档迁移、无模型可玩性和 `legacy-v2` 回滚；成人向内容按 003 的服务端策略、注册表和非露骨默认边界实现，不给模型文件/Shell 权限。本次具体执行范围以我另外分配的任务为准。

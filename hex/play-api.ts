@@ -1,4 +1,19 @@
 export type PlayClock = { day: number; minute: number; clockVersion?: number; timezone?: string };
+export type DialogueLine = { speakerId: string; kind: 'speech' | 'thought' | 'narration'; text: string };
+export type PlayGuidance = {
+  title: string;
+  chapter: string;
+  objective: string;
+  passage: string;
+  dialogueId?: string;
+  dialogue?: DialogueLine[];
+  completed?: boolean;
+  ending?: string;
+  playerRoutine?: string;
+  scheduleHint?: string;
+  actions: Array<{ id: string; label: string; intent: string; minutes?: number; reason?: string }>;
+};
+export type StoryInput = { dollName: string; story: string; names: Record<string, string>; templateId?: string };
 export type PlayEvent = {
   eventId: string;
   turnId?: string;
@@ -16,6 +31,7 @@ export type PlaySnapshot = {
   relationships?: Record<string, Record<string, unknown>>;
   environment?: Record<string, unknown>;
   clock?: PlayClock | null;
+  guidance?: PlayGuidance;
   [key: string]: unknown;
 };
 export type PlayProfile = {
@@ -105,7 +121,7 @@ export class PlayApiClient {
   getSession(): Promise<SessionResponse> {
     return this.request(`${this.base}/session`);
   }
-  createStoryDraft(input: { dollName: string; story: string; names: Record<string, string> }): Promise<StoryDraftResponse> {
+  createStoryDraft(input: StoryInput): Promise<StoryDraftResponse> {
     return this.request(`${this.playBase}/story`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) });
   }
   confirmStoryDraft(draftId: string, expectedVersion: number): Promise<SessionResponse & { snapshot: PlaySnapshot }> {

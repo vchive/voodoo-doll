@@ -223,6 +223,40 @@ class SinglePlayerApiTests(unittest.TestCase):
 
         asyncio.run(run())
 
+    def test_template_http_playthrough_recovery_and_late_ending(self):
+        async def run():
+            app = create_app(WorldKernel(world_id="story-http", store=EventStore(":memory:")))
+            async with await self._client(app) as client:
+                draft = (await client.post("/api/v4/play/story", json={"templateId": "rainy-office-v1"})).json()
+                confirmed = await client.post(f"/api/v4/play/story/{draft['draftId']}/confirm", json={"expectedVersion": draft["worldVersion"]})
+                self.assertEqual(confirmed.status_code, 200, confirmed.text)
+                snapshot = confirmed.json()["snapshot"]
+                for index in range(12):
+                    if snapshot["guidance"].get("completed"):
+                        break
+                    before = snapshot["worldVersion"]
+                    action = snapshot["guidance"]["actions"][0]
+                    preview = await client.post("/api/v4/play/intent", json={"text": action["intent"], "requestId": f"http-story-{index}", "expectedVersion": before})
+                    self.assertEqual(preview.status_code, 200, preview.text)
+                    self.assertEqual(preview.json()["worldVersion"], before)
+                    refreshed = await client.get("/api/v4/session")
+                    self.assertEqual(refreshed.json()["snapshot"]["narrative"], snapshot["narrative"])
+                    saved = await client.post(f"/api/v4/play/intent/{preview.json()['turnId']}/confirm", json={"expectedVersion": before})
+                    self.assertEqual(saved.status_code, 200, saved.text)
+                    snapshot = saved.json()["snapshot"]
+                self.assertEqual(snapshot["guidance"]["ending"], "trust")
+                self.assertTrue(snapshot["narrative"]["workDone"])
+                exported = (await client.get("/api/v4/play/save")).json()
+                self.assertEqual(exported["narrative"]["ending"], "trust")
+                # A new template remains playable even from a completed save.
+                draft = (await client.post("/api/v4/play/story", json={"templateId": "rainy-office-v1"})).json()
+                confirmed = await client.post(f"/api/v4/play/story/{draft['draftId']}/confirm")
+                self.assertEqual(confirmed.json()["snapshot"]["clock"]["minute"], 540)
+                wait = (await client.post("/api/v4/play/intent", json={"text": "等待60分钟", "requestId": "http-missed"})).json()
+                late = await client.post(f"/api/v4/play/intent/{wait['turnId']}/confirm")
+                self.assertEqual(late.json()["snapshot"]["guidance"]["ending"], "missed")
+        asyncio.run(run())
+
     def test_http_boundary_rejects_cross_origin_large_bodies_and_unprotected_kernel_routes(self):
         async def run():
             with patch.dict(os.environ, {"WORLD_MAX_BODY_BYTES": "256", "WORLD_ADMIN_TOKEN": ""}):

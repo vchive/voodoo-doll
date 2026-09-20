@@ -140,6 +140,8 @@ def create_app(kernel: Optional[WorldKernel] = None) -> Any:
     @app.api_route("/api/v4/session", methods=["GET", "POST"])
     def session(request: Request) -> Response:
         session_id, game, created = session_game(request)
+        if game.profile:
+            game._ensure_interest()
         payload = {
             "snapshot": game.snapshot(),
             "profile": game.profile,

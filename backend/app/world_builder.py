@@ -10,6 +10,7 @@ import uuid
 
 from .domain.events import make_event, stable_seed
 from .domain.models import ValidationError
+from .narrative import initialize_story
 from .tools.compiler import ToolCompiler
 from .tools.registry import EntityDefinition, PublishedRegistry, SAFE_ID
 
@@ -153,6 +154,7 @@ class WorldBuilder:
             if entity.entity_type == "object" and prior.get("lastAction") in entity.state.get("actions", []):
                 projection["lastAction"] = prior["lastAction"]
             working.objects[entity.entity_id] = projection
+        initialize_story(working, compiled.get("metadata", {}), draft_id)
         turn_id = "world-build-" + draft_id
         event = make_event(turn_id, previous + 1, 0, "ENV", "world_registry_published", None, "system", {
             "draftId": draft_id, "registryVersion": registry.version,
