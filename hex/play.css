@@ -182,3 +182,12 @@
   .dialogue-nameplate { min-height:30px; padding:4px 10px; }
   .single-story-actions .single-button { font-size:13px; }
 }
+
+/* Reading controls expose clipped content without choosing an action. */
+.dialogue-more { color:#eed4ac; border-color:#c9af8d66; }
+.single-panel-heading:focus, #intent-preview:focus, #single-dialogue:focus { outline:none; }
+@media (min-width:560px) and (orientation:landscape) {
+  .dialogue-page { scrollbar-width:thin; }
+  .dialogue-controls { min-width:0; gap:6px; }
+  .dialogue-controls .single-button { white-space:nowrap; }
+}

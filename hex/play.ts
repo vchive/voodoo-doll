@@ -10,7 +10,11 @@ import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompl
 
 import { parseLocalAction, applyLocalAction } from './play-local';
 import { advanceDialogue, dialogueAfterAction, restoreDialogue } from './play-dialogue';
+import { hasMoreToRead, nextReadingScroll, canSubmitInput } from './play-reading';
 import { splitGuidanceActions, type GuidanceAction } from './play-guidance';
+
+const composingInputs = new WeakSet<HTMLInputElement>();
+const readingObservers = new WeakMap<HTMLElement, () => void>();
 
 const STORAGE_KEY = PLAY_STORAGE_KEY;
 const LEGACY_KEY = 'voodoo-hex-v5';
@@ -51,6 +55,10 @@ function buildUi(): Ui {
   document.body.innerHTML = '<main id="single-player-root" class="single-player"></main>';
   const root = document.querySelector<HTMLElement>('#single-player-root')!;
   root.innerHTML = `<header class="single-top"><div class="single-brand">✶ 巫柜</div><details class="single-menu"><summary>菜单</summary><div id="single-tools" class="single-tools"></div></details><div id="single-state" class="single-state" role="status">正在打开房间…</div></header><section id="single-content"></section><section id="single-history" class="single-secondary" aria-label="回看" hidden><div class="single-panel-heading"><h2>回看</h2></div><div class="single-panel-body"><div id="single-backlog"></div><h2>行动记录</h2><section id="single-log" class="single-log"></section></div></section><div class="single-compose single-hidden" id="single-compose"><input id="single-input" class="single-input" maxlength="240" aria-label="自由行动或对话" placeholder="说出想做的事…" autocomplete="off"><button id="single-send" class="single-button primary" type="button">预览</button></div>`;
+  const input = root.querySelector<HTMLInputElement>('#single-input')!;
+  input.addEventListener('compositionstart', () => { composingInputs.add(input); });
+  input.addEventListener('compositionend', () => { composingInputs.delete(input); });
+  input.addEventListener('blur', () => { composingInputs.delete(input); });
   trackPlayViewport(root);
   return { root, state: root.querySelector('#single-state')!, content: root.querySelector('#single-content')!, log: root.querySelector('#single-log')!, stage: root, input: root.querySelector('#single-input')!, send: root.querySelector('#single-send')! };
 }
@@ -73,7 +81,7 @@ function trackPlayViewport(root: HTMLElement): void {
   update();
 }
 
-function button(label: string, onClick: () => void, primary = false): HTMLButtonElement { const el = document.createElement('button'); el.className = `single-button${primary ? ' primary' : ''}`; el.textContent = label; el.type = 'button'; el.addEventListener('click', onClick); return el; }
+function button(label: string, onClick: () => void, primary = false): HTMLButtonElement { const el = document.createElement('button'); el.className = `single-button${primary ? ' primary' : ''}`; el.textContent = label; el.type = 'button'; el.addEventListener('click', onClick); el.onkeydown = (event) => { if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault(); }; return el; }
 function logContext(snapshot: PlaySnapshot): Pick<LocalLogEntry, 'roomId' | 'clock' | 'worldVersion'> {
   return {
     roomId: snapshot.roomId,
@@ -191,6 +199,13 @@ function openPlayPanel(ui: Ui, panel?: string): void {
   ui.root.querySelectorAll<HTMLButtonElement>('[data-panel]').forEach((item) => {
     item.setAttribute('aria-expanded', String(item.dataset.panel === panel));
   });
+  if (panel) focusSurface(ui.root.querySelector<HTMLElement>(`#${panel} .single-panel-heading`));
+}
+
+function focusSurface(target: HTMLElement | null): void {
+  if (!target) return;
+  target.tabIndex = -1;
+  target.focus({ preventScroll: true });
 }
 
 function addPanelClose(ui: Ui, id: string): void {
@@ -208,6 +223,7 @@ function addPanelClose(ui: Ui, id: string): void {
 function renderDialogue(ui: Ui, state: LocalState): void {
   const host = ui.content.querySelector<HTMLElement>('#single-dialogue');
   if (!host) return;
+  readingObservers.get(host)?.();
   state.dialogue = restoreDialogue(state.snapshot, state.dialogue);
   const playback = state.dialogue;
   const line = playback.lines[playback.index];
@@ -231,18 +247,63 @@ function renderDialogue(ui: Ui, state: LocalState): void {
       target?.focus({ preventScroll: true });
     }
   };
-  const next = (): void => { state.dialogue = advanceDialogue(playback); redraw(true); };
-  page.onclick = next;
+  const next = (): void => {
+    if (hasMoreToRead(page)) {
+      page.scrollTop = nextReadingScroll(page);
+      updateScrollCues();
+      return;
+    }
+    state.dialogue = advanceDialogue(playback); redraw(true);
+  };
+  // A drag to read long text must not be treated as a click to skip it.
+  let pointerStart: { x: number; y: number } | undefined;
+  let dragged = false;
+  page.onpointerdown = (event) => { pointerStart = { x: event.clientX, y: event.clientY }; dragged = false; };
+  const trackPointer = (event: PointerEvent): void => {
+    if (pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 8) dragged = true;
+  };
+  page.onpointermove = trackPointer;
+  page.onpointerup = trackPointer;
+  page.onpointercancel = () => { dragged = true; };
+  page.onclick = () => { if (!dragged) next(); dragged = false; pointerStart = undefined; };
+  page.onkeydown = (event) => { if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault(); };
   const controls = host.querySelector('.dialogue-controls')!;
-  if (playback.choicesOpen) {
-    controls.append(button('返回对白', () => { state.dialogue = { ...playback, choicesOpen: false }; redraw(true); }));
-  } else {
-    controls.append(button('行动', () => { state.dialogue = { ...playback, choicesOpen: true }; redraw(true); }));
-    controls.append(button(playback.index < playback.lines.length - 1 ? '继续 ▸' : '选择行动 ▸', next, true));
-  }
+  let continueButton: HTMLButtonElement | undefined;
+  let moreChoices: HTMLButtonElement | undefined;
   const actions = host.querySelector<HTMLElement>('#single-guidance')!;
   actions.hidden = !playback.choicesOpen;
-  if (playback.choicesOpen) renderChoices(ui, state, actions);
+  if (playback.choicesOpen) {
+    renderChoices(ui, state, actions);
+    moreChoices = button('更多选项 ↓', () => { actions.scrollTop = nextReadingScroll(actions); updateScrollCues(); });
+    moreChoices.classList.add('dialogue-more');
+    moreChoices.hidden = true;
+    controls.append(moreChoices, button('返回对白', () => { state.dialogue = { ...playback, choicesOpen: false }; redraw(true); }));
+  } else {
+    controls.append(button('行动', () => { state.dialogue = { ...playback, choicesOpen: true }; redraw(true); }));
+    continueButton = button('继续 ▸', next, true);
+    continueButton.onkeydown = (event) => { if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault(); };
+    controls.append(continueButton);
+  }
+  function updateScrollCues(): void {
+    if (continueButton) {
+      const more = hasMoreToRead(page);
+      continueButton.textContent = more ? '继续阅读 ↓' : playback.index < playback.lines.length - 1 ? '继续 ▸' : '选择行动 ▸';
+      page.setAttribute('aria-label', more ? '继续阅读本句' : '继续阅读');
+    }
+    if (moreChoices) {
+      const visible = hasMoreToRead(actions);
+      // Keep focus stable when the final scroll hides this button.
+      if (!visible && document.activeElement === moreChoices) focusSurface(actions);
+      moreChoices.hidden = !visible;
+    }
+  }
+  page.addEventListener('scroll', updateScrollCues, { passive: true });
+  actions.addEventListener('scroll', updateScrollCues, { passive: true });
+  const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(updateScrollCues);
+  observer?.observe(page); observer?.observe(actions);
+  window.addEventListener('resize', updateScrollCues);
+  const frame = requestAnimationFrame(updateScrollCues);
+  readingObservers.set(host, () => { observer?.disconnect(); window.removeEventListener('resize', updateScrollCues); cancelAnimationFrame(frame); });
   const backlog = ui.root.querySelector<HTMLElement>('#single-backlog')!;
   backlog.innerHTML = '<h2>本段对白</h2>';
   playback.lines.slice(0, playback.index + 1).forEach((item) => {
@@ -337,6 +398,8 @@ function renderQuickActions(ui: Ui, state: LocalState, onIntent: IntentHandler):
 
 function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: IntentHandler): void {
   // Keep the input node (and any unsent draft) when rebuilding the play surface.
+  const oldReading = ui.content.querySelector<HTMLElement>('#single-dialogue');
+  if (oldReading) readingObservers.get(oldReading)?.();
   const compose = ui.input.parentElement!;
   ui.root.classList.add('is-playing');
   ui.content.innerHTML = `<section class="single-play-scene"><p class="single-rotate-hint">横过手机，场景看得更完整</p><div class="single-theater"><div id="single-meta" class="single-meta"></div><div id="single-stage-host" class="single-stage"></div><section id="single-dialogue" class="single-dialogue" aria-label="故事对话窗"></section></div><nav id="single-play-tools" class="single-play-tools" aria-label="其他玩法"></nav><section id="single-explore" class="single-secondary" aria-label="自由行动" hidden><div class="single-panel-heading"><h2>自由行动</h2></div><div class="single-panel-body"><div id="single-compose-slot"></div><div id="single-exploration-actions" class="single-action-row"></div><div id="single-quick-actions"></div></div></section><section id="single-notebook" class="single-secondary" aria-label="手记与日程" hidden><div class="single-panel-heading"><h2>手记 · 日程</h2></div><div id="single-notebook-body" class="single-panel-body"></div></section></section>`;
@@ -359,7 +422,7 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
   ui.log.hidden = false;
   for (const id of ['single-explore', 'single-notebook', 'single-history']) addPanelClose(ui, id);
   ui.root.onkeydown = (event) => {
-    if (event.key !== 'Escape' || !ui.root.dataset.openPanel) return;
+    if (composingInputs.has(ui.input) || event.isComposing || event.keyCode === 229 || event.key !== 'Escape' || !ui.root.dataset.openPanel) return;
     const id = ui.root.dataset.openPanel;
     openPlayPanel(ui);
     ui.root.querySelector<HTMLButtonElement>(`[data-panel="${id}"]`)?.focus({ preventScroll: true });
@@ -370,12 +433,16 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
   renderGuidance(ui, state, onIntent);
   renderQuickActions(ui, state, onIntent);
   ui.send.onclick = () => { const value = ui.input.value.trim(); if (value) onIntent(value); };
-  ui.input.onkeydown = (event) => { if (event.key === 'Enter') { event.preventDefault(); ui.send.click(); } };
+  ui.input.onkeydown = (event) => {
+    if (canSubmitInput(event, composingInputs.has(ui.input))) { event.preventDefault(); ui.send.click(); }
+  };
 }
 
 function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: string }, submit: (data: StoryInput) => Promise<void> | void, legacyAvailable = false, localRecoveryAvailable = false): void {
   const legacyHint = legacyAvailable ? '<p class="single-notice">发现旧模式的本机记录。它不会被自动覆盖；如需查看，请用地址后面的 <code>?legacy=1</code> 打开旧模式，再导出后从右上角导入。</p>' : '';
   const recoveryHint = localRecoveryAvailable ? '<p class="single-notice">发现这台设备上的试玩进度，但当前浏览器会话是一个新世界。旧进度仍保留；可先从右上角导出，再导入到当前世界，或重新确认下面的故事。</p>' : '';
+  const reading = ui.content.querySelector<HTMLElement>('#single-dialogue');
+  if (reading) readingObservers.get(reading)?.();
   ui.root.classList.remove('is-playing');
   ui.root.append(ui.input.parentElement!);
   ui.content.innerHTML = `<section class="single-card"><h1>从一个故事开始</h1><p>先玩一段有结局的故事，学会行动、交谈和安排自己的一天。</p><article class="single-library"><small>完整短篇 · 三日 · 三种立场</small><h2>红灯下的第三次回声</h2><p>一张写着明天日期的通行证，把你带进三天的档案工作、地铁值班、警报录音和公开选择。每个人都有自己的时间表；错过当面机会后，世界会留下公开记录，但不会替你补造证词。</p><div id="tutorial-entry"></div></article><details id="custom-world"><summary>自己设计世界</summary><p>按这五项描述：开场地点、你的处境、关键角色、各自诉求、即将发生的事件。也可以套用示例后修改。</p><div id="story-example"></div>${legacyHint}${recoveryHint}<label for="doll-name" class="single-label">给娃娃取个名字</label><input id="doll-name" class="single-input" maxlength="12" value="${escapeHtml(initial.dollName || '')}" placeholder="比如：小墨"><label for="story" class="single-label">世界从哪里开始</label><textarea id="story" class="single-textarea" maxlength="600" placeholder="比如：我在办公室遇见了一个总在加班的人…">${escapeHtml(initial.story || '')}</textarea><label for="name-a" class="single-label">角色 A 的名字</label><input id="name-a" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.A || '')}" placeholder="林川"><label for="name-b" class="single-label">角色 B 的名字</label><input id="name-b" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.B || '')}" placeholder="沈青"><label for="name-c" class="single-label">角色 C 的名字</label><input id="name-c" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.C || '')}" placeholder="周野"><div class="single-actions" id="onboarding-actions"></div></details><p class="single-error single-hidden" id="onboarding-error" role="alert"></p></section>`;
@@ -433,6 +500,7 @@ function renderIntentPreview(ui: Ui, draft: IntentDraftResponse, confirm: () => 
   card.querySelector('.single-actions')!.append(button('就这样做', confirm, true), button('先不做', cancel));
   (host || ui.content).append(card);
   card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  focusSurface(card);
 }
 
 function renderIntentErrorRecovery(ui: Ui, message: string): void {
@@ -640,6 +708,7 @@ async function run(): Promise<void> {
         busy = false;
         renderSnapshot(ui, state);
         setOperationInFlight(false);
+        focusSurface(ui.content.querySelector<HTMLElement>('#single-dialogue'));
       };
       if (direct) await confirm();
       else { display(); setState('行动预览 · 等待确认'); }

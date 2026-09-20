@@ -1,0 +1,40 @@
+{
+  "checks": [
+    {
+      "width": 568,
+      "height": 320,
+      "longTextPages": 8,
+      "dragDidNotAdvance": true
+    },
+    {
+      "width": 568,
+      "height": 320,
+      "choicePages": 3,
+      "noWorldRequests": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "longTextPages": 4,
+      "dragDidNotAdvance": true
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "choicePages": 3,
+      "noWorldRequests": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "portraitShortControls": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "choicePages": 3,
+      "noWorldRequests": true
+    }
+  ],
+  "errors": []
+}

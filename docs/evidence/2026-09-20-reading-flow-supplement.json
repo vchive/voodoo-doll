@@ -1,0 +1,182 @@
+{
+  "checkedAt": "2026-09-20T16:12:06.720Z",
+  "browser": "153.0.8010.52",
+  "scope": "Desktop Chrome viewport, mouse wheel, synthetic pointer/keyboard; not real mobile/WeChat",
+  "sourceSha256": {
+    "hex/play.ts": "71f59662d00be414104390505b6c636e72c99796e4aa4b13d02b3f4d8d89b778",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "hex/play-reading.ts": "a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c"
+  },
+  "checks": [
+    {
+      "name": "long_wheel_drag_resize_then_next",
+      "width": 568,
+      "height": 320,
+      "start": {
+        "scrollTop": 0,
+        "clientHeight": 115,
+        "scrollHeight": 776
+      },
+      "wheel": {
+        "scrollTop": 60,
+        "clientHeight": 115,
+        "scrollHeight": 776
+      },
+      "bottom": {
+        "scrollTop": 661,
+        "clientHeight": 115,
+        "scrollHeight": 776
+      },
+      "readingClicks": 8,
+      "dialogueIndexAfterNewClick": 1,
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "choices_scroll_to_end_and_back",
+      "width": 568,
+      "height": 320,
+      "flips": 3,
+      "atBottom": {
+        "scrollTop": 220,
+        "clientHeight": 115,
+        "scrollHeight": 335,
+        "focus": "single-guidance"
+      },
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "long_wheel_drag_resize_then_next",
+      "width": 667,
+      "height": 375,
+      "start": {
+        "scrollTop": 0,
+        "clientHeight": 170,
+        "scrollHeight": 644
+      },
+      "wheel": {
+        "scrollTop": 60,
+        "clientHeight": 170,
+        "scrollHeight": 644
+      },
+      "bottom": {
+        "scrollTop": 474,
+        "clientHeight": 170,
+        "scrollHeight": 644
+      },
+      "readingClicks": 4,
+      "dialogueIndexAfterNewClick": 1,
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "choices_scroll_to_end_and_back",
+      "width": 667,
+      "height": 375,
+      "flips": 2,
+      "atBottom": {
+        "scrollTop": 165,
+        "clientHeight": 170,
+        "scrollHeight": 335,
+        "focus": "single-guidance"
+      },
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "long_wheel_drag_resize_then_next",
+      "width": 844,
+      "height": 390,
+      "start": {
+        "scrollTop": 0,
+        "clientHeight": 175,
+        "scrollHeight": 700
+      },
+      "wheel": {
+        "scrollTop": 60,
+        "clientHeight": 175,
+        "scrollHeight": 700
+      },
+      "bottom": {
+        "scrollTop": 525,
+        "clientHeight": 175,
+        "scrollHeight": 700
+      },
+      "readingClicks": 4,
+      "dialogueIndexAfterNewClick": 1,
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "choices_scroll_to_end_and_back",
+      "width": 844,
+      "height": 390,
+      "flips": 2,
+      "atBottom": {
+        "scrollTop": 160,
+        "clientHeight": 175,
+        "scrollHeight": 335,
+        "focus": "single-guidance"
+      },
+      "intentOrConfirmPosts": 0
+    },
+    {
+      "name": "all_three_panel_focus",
+      "width": 568,
+      "height": 320,
+      "actionPosts": 0
+    },
+    {
+      "name": "pending_rotation_repeat_cancel",
+      "width": 568,
+      "height": 320,
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "draftRetained": true,
+      "worldVersionUnchanged": true
+    },
+    {
+      "name": "all_three_panel_focus",
+      "width": 667,
+      "height": 375,
+      "actionPosts": 0
+    },
+    {
+      "name": "pending_rotation_repeat_cancel",
+      "width": 667,
+      "height": 375,
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "draftRetained": true,
+      "worldVersionUnchanged": true
+    },
+    {
+      "name": "all_three_panel_focus",
+      "width": 844,
+      "height": 390,
+      "actionPosts": 0
+    },
+    {
+      "name": "pending_rotation_repeat_cancel",
+      "width": 844,
+      "height": 390,
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "draftRetained": true,
+      "worldVersionUnchanged": true
+    },
+    {
+      "name": "all_three_panel_focus",
+      "width": 390,
+      "height": 844,
+      "actionPosts": 0
+    },
+    {
+      "name": "pending_rotation_repeat_cancel",
+      "width": 390,
+      "height": 844,
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "draftRetained": true,
+      "worldVersionUnchanged": true
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

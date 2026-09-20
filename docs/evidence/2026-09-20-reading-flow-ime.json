@@ -1,0 +1,159 @@
+{
+  "date": "2026-09-20T15:55:42.621Z",
+  "browser": "153.0.8010.52",
+  "scope": "Desktop Chrome 844x390 and 568x320; composition events are synthetic, not real-device IME coverage",
+  "checks": [
+    {
+      "name": "isComposing_true_Enter",
+      "status": "pass",
+      "intentPosts": 0,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "legacy229_Enter",
+      "status": "pass",
+      "intentPosts": 0,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "tracked_composition_falseFlag13_Enter",
+      "status": "pass",
+      "intentPosts": 0,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "repeat_Enter_in_input",
+      "status": "pass",
+      "intentPosts": 0,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "isComposing_Escape",
+      "status": "pass",
+      "intentPosts": 0,
+      "editorOpen": true,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "legacy229_Escape",
+      "status": "pass",
+      "intentPosts": 0,
+      "editorOpen": true,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "tracked_composition_falseFlag_Escape",
+      "status": "pass",
+      "intentPosts": 0,
+      "editorOpen": true,
+      "focus": {
+        "id": "single-input",
+        "tag": "INPUT",
+        "cls": "single-input",
+        "text": ""
+      }
+    },
+    {
+      "name": "compositionend_newEnter_preview_focus_cancel_844",
+      "status": "pass",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "worldVersion": 2,
+      "cancelFocus": {
+        "id": "single-dialogue",
+        "tag": "SECTION",
+        "cls": "single-dialogue",
+        "text": "小墨巫毒娃娃闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾1 "
+      }
+    },
+    {
+      "name": "compositionend_newEnter_preview_focus_cancel_568",
+      "status": "pass",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "worldVersion": 2,
+      "cancelFocus": {
+        "id": "single-dialogue",
+        "tag": "SECTION",
+        "cls": "single-dialogue",
+        "text": "小墨巫毒娃娃闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾1 "
+      }
+    },
+    {
+      "name": "heldEnter_panel_open_and_close_focus",
+      "status": "pass",
+      "intentPosts": 0,
+      "closeFocus": {
+        "id": "",
+        "tag": "BUTTON",
+        "cls": "single-button",
+        "text": "自由行动"
+      },
+      "draft": "去地铁站"
+    },
+    {
+      "name": "library_return_keeps_single_composition_listener_and_preview",
+      "status": "pass",
+      "roundTrips": 3,
+      "listeners": {
+        "compositionstart": 1,
+        "compositionend": 1
+      },
+      "intentPosts": 1,
+      "confirmPosts": 0
+    }
+  ],
+  "errors": [],
+  "startSourceSha256": {
+    "hex/play.ts": "c5afe260faa3538817f76c92be68add4ec56bf5f1e626b0d6883afd9678bb50a",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "hex/play-reading.ts": "a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c"
+  },
+  "endSourceSha256": {
+    "hex/play.ts": "c5afe260faa3538817f76c92be68add4ec56bf5f1e626b0d6883afd9678bb50a",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "hex/play-reading.ts": "a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c"
+  },
+  "totals": {
+    "pass": 11,
+    "fail": 0
+  }
+}

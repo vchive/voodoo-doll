@@ -1,0 +1,384 @@
+{
+  "date": "2026-09-20T16:10:03.394Z",
+  "browser": "153.0.8010.52",
+  "scope": "Desktop Chrome 844x390; independent SQLite and browser context. No real-device coverage.",
+  "checks": [
+    {
+      "name": "five_imports_do_not_accumulate_reading_listeners_or_observers",
+      "status": "pass",
+      "imports": 5,
+      "worldVersions": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "activeReadingListeners": 1,
+      "activeReadingObservers": 1,
+      "intentPosts": 0
+    },
+    {
+      "name": "five_library_roundtrips_cleanup_and_preserve_draft_reading",
+      "status": "pass",
+      "roundTrips": 5,
+      "readingIndex": 2,
+      "draft": "去地铁站",
+      "additionalPosts": 0
+    },
+    {
+      "name": "repeated_reading_and_resize_only_keeps_current_observer",
+      "status": "pass",
+      "toggles": 3,
+      "additionalPosts": 0,
+      "readingContinues": true
+    },
+    {
+      "name": "pending_refresh_cancel_preserves_reading_draft_without_duplicate_actions",
+      "status": "pass",
+      "pendingId": "380f79bd-a0de-4826-a412-a1d849c0ced8",
+      "intentPosts": 1,
+      "confirmPosts": 0,
+      "worldVersion": 7,
+      "readingIndex": 3
+    }
+  ],
+  "errors": [],
+  "metrics": [
+    {
+      "label": "initial",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 2,
+      "canvasCount": 1
+    },
+    {
+      "label": "import 1",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 4,
+      "canvasCount": 1
+    },
+    {
+      "label": "resized import 1",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 4,
+      "canvasCount": 1
+    },
+    {
+      "label": "import 2",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 6,
+      "canvasCount": 1
+    },
+    {
+      "label": "resized import 2",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 6,
+      "canvasCount": 1
+    },
+    {
+      "label": "import 3",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 8,
+      "canvasCount": 1
+    },
+    {
+      "label": "resized import 3",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 8,
+      "canvasCount": 1
+    },
+    {
+      "label": "import 4",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 10,
+      "canvasCount": 1
+    },
+    {
+      "label": "resized import 4",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 10,
+      "canvasCount": 1
+    },
+    {
+      "label": "import 5",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 12,
+      "canvasCount": 1
+    },
+    {
+      "label": "resized import 5",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 12,
+      "canvasCount": 1
+    },
+    {
+      "label": "library 1",
+      "activeWindowResize": 1,
+      "activeReadingResize": 0,
+      "activeReadingObservers": 0,
+      "readingTargets": 0,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 14,
+      "canvasCount": 0
+    },
+    {
+      "label": "return 1",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 16,
+      "canvasCount": 1
+    },
+    {
+      "label": "library 2",
+      "activeWindowResize": 1,
+      "activeReadingResize": 0,
+      "activeReadingObservers": 0,
+      "readingTargets": 0,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 16,
+      "canvasCount": 0
+    },
+    {
+      "label": "return 2",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 18,
+      "canvasCount": 1
+    },
+    {
+      "label": "library 3",
+      "activeWindowResize": 1,
+      "activeReadingResize": 0,
+      "activeReadingObservers": 0,
+      "readingTargets": 0,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 18,
+      "canvasCount": 0
+    },
+    {
+      "label": "return 3",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 20,
+      "canvasCount": 1
+    },
+    {
+      "label": "library 4",
+      "activeWindowResize": 1,
+      "activeReadingResize": 0,
+      "activeReadingObservers": 0,
+      "readingTargets": 0,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 20,
+      "canvasCount": 0
+    },
+    {
+      "label": "return 4",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 22,
+      "canvasCount": 1
+    },
+    {
+      "label": "library 5",
+      "activeWindowResize": 1,
+      "activeReadingResize": 0,
+      "activeReadingObservers": 0,
+      "readingTargets": 0,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 22,
+      "canvasCount": 0
+    },
+    {
+      "label": "return 5",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 24,
+      "canvasCount": 1
+    },
+    {
+      "label": "choices 1",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 25,
+      "canvasCount": 1
+    },
+    {
+      "label": "reading 1",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 26,
+      "canvasCount": 1
+    },
+    {
+      "label": "choices 2",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 27,
+      "canvasCount": 1
+    },
+    {
+      "label": "reading 2",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 28,
+      "canvasCount": 1
+    },
+    {
+      "label": "choices 3",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 29,
+      "canvasCount": 1
+    },
+    {
+      "label": "reading 3",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 30,
+      "canvasCount": 1
+    },
+    {
+      "label": "next line",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 31,
+      "canvasCount": 1
+    },
+    {
+      "label": "pending before reload",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 31,
+      "canvasCount": 1
+    },
+    {
+      "label": "pending restored",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 2,
+      "canvasCount": 1
+    },
+    {
+      "label": "cancel",
+      "activeWindowResize": 2,
+      "activeReadingResize": 1,
+      "activeReadingObservers": 1,
+      "readingTargets": 2,
+      "disconnectedReadingTargets": 0,
+      "readingConstructed": 3,
+      "canvasCount": 1
+    }
+  ],
+  "startSourceSha256": {
+    "hex/play.ts": "71f59662d00be414104390505b6c636e72c99796e4aa4b13d02b3f4d8d89b778",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "hex/play-reading.ts": "a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c"
+  },
+  "posts": [
+    "http://127.0.0.1:18771/api/v4/play/story",
+    "http://127.0.0.1:18771/api/v4/play/story/story-cbdee3cc18d345a2/confirm",
+    "http://127.0.0.1:18771/api/v4/play/save/import",
+    "http://127.0.0.1:18771/api/v4/play/save/import",
+    "http://127.0.0.1:18771/api/v4/play/save/import",
+    "http://127.0.0.1:18771/api/v4/play/save/import",
+    "http://127.0.0.1:18771/api/v4/play/save/import",
+    "http://127.0.0.1:18771/api/v4/play/intent",
+    "http://127.0.0.1:18771/api/v4/play/intent/380f79bd-a0de-4826-a412-a1d849c0ced8/cancel"
+  ],
+  "endSourceSha256": {
+    "hex/play.ts": "71f59662d00be414104390505b6c636e72c99796e4aa4b13d02b3f4d8d89b778",
+    "hex/play.css": "3ae65cf46fb6fe9cc59472d3a2db4241b1245e345b3ed9c6702028631294ab70",
+    "hex/play-reading.ts": "a326466313e544911d5138fe81d6a55e26b232e2f70e0e4696aef3c2b7cf9e2c"
+  },
+  "totals": {
+    "pass": 4,
+    "fail": 0
+  }
+}
