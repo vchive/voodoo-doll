@@ -8,6 +8,7 @@ test('故事推进动作和场景探索动作分开显示', () => {
   assert.equal(isStoryAction(action('full-station')), true);
   assert.equal(isStoryAction(action('story-trust')), true);
   assert.equal(isStoryAction(action('postscript-start')), true);
+  assert.equal(isStoryAction(action('signal-station')), true);
   assert.equal(isStoryAction(action('observe')), false);
   assert.equal(isStoryAction(action('talk-A')), false);
 

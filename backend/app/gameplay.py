@@ -22,7 +22,10 @@ from .migrations.legacy import MigrationError, migrate_legacy_payload
 from .world.clock import clock_snapshot, default_clock
 from .world.schedule import project_presence
 from .narrative import (TEMPLATE_ID, FULL_TEMPLATE_ID, TEMPLATE_STORY, FULL_TEMPLATE_STORY, DOOR_IDS, guidance, action_minutes,
-                        template_schedules, full_template_schedules, validate_saved_narrative)
+                        template_schedules, full_template_schedules, validate_saved_narrative, clear_signal_props)
+from .signal_story import (SIGNAL_TEMPLATE_ID, STORY_TITLE as SIGNAL_STORY_TITLE,
+                           STORY_DESCRIPTION as SIGNAL_STORY_DESCRIPTION, signal_schedules,
+                           action_minutes as signal_action_minutes)
 
 
 ROOM_ALIASES = {
@@ -34,6 +37,8 @@ ROOM_ALIASES = {
 OBJECT_ALIASES = {
     "灯": "lamp", "台灯": "lamp", "铃": "bell", "铃铛": "bell", "门": "door",
     "窗": "window", "窗户": "window", "水壶": "kettle", "办公桌": "desk", "工作台": "desk",
+    "事故档案夹": "dossier", "档案夹": "dossier", "交班簿": "handover-book", "交班卡": "handover-book",
+    "信号机": "signal-lever", "信号机手柄": "signal-lever", "录音机": "recorder",
 }
 
 
@@ -135,7 +140,7 @@ class SinglePlayerGame:
             return False
         events = self.kernel.store.events(self.kernel.state.world_id, version)
         allowed = {"clock_advanced", "presence_projected", "activation_started", "activation_quiescing",
-                   "activation_stopped", "activation_expired", "chapter_completed"}
+                   "activation_stopped", "activation_expired", "chapter_completed", "chapter_reconciled"}
         return (bool(events) and all(event.source == "system" and event.action in allowed for event in events)
                 and {event.world_version for event in events} == set(range(version + 1, current + 1)))
 
@@ -150,12 +155,15 @@ class SinglePlayerGame:
         if not isinstance(body, Mapping):
             raise ValidationError("story request must be an object", "invalid_story_request")
         template_id = body.get("templateId")
-        if template_id not in (None, TEMPLATE_ID, FULL_TEMPLATE_ID):
+        if template_id not in (None, TEMPLATE_ID, FULL_TEMPLATE_ID, SIGNAL_TEMPLATE_ID):
             raise ValidationError("story template is not supported", "unknown_story_template")
         doll_name = _text(body.get("dollName", "小墨"), "dollName", 12)
-        story = (FULL_TEMPLATE_STORY if template_id == FULL_TEMPLATE_ID else TEMPLATE_STORY) if template_id else _text(body.get("story"), "story", 600)
+        story = (SIGNAL_STORY_DESCRIPTION if template_id == SIGNAL_TEMPLATE_ID else
+                 FULL_TEMPLATE_STORY if template_id == FULL_TEMPLATE_ID else TEMPLATE_STORY) if template_id else _text(body.get("story"), "story", 600)
         names = _safe_names(body.get("names", {}))
-        if template_id:
+        if template_id == SIGNAL_TEMPLATE_ID:
+            names = {"A": "林川", "B": "沈青", "C": "周野", **names}
+        elif template_id:
             names = {"A": "林川", "B": "沈青", "C": "周野", **names}
         schedules = []
         for agent_id, room_id, activity in (("A", "office", "work"), ("B", "home", "rest"), ("C", "bar", "watch")):
@@ -165,7 +173,9 @@ class SinglePlayerGame:
                 "startMinute": 0, "endMinute": 1440,
                 "location": {"roomId": room_id}, "activity": activity, "priority": 1,
             })
-        if template_id == FULL_TEMPLATE_ID:
+        if template_id == SIGNAL_TEMPLATE_ID:
+            schedules = signal_schedules()
+        elif template_id == FULL_TEMPLATE_ID:
             names = {"A": "林川", "B": "沈青", "C": "周野", **names}
             schedules = full_template_schedules()
         elif template_id:
@@ -189,7 +199,8 @@ class SinglePlayerGame:
             "draftId": draft_id, "status": "draft", "worldVersion": self.kernel.state.world_version,
             "preview": {"story": story, "dollName": doll_name, "names": names, "templateId": template_id,
                          "roomLabels": ["办公室", "家", "酒吧"],
-                         "schedules": compiled["schedules"], "encounters": compiled["encounters"]},
+                         "schedules": compiled["schedules"], "encounters": compiled["encounters"],
+                         "title": SIGNAL_STORY_TITLE if template_id == SIGNAL_TEMPLATE_ID else ("雨停以前：明天已经发生" if template_id == FULL_TEMPLATE_ID else "雨停以前")},
         }
 
     def confirm_story(self, draft_id: str, body: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
@@ -293,6 +304,18 @@ class SinglePlayerGame:
             for verb, words in verbs:
                 if any(word in text for word in words):
                     return {"action": "use", "payload": {"objectId": object_id, "verb": verb}}
+        sleep_match = re.fullmatch(r"(?:睡觉|睡一觉|(?:睡觉|睡|休息)到(?P<day>第二天|第三天|明天))[。！]?", text)
+        if sleep_match:
+            n = self.kernel.state.metadata.get("narrative", {})
+            step = n.get("step")
+            if n.get("templateId") != SIGNAL_TEMPLATE_ID or step not in ("sleep1", "sleep2"):
+                raise ValidationError("先完成今天的调查，再回家选择睡觉。", "sleep_not_available")
+            if self.kernel.state.agents["YOU"].room_id != "home":
+                raise ValidationError("先回家，再睡觉开始下一天。", "sleep_requires_home")
+            requested_day = sleep_match.group("day")
+            if (requested_day == "第二天" and step != "sleep1") or (requested_day == "第三天" and step != "sleep2"):
+                raise ValidationError("请使用当前推荐的睡觉行动，不能跳过调查日。", "invalid_sleep_day")
+            return {"action": "observe", "payload": {"sleepUntil": "next-day", "waitMinutes": 120}}
         if re.fullmatch(r"(?:等待|等)(?:\d+|十|二十|三十)?(?:分钟|分)?[。！]?", text):
             match = re.search(r"(\d+)\s*(?:分钟|分)", text)
             minutes = min(120, max(1, int(match.group(1)))) if match else (30 if "三十" in text else 20 if "二十" in text else 10)
@@ -317,7 +340,9 @@ class SinglePlayerGame:
         text = _text(body.get("text"), "text", 240)
         normalized = self._normalize_intent(text)
         payload = normalized.setdefault("payload", {})
-        payload["gameMinutes"] = action_minutes(normalized["action"], payload)
+        minutes_for = (signal_action_minutes if self.kernel.state.metadata.get("narrative", {}).get("templateId") == SIGNAL_TEMPLATE_ID
+                       else action_minutes)
+        payload["gameMinutes"] = minutes_for(normalized["action"], payload)
         # Preview never spends action time or advances a chapter. A reader
         # returning after an expired lease may renew the server lifecycle;
         # validate first so unsupported input does not trigger that renewal.
@@ -491,11 +516,28 @@ class SinglePlayerGame:
         previous_narrative = working.metadata.pop("narrative", None)
         saved_snapshot = payload.get("snapshot")
         saved_narrative = payload.get("narrative", saved_snapshot.get("narrative") if isinstance(saved_snapshot, Mapping) else None)
+        if not isinstance(saved_narrative, Mapping) or saved_narrative.get("templateId") != SIGNAL_TEMPLATE_ID:
+            clear_signal_props(working)
         if source_key == "voodoo-single-v1" and saved_narrative is not None:
             working.metadata["narrative"] = validate_saved_narrative(saved_narrative)
-            schedule_blocks = full_template_schedules() if saved_narrative.get("templateId") == FULL_TEMPLATE_ID else template_schedules()
-            working.metadata["schedules"] = {"version": 2 if saved_narrative.get("templateId") == FULL_TEMPLATE_ID else 1,
+            saved_template = saved_narrative.get("templateId")
+            schedule_blocks = (signal_schedules() if saved_template == SIGNAL_TEMPLATE_ID else
+                               full_template_schedules() if saved_template == FULL_TEMPLATE_ID else template_schedules())
+            working.metadata["schedules"] = {"version": 1 if saved_template == SIGNAL_TEMPLATE_ID else (2 if saved_template == FULL_TEMPLATE_ID else 1),
                                               "blocks": schedule_blocks}
+            if saved_template == SIGNAL_TEMPLATE_ID:
+                from .signal_story import install_props
+                # The public save intentionally contains no arbitrary world
+                # object registry. Recreate this template's canonical props
+                # without initializing its clock, profile or story progress.
+                install_props(working)
+            else:
+                # Reinstall the original template's authored desk description;
+                # no Signal-Man text is allowed to leak into a legacy save.
+                reveals = ("原稿、旧卡片柜索引和一张写着明天日期的通行证都在这里。" if saved_template == FULL_TEMPLATE_ID
+                           else "今日待校对的是地铁停运告示，右下角留着一块擦除痕迹。")
+                working.objects["desk"].update(label="校对办公桌", reveals=reveals)
+            working.metadata.setdefault("publishedWorld", {})["schedules"] = copy.deepcopy(working.metadata["schedules"])
             working.metadata["activation"] = {"leases": {}, "agents": {}, "enabled": True}
             working.present = ["YOU", "A", "B", "C"]
             for actor in ("A", "B", "C"):

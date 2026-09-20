@@ -169,3 +169,13 @@ test('新手章节在刷新后恢复，损坏步骤被忽略', () => {
   assert.deepEqual(restored.tutorial, { templateId: 'rainy-office-v1', step: 'choice' });
   assert.equal(normalizeLocalState({ tutorial: { templateId: 'rainy-office-v1', step: 'broken' } }).tutorial, undefined);
 });
+
+test('恢复调查笔记时保留已核验记录与隐藏动作标记', () => {
+  const restored = normalizeLocalState({ snapshot: { guidance: {
+    title: '红灯下的第三次回声', chapter: '第二天',
+    journal: [{ id: 'shen-tape', title: '沈青的录音', text: '已听过，仍标注不确定的声音。' }, null],
+    actions: [{ id: 'compat', label: '旧动作', intent: '观察周围', hidden: true }],
+  } } });
+  assert.deepEqual(restored.snapshot.guidance.journal, [{ id: 'shen-tape', title: '沈青的录音', text: '已听过，仍标注不确定的声音。' }]);
+  assert.equal(restored.snapshot.guidance.actions[0].hidden, true);
+});

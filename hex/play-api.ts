@@ -11,6 +11,7 @@ export type PlayGuidance = {
   ending?: string;
   playerRoutine?: string;
   scheduleHint?: string;
+  journal?: Array<{ id: string; title: string; text: string }>;
   actions: Array<{ id: string; label: string; intent: string; minutes?: number; reason?: string }>;
 };
 export type StoryInput = { dollName: string; story: string; names: Record<string, string>; templateId?: string };

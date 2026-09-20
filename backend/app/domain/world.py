@@ -508,8 +508,10 @@ class WorldKernel:
         lifecycle_turn_id = f"clock-{clock['clockVersion']}-v{previous_version + 1}"
         expired_passage = expire_story(working, clock)
         if expired_passage:
-            events.append(self._lifecycle_event("chapter_completed", lifecycle_turn_id, previous_version + 1,
-                                                {"ending": "missed", "text": expired_passage}, len(events)))
+            narrative = working.metadata.get("narrative", {})
+            events.append(self._lifecycle_event("chapter_completed" if narrative.get("completed") else "chapter_reconciled",
+                                                lifecycle_turn_id, previous_version + 1,
+                                                {"ending": narrative.get("ending"), "text": expired_passage}, len(events)))
         reconciliation = reconcile_story(working, clock)
         if reconciliation:
             events.append(self._lifecycle_event("chapter_reconciled", lifecycle_turn_id, previous_version + 1,
@@ -764,10 +766,14 @@ class WorldKernel:
             started_clock = clock_snapshot(working.metadata)
             clock = spend_minutes(working, minutes)
             passage = advance_story(working, events[0], started_clock)
+            # Authored sleep may re-anchor the clock to the next morning.
+            # Presence and the emitted event must use that final clock.
+            clock = clock_snapshot(working.metadata)
+            elapsed_minutes = (clock["day"] - started_clock["day"]) * 1440 + clock["minute"] - started_clock["minute"]
             _, presence_changes = project_presence(working, clock)
             lifecycle = reconcile_leases(working, clock, reason="projection_changed")
             events.append(self._lifecycle_event("clock_advanced", turn_id, new_version,
-                                               {"clock": clock, "reason": "player_action", "minutes": minutes}, len(events)))
+                                               {"clock": clock, "reason": "player_action", "minutes": elapsed_minutes}, len(events)))
             for item in presence_changes:
                 events.append(self._lifecycle_event("presence_projected", turn_id, new_version, item, len(events)))
             for item in lifecycle.get("started", []):

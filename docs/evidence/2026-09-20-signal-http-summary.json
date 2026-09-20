@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-20",
+  "baseUrl": "http://127.0.0.1:18769",
+  "scope": "real socket HTTP; independent SQLite and anonymous sessions; no browser or real-device claims",
+  "sourceSha256": {
+    "backend/app/signal_story.py": "3be0f20033b4b9a2f3d3a905ec3c7b939199c3f307e20c9ff6a5b87546450857",
+    "backend/app/signal_content.py": "cdd5427aa91fb90b22d09fc3b459a09b9f6078fff8c6e0017b4b0ff4ca1757fa",
+    "backend/app/gameplay.py": "383966eb4148e99535cd1a3fd4b42f88d7c2bffc028b649f2f1fc1461089da17",
+    "backend/app/narrative.py": "ab5d74d26122f7e5cafaeff5b3f340d49770f4848c63d87601387a7faf9d1706"
+  },
+  "requestCount": 220,
+  "results": [
+    {
+      "ending": "trust",
+      "branch": "station",
+      "actions": 23
+    },
+    {
+      "ending": "audit",
+      "branch": "station",
+      "actions": 23
+    },
+    {
+      "ending": "protect",
+      "branch": "kitchen",
+      "actions": 23
+    },
+    {
+      "ending": "missed",
+      "actions": 11
+    },
+    {
+      "ending": "audit",
+      "branch": "kitchen",
+      "importToNewSession": true,
+      "actions": 22
+    }
+  ]
+}

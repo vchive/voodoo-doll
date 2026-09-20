@@ -9,7 +9,7 @@ export type GuidanceAction = PlayGuidance['actions'][number] & { hidden?: boolea
  * and postscript saves; the server remains authoritative about validity.
  */
 export function isStoryAction(action: GuidanceAction): boolean {
-  return /^(?:story|full|postscript)-/.test(action.id);
+  return /^(?:story|full|signal|postscript)-/.test(action.id);
 }
 
 export function splitGuidanceActions(actions: GuidanceAction[] | undefined): {

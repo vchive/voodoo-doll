@@ -11,6 +11,7 @@ from typing import Any, Dict, Mapping, Optional
 
 from .domain.models import Event, ValidationError, WorldState
 from .world.clock import clock_snapshot, default_clock
+from .signal_story import SIGNAL_TEMPLATE_ID, STORY_TITLE as SIGNAL_STORY_TITLE, STORY_DESCRIPTION as SIGNAL_STORY_DESCRIPTION, signal_schedules
 
 TEMPLATE_ID = "rainy-office-v1"
 FULL_TEMPLATE_ID = "rainy-office-v2"
@@ -1029,31 +1030,80 @@ _v1_expire_story = expire_story
 _v1_reconcile_story = reconcile_story
 _v1_validate_saved_narrative = validate_saved_narrative
 
+# The Signal-Man adaptation is deliberately a separate module.  Keeping its
+# handlers outside this file makes the rainy-office saves and their validation
+# contract stable while allowing the default tutorial to evolve independently.
+from .signal_story import (
+    advance_story as _signal_advance_story,
+    expire_story as _signal_expire_story,
+    guidance as _signal_guidance,
+    initialize_story as _signal_initialize_story,
+    is_signal_template,
+    reconcile_story as _signal_reconcile_story,
+    scene_actions as _signal_scene_actions,
+    story_response as _signal_story_response,
+    validate_saved_narrative as _signal_validate_saved_narrative,
+)
+
+
+def clear_signal_props(state: WorldState) -> None:
+    """Retire only this tutorial's authored props when another world replaces it."""
+    labels = {"signal-lever": "信号机手柄", "handover-book": "交班簿",
+              "dossier": "事故档案夹", "recorder": "旧录音机"}
+    for identifier, label in labels.items():
+        if state.objects.get(identifier, {}).get("label") == label:
+            state.objects.pop(identifier, None)
+    desk = state.objects.get("desk", {})
+    if desk.get("label") == "档案馆事故档案桌":
+        desk.pop("label", None)
+        desk.pop("reveals", None)
+    if state.environment.get("sound") == "distant-trains":
+        state.environment.pop("sound", None)
+    schedules = state.metadata.get("schedules", {})
+    if isinstance(schedules, dict) and isinstance(schedules.get("blocks"), list):
+        schedules["blocks"] = [item for item in schedules["blocks"] if "-signal-" not in item.get("id", "")]
+        state.metadata.setdefault("publishedWorld", {})["schedules"] = copy.deepcopy(schedules)
+
 
 def initialize_story(state: WorldState, metadata: Mapping[str, Any], draft_id: str) -> None:
-    if metadata.get("templateId") == FULL_TEMPLATE_ID:
-        _full_initialize_story(state, metadata, draft_id)
+    if metadata.get("templateId") == SIGNAL_TEMPLATE_ID:
+        _signal_initialize_story(state, metadata, draft_id)
     else:
-        _v1_initialize_story(state, metadata, draft_id)
+        if isinstance(metadata.get("singlePlayerProfile"), Mapping):
+            clear_signal_props(state)
+        if metadata.get("templateId") == FULL_TEMPLATE_ID:
+            _full_initialize_story(state, metadata, draft_id)
+        else:
+            _v1_initialize_story(state, metadata, draft_id)
 
 
 def advance_story(state: WorldState, request: Event, started_clock: Mapping[str, Any]) -> Optional[str]:
+    if is_signal_template(state):
+        return _signal_advance_story(state, request, started_clock)
     return _full_advance_story(state, request, started_clock) if is_full_template(state) else _v1_advance_story(state, request, started_clock)
 
 
 def story_response(state: WorldState, actor: str, request: Event) -> Optional[str]:
+    if is_signal_template(state):
+        return _signal_story_response(state, actor, request)
     return _full_story_response(state, actor, request) if is_full_template(state) else _v1_story_response(state, actor, request)
 
 
 def guidance(state: WorldState) -> dict:
+    if is_signal_template(state):
+        return _signal_guidance(state)
     return _full_guidance(state) if is_full_template(state) else _v1_guidance(state)
 
 
 def scene_actions(state: WorldState) -> list[dict]:
+    if is_signal_template(state):
+        return _signal_scene_actions(state)
     return _full_scene_actions(state) if is_full_template(state) else _v1_scene_actions(state)
 
 
 def expire_story(state: WorldState, clock: Mapping[str, Any]) -> Optional[str]:
+    if is_signal_template(state):
+        return _signal_expire_story(state, clock)
     if is_full_template(state):
         if _full_deadline_missed(state, clock):
             state.metadata["narrative"].update(step="day1-home", ending="missed", choice="missed")
@@ -1063,12 +1113,16 @@ def expire_story(state: WorldState, clock: Mapping[str, Any]) -> Optional[str]:
 
 
 def reconcile_story(state: WorldState, clock: Mapping[str, Any]) -> Optional[dict]:
+    if is_signal_template(state):
+        return _signal_reconcile_story(state, clock)
     if is_full_template(state):
         return None
     return _v1_reconcile_story(state, clock)
 
 
 def validate_saved_narrative(value: Any) -> dict:
+    if isinstance(value, Mapping) and value.get("templateId") == SIGNAL_TEMPLATE_ID:
+        return _signal_validate_saved_narrative(value)
     if isinstance(value, Mapping) and value.get("templateId") == FULL_TEMPLATE_ID:
         return _full_validate_saved_narrative(value)
     return _v1_validate_saved_narrative(value)

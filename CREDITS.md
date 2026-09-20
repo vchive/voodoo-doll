@@ -1,5 +1,9 @@
 # 美术来源与署名
 
+## 新手故事的文学来源（2026-09-20）
+
+《红灯下的第三次回声》借鉴 Charles Dickens 1866 年短篇 [The Signal-Man](https://www.gutenberg.org/ebooks/1289) 的铁路值班、反复警报与结尾呼应结构。游戏中文叙述、角色、档案调查与分支结局为本项目重新编写；未复制现成中译文或商业 Galgame 台词。阅读与改编区别见[研究记录](docs/research/2026-09-20-signal-man-adaptation.md)。
+
 2026-09-19 软件源码研究补充：已下载 boardgame.io 固定提交 `5e9a2c94bde803fae8b081958c406c4d0a7be8ae`，核对 MIT 许可证与 reducer/master；仅用于架构研究，没有复制到运行时或加入依赖。来源、版权和复用结论见 [源码审计](docs/research/2026-09-19-source-reuse-audit.md)。当前已有 Pi 依赖/调度核心保持原有来源记录，本说明只针对本轮新增研究。
 
 更新：2026-09-18，VIS-01 精致像素人物升级。
@@ -12,6 +16,8 @@
 - 原创绘制代码随项目管理，未引入额外第三方素材许可要求。本文件不替仓库设定总的软件许可证。
 
 ### LPC 自测比较层（可选、本地）
+
+- 2026-09-20 上传复核：上述五张自测合成图曾被旧提交跟踪；本次从当前版本的 Git 索引移除并加入忽略规则，本机文件保留，默认原创人物不受影响。历史提交仍含这些图，本次未改写远端历史；不能把“不进入构建”写成“从未随仓库分发”。
 
 - `hex/selftest/lpc/{YOU,A,B,C,Z}.png` 是从本机合成预览裁出的 64×64 LPC 精灵表，供 VIS-01 的画质对比使用。它们不是默认发布素材：`hex/vite.config.js` 设置 `publicDir: false`，所以 `npm run hex:build` 不会把该目录复制到 `dist-hex/`；缺失文件时舞台自动回退 `hex/characters.js` 的原创 Canvas 人物。
 - 合成层来自 [Universal LPC Character Generator](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator) 及其 LPC 图层包。该生成器仓库和图层清单包含 CC-BY-SA 3.0、GPL 3.0、OGA-BY 等混合许可；合成图仅用于本机自测，未作为可再分发的产品素材。若要随产品发布，必须先为每个实际使用的身体、发型和衣物图层补齐作者署名与许可核验。

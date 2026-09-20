@@ -208,10 +208,15 @@ export function normalizeLocalState(value: unknown): LocalState | null {
       dialogueId: stringValue(guide.dialogueId), dialogue: normalizeDialogueLines(guide.dialogue),
       completed: guide.completed === true,
       ending: stringValue(guide.ending), playerRoutine: stringValue(guide.playerRoutine), scheduleHint: stringValue(guide.scheduleHint),
+      journal: Array.isArray(guide.journal) ? guide.journal.flatMap((item) => {
+        const entry = record(item);
+        if (!entry || typeof entry.id !== 'string' || typeof entry.title !== 'string' || typeof entry.text !== 'string') return [];
+        return [{ id: entry.id, title: stringValue(entry.title), text: stringValue(entry.text) }];
+      }).slice(0, 64) : [],
       actions: Array.isArray(guide.actions) ? guide.actions.flatMap((item) => {
         const action = record(item);
         if (!action || typeof action.id !== 'string' || typeof action.label !== 'string' || typeof action.intent !== 'string') return [];
-        return [{ id: action.id, label: action.label, intent: action.intent, ...(typeof action.minutes === 'number' ? { minutes: action.minutes } : {}), reason: stringValue(action.reason) }];
+        return [{ id: action.id, label: action.label, intent: action.intent, ...(typeof action.minutes === 'number' ? { minutes: action.minutes } : {}), reason: stringValue(action.reason), ...(action.hidden === true ? { hidden: true } : {}) }];
       }).slice(0, 12) : [],
     };
   } else delete snapshot.guidance;

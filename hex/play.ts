@@ -16,7 +16,7 @@ const STORAGE_KEY = PLAY_STORAGE_KEY;
 const LEGACY_KEY = 'voodoo-hex-v5';
 const ROOM_TO_STAGE: Record<string, string> = { office: 'office', kitchen: 'kitchen', street: 'street', bar: 'bar', parlor: 'bedroom', home: 'bedroom', bedroom: 'bedroom', hall: 'corridor', station: 'corridor', garden: 'street', attic: 'office' };
 const ROOM_LABELS: Record<string, string> = { parlor: '会客厅', bedroom: '卧室', hall: '走廊', station: '地铁站', office: '办公室', home: '家里', kitchen: '厨房', street: '街上', garden: '花园', attic: '阁楼', bar: '酒吧' };
-const TUTORIAL_STORY: StoryInput = { templateId: 'rainy-office-v2', dollName: '小墨', names: { A: '林川', B: '沈青', C: '周野' }, story: '雨停以前：明天已经发生。三天里，你要完成档案馆的工作，追查地铁站被擦掉的司机姓名，听见沈青留下的录音，并决定是否让林川承担公开审计的后果。' };
+const TUTORIAL_STORY: StoryInput = { templateId: 'signal-rain-v1', dollName: '小墨', names: { A: '林川', B: '沈青', C: '周野' }, story: '红灯下的第三次回声。三天里，你要完成档案馆的工作，追查地铁站第三次警报与 06-17 交班记录，听见沈青保存的录音，再决定和林川共同署名、公开审计，还是先保护仍在照护父亲的他。' };
 const TRAVEL_ROOMS = ['parlor', 'bedroom', 'hall', 'office', 'home', 'bar', 'kitchen', 'street', 'station', 'garden', 'attic'];
 
 type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: (value: string) => void };
@@ -176,6 +176,8 @@ function renderDialogue(ui: Ui, state: LocalState): void {
   const redraw = (focus = false): void => {
     saveLocal(state);
     renderDialogue(ui, state);
+    const hint = ui.content.querySelector('#single-guidance > .single-action-hint');
+    if (hint && state.dialogue?.choicesOpen) hint.textContent = '选择一个推荐动作继续故事；观察和等待属于自由探索。';
     if (focus) ui.content.querySelector<HTMLButtonElement>('.dialogue-page')?.focus({ preventScroll: true });
   };
   const next = (): void => {
@@ -226,7 +228,7 @@ function renderGuidance(ui: Ui, state: LocalState, onIntent: (value: string) => 
   const actions = document.createElement('div'); actions.className = 'single-story-actions';
   if (!state.offline) {
     story.slice(0, 4).forEach((action) => {
-      const item = quickButton(action.label, action.intent, onIntent); if (action.id.startsWith('story-')) item.classList.add('primary');
+      const item = quickButton(action.label, action.intent, onIntent); item.classList.add('primary');
       item.dataset.storyAction = 'true';
       const detail = document.createElement('small');
       detail.textContent = [typeof action.minutes === 'number' ? `约 ${action.minutes} 分钟` : '', action.reason || ''].filter(Boolean).join(' · ');
@@ -255,8 +257,19 @@ function renderGuidance(ui: Ui, state: LocalState, onIntent: (value: string) => 
     details.append(explorationActions);
     host.append(details);
   }
-  const primaryLabel = story[0]?.label || exploration[0]?.label;
-  ui.input.placeholder = primaryLabel ? `也可以输入：${primaryLabel}` : '自由行动，例如：观察周围';
+  const primaryIntent = story[0]?.intent || exploration[0]?.intent;
+  ui.input.placeholder = primaryIntent ? `也可以输入：${primaryIntent}` : '自由行动，例如：观察周围';
+  if (guide?.journal?.length) {
+    const journal = document.createElement('details'); journal.className = 'single-journal';
+    const summary = document.createElement('summary'); summary.textContent = `调查笔记 · ${guide.journal.length} 条已核验记录`;
+    journal.append(summary);
+    guide.journal.forEach((entry) => {
+      const item = document.createElement('p');
+      const title = document.createElement('strong'); title.textContent = `${entry.title}：`;
+      item.append(title, document.createTextNode(entry.text)); journal.append(item);
+    });
+    host.append(journal);
+  }
 }
 
 
@@ -302,7 +315,7 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: (text
 function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: string }, submit: (data: StoryInput) => Promise<void> | void, legacyAvailable = false, localRecoveryAvailable = false): void {
   const legacyHint = legacyAvailable ? '<p class="single-notice">发现旧模式的本机记录。它不会被自动覆盖；如需查看，请用地址后面的 <code>?legacy=1</code> 打开旧模式，再导出后从右上角导入。</p>' : '';
   const recoveryHint = localRecoveryAvailable ? '<p class="single-notice">发现这台设备上的试玩进度，但当前浏览器会话是一个新世界。旧进度仍保留；可先从右上角导出，再导入到当前世界，或重新确认下面的故事。</p>' : '';
-  ui.content.innerHTML = `<section class="single-card"><h1>从一个故事开始</h1><p>先玩一段有结局的故事，学会行动、交谈和安排自己的一天。</p><article class="single-library"><small>入门长篇 · 三日 · 三条路线</small><h2>雨停以前：明天已经发生</h2><p>一张写着明天日期的通行证，把你带进三天的工作、交班、录音和公开选择。每个人都有自己的时间表，错过当面机会后，世界会留下不同的替代线索。</p><div id="tutorial-entry"></div></article><details id="custom-world"><summary>自己设计世界</summary><p>按这五项描述：开场地点、你的处境、关键角色、各自诉求、即将发生的事件。也可以套用示例后修改。</p><div id="story-example"></div>${legacyHint}${recoveryHint}<label for="doll-name" class="single-label">给娃娃取个名字</label><input id="doll-name" class="single-input" maxlength="12" value="${escapeHtml(initial.dollName || '')}" placeholder="比如：小墨"><label for="story" class="single-label">世界从哪里开始</label><textarea id="story" class="single-textarea" maxlength="600" placeholder="比如：我在办公室遇见了一个总在加班的人…">${escapeHtml(initial.story || '')}</textarea><label for="name-a" class="single-label">角色 A 的名字</label><input id="name-a" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.A || '')}" placeholder="林川"><label for="name-b" class="single-label">角色 B 的名字</label><input id="name-b" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.B || '')}" placeholder="沈青"><label for="name-c" class="single-label">角色 C 的名字</label><input id="name-c" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.C || '')}" placeholder="周野"><div class="single-actions" id="onboarding-actions"></div></details><p class="single-error single-hidden" id="onboarding-error" role="alert"></p></section>`;
+  ui.content.innerHTML = `<section class="single-card"><h1>从一个故事开始</h1><p>先玩一段有结局的故事，学会行动、交谈和安排自己的一天。</p><article class="single-library"><small>完整短篇 · 三日 · 三种立场</small><h2>红灯下的第三次回声</h2><p>一张写着明天日期的通行证，把你带进三天的档案工作、地铁值班、警报录音和公开选择。每个人都有自己的时间表；错过当面机会后，世界会留下公开记录，但不会替你补造证词。</p><div id="tutorial-entry"></div></article><details id="custom-world"><summary>自己设计世界</summary><p>按这五项描述：开场地点、你的处境、关键角色、各自诉求、即将发生的事件。也可以套用示例后修改。</p><div id="story-example"></div>${legacyHint}${recoveryHint}<label for="doll-name" class="single-label">给娃娃取个名字</label><input id="doll-name" class="single-input" maxlength="12" value="${escapeHtml(initial.dollName || '')}" placeholder="比如：小墨"><label for="story" class="single-label">世界从哪里开始</label><textarea id="story" class="single-textarea" maxlength="600" placeholder="比如：我在办公室遇见了一个总在加班的人…">${escapeHtml(initial.story || '')}</textarea><label for="name-a" class="single-label">角色 A 的名字</label><input id="name-a" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.A || '')}" placeholder="林川"><label for="name-b" class="single-label">角色 B 的名字</label><input id="name-b" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.B || '')}" placeholder="沈青"><label for="name-c" class="single-label">角色 C 的名字</label><input id="name-c" class="single-input" maxlength="12" value="${escapeHtml(initial.names?.C || '')}" placeholder="周野"><div class="single-actions" id="onboarding-actions"></div></details><p class="single-error single-hidden" id="onboarding-error" role="alert"></p></section>`;
   ui.log.hidden = true; ui.root.querySelector<HTMLElement>('#single-history')!.hidden = true;
   ui.input.parentElement?.classList.add('single-hidden');
   ui.content.querySelector('#tutorial-entry')!.append(button('开始新手故事', async () => {

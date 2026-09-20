@@ -1,0 +1,35 @@
+{
+  "routes": [
+    {
+      "route": "audit",
+      "branch": "station",
+      "width": 320,
+      "steps": [
+        "arrival",
+        "depart",
+        "station",
+        "signal-clue",
+        "office",
+        "dossier",
+        "meeting",
+        "day1-choice",
+        "day1-home",
+        "sleep1",
+        "day2-start",
+        "day2-station",
+        "day2-office",
+        "day2-office",
+        "sleep2",
+        "sleep2",
+        "day3-archive",
+        "day3-archive",
+        "day3-hearing",
+        "day3-decision",
+        "day3-home",
+        "complete"
+      ],
+      "readLines": 168
+    }
+  ],
+  "errors": []
+}

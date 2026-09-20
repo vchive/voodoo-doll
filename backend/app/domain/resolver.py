@@ -96,6 +96,8 @@ class EnvironmentResolver:
                 text = f"你驾驶{kind}前往{mobility.get('toRoom', '目的地')}。"
             return {"text": text, "ambient": mode, "mobility": mobility}
         if action == "observe":
+            if request.payload.get("sleepUntil"):
+                return {"text": "你结束今天的安排，收好笔记休息。醒来时，已经到了约定的第二天早晨。", "ambient": "rest"}
             if request.payload.get("waitMinutes"):
                 return {"text": f"你等了{request.payload['waitMinutes']}分钟。角色会按照各自的日程继续生活。", "ambient": "wait"}
             from ..narrative import DOOR_IDS, ROOM_LABELS

@@ -24,3 +24,6 @@ artifacts/
 # 临时借用的付费素材：许可禁止分发素材文件本身，仓库转公开前不得提交。
 # 详见 CREDITS.md。
 hex/public/donarg/
+
+# 合成图层的署名尚未核齐，仅保留本机比较，不再跟踪上传。
+hex/selftest/lpc/*.png
