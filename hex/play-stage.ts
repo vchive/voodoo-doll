@@ -15,15 +15,32 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
   element.append(overviewShell);
   const overviewHost = overviewShell.querySelector<HTMLElement>('.vn-overview')!;
   const overviewFrame = overviewShell.querySelector<HTMLElement>('.vn-overview-frame')!;
+  overviewFrame.id = 'single-overview-frame';
+  const overviewToggle = document.createElement('button');
+  overviewToggle.type = 'button'; overviewToggle.className = 'vn-overview-toggle'; overviewToggle.dataset.overviewToggle = 'true';
+  overviewToggle.setAttribute('aria-controls', overviewFrame.id);
+  element.append(overviewToggle);
+  // A display preference lives separately from every world/save protocol.
+  const overviewPreferenceKey = 'voodoo-overview-collapsed';
+  let overviewCollapsed = false;
+  try { overviewCollapsed = localStorage.getItem(overviewPreferenceKey) === 'true'; } catch { /* Keep the in-memory control usable. */ }
   let observedDialogue: HTMLElement | null = null;
   let layoutFrame = 0;
   const resizeOverview = (): void => {
-    const { width, height, top } = overviewShell.getBoundingClientRect();
+    const { width, height, top, left } = overviewShell.getBoundingClientRect();
     const captionHeight = overviewShell.querySelector<HTMLElement>('.vn-overview-caption')!.offsetHeight;
     const available = element.dataset.view === 'portrait' && observedDialogue ? Math.min(height, observedDialogue.getBoundingClientRect().top - top - 6) : height;
     const pictureHeight = Math.max(0, Math.min(available - (captionHeight ? captionHeight + 3 : 0), width * 8 / 9));
     overviewFrame.style.width = `${pictureHeight * 9 / 8}px`;
     overviewFrame.style.height = `${pictureHeight}px`;
+    // Keep the restore button at the small room's anchor, even when its
+    // picture is hidden. As a stage sibling it cannot be clipped by a tiny
+    // picture while an action preview occupies most of a short screen.
+    const stageBox = element.getBoundingClientRect();
+    const controlWidth = overviewCollapsed ? 76 : 44;
+    const controlLeft = left - stageBox.left + width / 2 + (overviewCollapsed ? -controlWidth / 2 : pictureHeight * 9 / 16 - controlWidth);
+    overviewToggle.style.left = `${Math.max(0, Math.min(stageBox.width - controlWidth, controlLeft))}px`;
+    overviewToggle.style.top = `${top - stageBox.top}px`;
   };
   const overviewResize = new ResizeObserver(resizeOverview); overviewResize.observe(overviewShell);
   const hotspots = overviewShell.querySelector<HTMLElement>('.vn-scene-hotspots')!;
@@ -48,6 +65,13 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
   const captionText = () => view !== 'overview' ? '俯视一览' : !hasSceneNpc ? '你和娃娃在这里' : interactionEnabled ? '点人物交谈' : '人物位置';
   function applyView(): void {
     element.dataset.view = view;
+    element.dataset.overviewCollapsed = String(overviewCollapsed);
+    overviewToggle.hidden = view !== 'portrait';
+    overviewToggle.setAttribute('aria-expanded', String(!overviewCollapsed));
+    overviewToggle.setAttribute('aria-label', overviewCollapsed ? '展开俯视房间' : '收起俯视房间');
+    overviewToggle.title = overviewToggle.getAttribute('aria-label')!;
+    overviewToggle.replaceChildren(Object.assign(document.createElement('span'), { textContent: overviewCollapsed ? '展开房间' : '−' }));
+    overviewShell.setAttribute('aria-hidden', String(view === 'portrait' && overviewCollapsed));
     const theater = element.closest<HTMLElement>('.single-theater');
     if (theater) theater.dataset.view = view;
     const dialogue = theater?.querySelector<HTMLElement>('#single-dialogue') || null;
@@ -65,6 +89,13 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
     cancelAnimationFrame(layoutFrame); layoutFrame = requestAnimationFrame(resizeOverview);
   }
   toggle.onclick = () => { manualView = view === 'overview' ? 'portrait' : 'overview'; view = manualView; applyView(); };
+  overviewToggle.onclick = () => {
+    if (view !== 'portrait') return;
+    overviewCollapsed = !overviewCollapsed;
+    try { localStorage.setItem(overviewPreferenceKey, String(overviewCollapsed)); } catch { /* The current session still remembers it. */ }
+    applyView();
+  };
+  overviewToggle.onkeydown = (event) => { if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault(); };
   function setInteractionEnabled(enabled: boolean): void {
     interactionEnabled = enabled;
     hotspots.querySelectorAll<HTMLButtonElement>('button').forEach(node => { node.disabled = !enabled; });

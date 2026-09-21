@@ -611,7 +611,11 @@ async function run(): Promise<void> {
     ui.send.disabled = locked || Boolean(pending);
     ui.root.querySelectorAll<HTMLButtonElement>('[data-quick-action]').forEach((item) => { item.disabled = locked || Boolean(pending); });
     setToolsEnabled(!locked && !pending);
-    ui.content.querySelectorAll<HTMLButtonElement>('button').forEach((item) => { item.disabled = locked || Boolean(pending); });
+    ui.content.querySelectorAll<HTMLButtonElement>('button').forEach((item) => {
+      // These controls only change the picture, so a pending action needn't
+      // prevent the player from hiding the inset or viewing the scene.
+      item.disabled = !item.matches('[data-view-toggle], [data-overview-toggle]') && (locked || Boolean(pending));
+    });
     if (!locked && pending?.kind === 'intent') {
       ui.content.querySelectorAll<HTMLButtonElement>('#intent-preview button').forEach((item) => { item.disabled = false; });
     }
@@ -971,7 +975,7 @@ async function run(): Promise<void> {
       if (operationInFlight || state.pending) { setState('请先完成当前操作，再导入保存。'); return; }
       setOperationInFlight(true);
       setEntryEnabled(ui, false);
-      ui.content.querySelectorAll<HTMLButtonElement>('button').forEach((item) => { item.disabled = true; });
+      ui.content.querySelectorAll<HTMLButtonElement>('button:not([data-view-toggle]):not([data-overview-toggle])').forEach((item) => { item.disabled = true; });
       setState('正在检查保存记录…');
       try {
         const payload = JSON.parse(await selected.text());

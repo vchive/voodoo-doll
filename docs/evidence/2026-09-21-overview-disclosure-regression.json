@@ -1,0 +1,1138 @@
+{
+  "startedAt": "2026-09-21T04:27:21.988Z",
+  "cases": [
+    {
+      "name": "vn-stage-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 5,
+      "readClicks": 43,
+      "posts": [
+        "story",
+        "story/story-8cb45aeff9a04005/confirm",
+        "intent",
+        "intent/dd4de1eb-f39d-4e78-9ed1-ab7dc7e22a1e/confirm",
+        "intent",
+        "intent/89733c47-38f8-4daa-96d0-0833a9b2bada/confirm",
+        "intent",
+        "intent/6c8cb292-61ee-4ede-a530-34818c91b97d/confirm",
+        "intent",
+        "intent/8dc9b03d-f7a0-4b57-836a-5d57914bdd3d/confirm",
+        "intent",
+        "intent/294ed9d1-66e2-4f24-b14b-f63f4535df18/confirm",
+        "intent",
+        "intent/60d741b7-f034-4581-b4f6-25bece14df96/cancel",
+        "intent",
+        "intent/6babaef2-53ae-40ed-a0bb-8f6e7f9478ba/confirm",
+        "intent",
+        "intent/8210072d-a34d-4bde-9923-4452204f8929/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 51,
+          "width": 818,
+          "height": 288,
+          "right": 831,
+          "bottom": 339
+        },
+        "view": "portrait",
+        "preview": false,
+        "dialogue": {
+          "x": 27,
+          "y": 210.046875,
+          "width": 790,
+          "height": 120.953125,
+          "right": 817,
+          "bottom": 331
+        },
+        "footer": {
+          "x": 44,
+          "y": 281,
+          "width": 756,
+          "height": 45,
+          "right": 800,
+          "bottom": 326
+        },
+        "width": 844,
+        "height": 390,
+        "overflow": false
+      },
+      "thoughtPages": 14,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "7ce33683-ce50-5ad1-b9a3-8767f1a63b6d",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "91d1207b-b7af-5a6e-a497-88715688ccbc",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "864f0fbe-6563-54c6-a9f1-9e406978f89a",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "8ead422e-a02f-5670-a2e1-bf9b2b34c14b",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "2b295221-7e2f-5627-a823-fe3c4c46724d",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "5ca68f2b-be6c-596f-8718-18ad5f416dce",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "12aee643-9baa-5d8b-9e2d-23f82da760d5",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 121.640625,
+          "right": 817,
+          "bottom": 329,
+          "width": 790,
+          "height": 207.359375
+        },
+        "preview": {
+          "x": 44,
+          "y": 134.640625,
+          "right": 800,
+          "bottom": 320,
+          "width": 756,
+          "height": 185.359375
+        },
+        "text": {
+          "x": 44,
+          "y": 163.640625,
+          "right": 800,
+          "bottom": 266,
+          "width": 756,
+          "height": 102.359375
+        },
+        "readableHeight": 86,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 274,
+            "right": 140,
+            "bottom": 320,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 274,
+            "right": 228,
+            "bottom": 320,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-568x320",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 5,
+      "readClicks": 68,
+      "posts": [
+        "story",
+        "story/story-4d01a796fce141ae/confirm",
+        "intent",
+        "intent/edb5a283-1add-449a-b43d-cbd63e92bc43/confirm",
+        "intent",
+        "intent/bc4224c7-06e0-4785-a283-1cd6ad0d3af6/confirm",
+        "intent",
+        "intent/218b62d9-3cb0-46a4-8e91-eb661e72bb73/confirm",
+        "intent",
+        "intent/3104b054-b817-4b9e-aebd-fb4bb47b64c9/confirm",
+        "intent",
+        "intent/bef935f8-8f07-4329-b20a-3084e36edf70/confirm",
+        "intent",
+        "intent/59146886-3340-4450-92b4-af47a8b34b1f/cancel",
+        "intent",
+        "intent/4be5193d-2375-435d-a3ab-d84f90d96e46/confirm",
+        "intent",
+        "intent/e8f22f7e-89c3-4747-8cdb-ed5f7a3caad0/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 51,
+          "width": 542,
+          "height": 218,
+          "right": 555,
+          "bottom": 269
+        },
+        "view": "portrait",
+        "preview": false,
+        "dialogue": {
+          "x": 27,
+          "y": 147,
+          "width": 514,
+          "height": 114,
+          "right": 541,
+          "bottom": 261
+        },
+        "footer": {
+          "x": 44,
+          "y": 211,
+          "width": 480,
+          "height": 45,
+          "right": 524,
+          "bottom": 256
+        },
+        "width": 568,
+        "height": 320,
+        "overflow": false
+      },
+      "thoughtPages": 21,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "dbf4a16f-90f3-551c-b544-a3b385001354",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "87c98715-1853-5b3b-86ff-978a36e36f8b",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "68a8dcf5-fcb9-504a-bebb-cb71aafcf8d1",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "f32a1069-97ee-5255-9836-d42e7057635d",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "aab9242e-5f66-5565-a0a0-d7c185d9761f",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "536479dd-8e5b-537a-b5b1-ecacf660037a",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "4c308173-57b7-5dd9-8a79-b5dcaeafbdeb",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 93,
+          "right": 541,
+          "bottom": 259,
+          "width": 514,
+          "height": 166
+        },
+        "preview": {
+          "x": 44,
+          "y": 106,
+          "right": 524,
+          "bottom": 250,
+          "width": 480,
+          "height": 144
+        },
+        "text": {
+          "x": 44,
+          "y": 135,
+          "right": 524,
+          "bottom": 196,
+          "width": 480,
+          "height": 61
+        },
+        "readableHeight": 45,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 568,
+          "height": 320
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 204,
+            "right": 140,
+            "bottom": 250,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 204,
+            "right": 228,
+            "bottom": 250,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 5,
+      "readClicks": 43,
+      "posts": [
+        "story",
+        "story/story-0de3c034d539431d/confirm",
+        "intent",
+        "intent/db42963d-d22f-49f4-833f-45fa18dbe447/confirm",
+        "intent",
+        "intent/a0eae72e-2802-49ba-a7db-3b562f280f27/confirm",
+        "intent",
+        "intent/b3a4cf0e-fdc0-46c1-b0b1-608685a59dcb/confirm",
+        "intent",
+        "intent/1fc30d84-7c95-446c-9bc9-cd1fe2b8c940/confirm",
+        "intent",
+        "intent/899e55fd-8cf5-45eb-8ac8-9c44c2a8a21c/confirm",
+        "intent",
+        "intent/a353d240-3468-4aca-a76f-dd1937d28fd5/cancel",
+        "intent",
+        "intent/6662154a-77a5-4fd7-b339-e566cd189955/confirm",
+        "intent",
+        "intent/0dab0efe-c388-4efb-82d5-ed5261912039/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 17,
+          "y": 109,
+          "width": 356,
+          "height": 677,
+          "right": 373,
+          "bottom": 786
+        },
+        "view": "portrait",
+        "preview": false,
+        "dialogue": {
+          "x": 27,
+          "y": 491.671875,
+          "width": 336,
+          "height": 284.328125,
+          "right": 363,
+          "bottom": 776
+        },
+        "footer": {
+          "x": 42,
+          "y": 724,
+          "width": 306,
+          "height": 45,
+          "right": 348,
+          "bottom": 769
+        },
+        "width": 390,
+        "height": 844,
+        "overflow": false
+      },
+      "thoughtPages": 14,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "909d6efa-bf6d-572f-a121-a543682fb2ee",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "30f58a36-0fa8-5e3f-8ba7-2faa32431f42",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "e2f8a384-7aaa-5d5c-aca2-477d1cc0c0f5",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "f351a99a-ef82-5a72-a0e1-80e8ae94065c",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "07ea0405-3e6f-59c2-a9b3-4964e1d741dc",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "be66b972-3586-58ea-8eb9-94f66950af21",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "6d8116c9-b890-5d50-b3e0-acfab509c256",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 288.5625,
+          "right": 363,
+          "bottom": 776,
+          "width": 336,
+          "height": 487.4375
+        },
+        "preview": {
+          "x": 44,
+          "y": 301.5625,
+          "right": 346,
+          "bottom": 767,
+          "width": 302,
+          "height": 465.4375
+        },
+        "text": {
+          "x": 44,
+          "y": 330.5625,
+          "right": 346,
+          "bottom": 713,
+          "width": 302,
+          "height": 382.4375
+        },
+        "readableHeight": 366,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 721,
+            "right": 140,
+            "bottom": 767,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 721,
+            "right": 228,
+            "bottom": 767,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-320x568",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "actions": 5,
+      "readClicks": 74,
+      "posts": [
+        "story",
+        "story/story-08d3a59e51734519/confirm",
+        "intent",
+        "intent/d1197454-874b-4519-8407-b65f0276dc4b/confirm",
+        "intent",
+        "intent/5121e5fb-00d5-4fb3-8338-72fb8320df30/confirm",
+        "intent",
+        "intent/86f55d92-1410-4c6c-849f-4a33cfd19dc5/confirm",
+        "intent",
+        "intent/978f8d2f-5b8c-414b-b11f-faea05afda4f/confirm",
+        "intent",
+        "intent/d87ecd11-3a69-4a7c-bc27-500ef37bc3df/confirm",
+        "intent",
+        "intent/7832d47c-62bd-474c-84d6-eb9921d5e39c/cancel",
+        "intent",
+        "intent/67fbef4c-ed21-4971-bf96-8a6c6aad3353/confirm",
+        "intent",
+        "intent/6dafc0e0-0f50-4039-9f0c-5c66257454fd/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 109,
+          "width": 294,
+          "height": 401,
+          "right": 307,
+          "bottom": 510
+        },
+        "view": "portrait",
+        "preview": false,
+        "dialogue": {
+          "x": 23,
+          "y": 331.59375,
+          "width": 274,
+          "height": 168.40625,
+          "right": 297,
+          "bottom": 500
+        },
+        "footer": {
+          "x": 38,
+          "y": 448,
+          "width": 244,
+          "height": 45,
+          "right": 282,
+          "bottom": 493
+        },
+        "width": 320,
+        "height": 568,
+        "overflow": false
+      },
+      "thoughtPages": 21,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "2f956d0f-9c46-5ece-8260-c9d135c541c9",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "e44157a8-7d6d-5eee-b27c-f020d89cfaa8",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "cba82cd3-06bb-5624-ae0e-1890a103ae89",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "2f227fb0-754b-5bda-ac3e-c7e052892a92",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "cc4ce287-18fa-5045-98af-017c0d76ea37",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "a1240de1-0014-5ecb-9515-0a3e23e0a1fd",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "b477fa87-4316-58d2-85bb-78e2a5baf835",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 23,
+          "y": 211.28125,
+          "right": 297,
+          "bottom": 500,
+          "width": 274,
+          "height": 288.71875
+        },
+        "preview": {
+          "x": 40,
+          "y": 224.28125,
+          "right": 280,
+          "bottom": 491,
+          "width": 240,
+          "height": 266.71875
+        },
+        "text": {
+          "x": 40,
+          "y": 253.28125,
+          "right": 280,
+          "bottom": 437,
+          "width": 240,
+          "height": 183.71875
+        },
+        "readableHeight": 168,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "buttons": [
+          {
+            "x": 40,
+            "y": 445,
+            "right": 136,
+            "bottom": 491,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 144,
+            "y": 445,
+            "right": 224,
+            "bottom": 491,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-reduced-motion",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 2,
+      "readClicks": 22,
+      "posts": [
+        "story",
+        "story/story-3a66d921e51b449f/confirm",
+        "intent",
+        "intent/7edf1806-372d-450d-9689-b80ad3174352/confirm",
+        "intent",
+        "intent/abe6d639-bd28-4a5f-bc31-d055ae4e7f45/confirm",
+        "intent",
+        "intent/3458f5a9-66ac-4e39-b2c0-349670728976/confirm",
+        "intent",
+        "intent/97256778-27a6-4b3d-b354-6a08cf5d6ec2/confirm"
+      ],
+      "errors": [],
+      "thoughtPages": 6,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "f43e0e25-3f73-56ad-ab5e-d9a9de6a7216",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "5d4d4842-a793-5c86-8f1f-4e740c82d5c3",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "beee4d58-a83c-5bf5-8bea-aeaf5a02990d",
+          "action": "move"
+        },
+        {
+          "kind": "speak",
+          "eventId": "d9b148f6-426f-52d9-be32-1cb33979f513",
+          "action": "ask"
+        }
+      ],
+      "spokenIds": [
+        "A"
+      ],
+      "reducedMotion": true,
+      "passed": true
+    },
+    {
+      "name": "vn-art-fallback",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 6,
+      "posts": [
+        "story",
+        "story/story-a1856bf7645849e4/confirm",
+        "intent",
+        "intent/621e65e7-7369-45f2-9ca8-5483d2994f23/confirm",
+        "intent",
+        "intent/910dc0aa-f6ba-492d-804b-4f29682934b9/confirm"
+      ],
+      "errors": [],
+      "performances": [
+        {
+          "kind": "move",
+          "eventId": "0474b9f8-03c7-5466-a8fc-60ab295f7323",
+          "action": "move"
+        },
+        {
+          "kind": "open",
+          "eventId": "2af6d87f-1ba8-5c69-a848-556f779b0fbd",
+          "action": "use"
+        }
+      ],
+      "thoughtPages": 2,
+      "artFailure": "All image requests deliberately aborted; text, recommendations and confirmed actions stayed usable.",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-f91565372fac4ffd/confirm",
+        "save/import",
+        "intent",
+        "intent/f454f5b4-5323-491b-b491-df276929773f/confirm",
+        "intent",
+        "intent/85b16d33-ab87-4850-ad3c-9e9ecc767296/cancel",
+        "story",
+        "story/story-7410798b850d4cbf/cancel",
+        "story",
+        "story/story-c0a99587d78e4060/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 121.640625,
+          "right": 817,
+          "bottom": 329,
+          "width": 790,
+          "height": 207.359375
+        },
+        "preview": {
+          "x": 44,
+          "y": 134.640625,
+          "right": 800,
+          "bottom": 320,
+          "width": 756,
+          "height": 185.359375
+        },
+        "text": {
+          "x": 44,
+          "y": 163.640625,
+          "right": 800,
+          "bottom": 266,
+          "width": 756,
+          "height": 102.359375
+        },
+        "readableHeight": 86,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 274,
+            "right": 140,
+            "bottom": 320,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 274,
+            "right": 228,
+            "bottom": 320,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-568x320",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-3bf48ac5ffb046bd/confirm",
+        "save/import",
+        "intent",
+        "intent/055c374d-ec5b-401a-86fd-fd5e7c2ebe70/confirm",
+        "intent",
+        "intent/6e09cc3d-7253-4e61-b74e-9d85266291e6/cancel",
+        "story",
+        "story/story-594ac73cc08a4ba9/cancel",
+        "story",
+        "story/story-6c5c9b79a5ec4a62/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 93,
+          "right": 541,
+          "bottom": 259,
+          "width": 514,
+          "height": 166
+        },
+        "preview": {
+          "x": 44,
+          "y": 106,
+          "right": 524,
+          "bottom": 250,
+          "width": 480,
+          "height": 144
+        },
+        "text": {
+          "x": 44,
+          "y": 135,
+          "right": 524,
+          "bottom": 196,
+          "width": 480,
+          "height": 61
+        },
+        "readableHeight": 45,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 568,
+          "height": 320
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 204,
+            "right": 140,
+            "bottom": 250,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 204,
+            "right": 228,
+            "bottom": 250,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-f454f8c77ab54d22/confirm",
+        "save/import",
+        "intent",
+        "intent/f94e02a3-1997-46ef-94a5-b647ee58e138/confirm",
+        "intent",
+        "intent/8efd8bd2-68c5-4d5d-84d0-ed2619f72d2e/cancel",
+        "story",
+        "story/story-891b6b55350544ce/cancel",
+        "story",
+        "story/story-bd027e79949a4439/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 288.5625,
+          "right": 363,
+          "bottom": 776,
+          "width": 336,
+          "height": 487.4375
+        },
+        "preview": {
+          "x": 44,
+          "y": 301.5625,
+          "right": 346,
+          "bottom": 767,
+          "width": 302,
+          "height": 465.4375
+        },
+        "text": {
+          "x": 44,
+          "y": 330.5625,
+          "right": 346,
+          "bottom": 713,
+          "width": 302,
+          "height": 382.4375
+        },
+        "readableHeight": 366,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 721,
+            "right": 140,
+            "bottom": 767,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 721,
+            "right": 228,
+            "bottom": 767,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v1-postscript",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 6,
+      "readClicks": 36,
+      "posts": [
+        "story",
+        "story/story-78165cf23d404c98/confirm",
+        "save/import",
+        "intent",
+        "intent/29c08a97-2392-4b93-be01-bb04c18b385c/confirm",
+        "intent",
+        "intent/a748bbad-b295-41fe-a5fd-926a41014fcc/confirm",
+        "intent",
+        "intent/d6bb068c-6832-40ad-8c9f-6518d754ce35/confirm",
+        "intent",
+        "intent/1fc8aae8-067c-4e39-91b4-d7f4ffeb55c9/confirm",
+        "intent",
+        "intent/3ddcd980-0f7d-44e2-8f9b-6616213ed91e/confirm",
+        "intent",
+        "intent/0ee390cc-717e-4937-9279-67c55a21cdae/confirm"
+      ],
+      "errors": [],
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "save-recovery",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 21,
+      "readClicks": 158,
+      "posts": [
+        "story",
+        "story/story-59030de65ee74c43/confirm",
+        "intent",
+        "intent/d785ef8d-169a-4727-b5f1-c2db546de206/confirm",
+        "intent",
+        "intent/ed7674d7-d089-437e-bef5-5030397240aa/confirm",
+        "intent",
+        "intent/4db115bf-a4be-4b6e-82b4-1a2c35cb983a/confirm",
+        "intent",
+        "intent/34608b63-d814-453f-9f21-7bd7a3ee773d/confirm",
+        "intent",
+        "intent/6697df38-a091-415d-8323-7e3b0d7a4765/confirm",
+        "intent",
+        "intent/da05e1e8-62ae-46cf-8b6b-148b58300081/confirm",
+        "intent",
+        "intent/1dca374b-6db1-41de-9b23-4dc7201f6774/confirm",
+        "intent",
+        "intent/b159b04b-0ad8-4bae-aefd-5b8d25c2bf03/confirm",
+        "intent",
+        "intent/6459c3ca-684e-4353-8991-c3cc72a5be55/confirm",
+        "intent",
+        "intent/b885db0d-c771-4cce-9cde-71c9e7793a95/confirm",
+        "intent",
+        "intent/bc6559b8-8ed9-4b68-84ce-f13bf68f0db5/confirm",
+        "intent",
+        "intent/9f9b19be-29a4-4757-96b5-9faf1285414a/cancel",
+        "intent",
+        "intent",
+        "intent/19aa0468-35e2-4841-8ca2-b91376ca3268/confirm",
+        "save/import",
+        "intent",
+        "intent/bd27a40c-0a0c-4b58-80cd-321762c24f89/confirm",
+        "intent",
+        "intent/8fe40b27-9897-45e4-9636-779d252ad165/confirm",
+        "intent",
+        "intent/aacb35a0-79bc-416e-8224-11c85f263d7d/confirm",
+        "intent",
+        "intent/abf9f129-2546-4c3f-ab45-70e1580a2625/confirm",
+        "intent",
+        "intent/3dacb4e9-a62f-4751-8140-c27c8f416ada/confirm",
+        "intent",
+        "intent/ec2c2a97-0de1-4c79-a0e0-237110e06e1e/confirm",
+        "intent",
+        "intent/3f6d6fa1-37ae-42c1-bb23-fc3ed60a2673/confirm",
+        "intent",
+        "intent/1fcb4a2f-c425-4bad-8076-dd26e264dbf0/confirm",
+        "intent",
+        "intent/e755d532-0862-4119-9b9b-f3a48d038002/confirm",
+        "intent",
+        "intent/61273981-038a-4a29-a1bf-309305419623/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "confirmation-retry",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-5eecbb31365347ff/confirm",
+        "intent",
+        "intent/2b81c349-421d-475b-bc2a-ad4cfc4975e4/confirm",
+        "intent/2b81c349-421d-475b-bc2a-ad4cfc4975e4/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "cancel-without-network",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-777e6efa58774773/confirm",
+        "intent",
+        "intent/41cb4227-4cef-4498-9be1-1e993b4dfdc8/cancel",
+        "intent/41cb4227-4cef-4498-9be1-1e993b4dfdc8/cancel"
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "sources": {
+    "scripts/playtest-single-player.mjs": "66c03e539b20aacc1ea06d5e0cab5a96cde4a326712ff9d9938560d97d67ecb0",
+    "hex/play.ts": "05c2c1554aa7826cb4e32cff4f9c9abda3c9336ac80059caa500ffa8382cb9cf",
+    "hex/play-state.ts": "887b5efc0bf9ede3238ea456e0b6f4c91718c6a39ee2815f3b70bca85d8e08d2",
+    "hex/play-guidance.ts": "36128fbba1217a0e96f8b0dc94d888f5e4d290348221fbaae43faf9ea72e2409",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play-local.ts": "c8bf992779ce8fdaed276d62c1af08bb3d351aa1d25418bf1904958b9864a262",
+    "hex/play-recovery.ts": "fa08a8634ef48f4f1ea69fc4d85ca56040169485c0a45fdfac82abaa12d2c4ee",
+    "hex/play-performance.ts": "73d23ff6b6af40e034129c2d74f3e9521acfda489a055aad613d890a48f0ce24",
+    "hex/play-overview-model.ts": "0fe5ea7758f3222cf09abd023c0eb4c7480513be84f94503565eab074874288c",
+    "hex/play-overview.ts": "af4061ffcd2e2acab5cbdb8ff280db87c03e2e3bf2029f0439a59bf35e486944",
+    "hex/characters.js": "a402fb3d32c7119d61a44e578dce3791f77580acaa9422f04e790931e2e8faec",
+    "hex/rooms.js": "0ab6b588454ebbc49913f32c6625aff15b1eea9635281776b2f9e0654e7cbf4e",
+    "hex/play-stage.ts": "4c08af7b1c10c7f45cf1398c9d8f04dc07f6afdbbfc922b613eace5db47fb7f7",
+    "hex/play-stage.css": "ed17194cb8ac7544baa5d218651d2e9e42f4719095d01588cf448c518e1e395b",
+    "hex/play-art.ts": "59415a6c903a083c8d32e683af5d1a73f4dc5d9d9ee92c6389e317340d12521b",
+    "hex/play.css": "f45852dee5642af32d97d8d16617666784692987d790d37f9df1fcb41a5e4eaf",
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/narrative.py": "7eba8d245c378da07241384e8b69f5a9c04e4dbae38d7e7220f74e8f51679f39",
+    "backend/app/signal_story.py": "6b7798a2c8a4b0c18339574e2db22cab09ab730f551e9704ec3625704a55cff3",
+    "dist-hex/index.html": "269c097dad3415ea1025f6457d8fb7ec60749e7adbb80bba4f1670c1359192c7"
+  },
+  "baseCommit": "99a61d241a0052014eaa3467e90aba7bdbab342d",
+  "browser": "153.0.8010.52",
+  "finishedAt": "2026-09-21T04:28:05.843Z",
+  "passed": true,
+  "database": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/voodoo-playtest-rgWJjF/world.sqlite3"
+}

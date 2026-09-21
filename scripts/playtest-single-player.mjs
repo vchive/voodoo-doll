@@ -1,5 +1,6 @@
 // MW-36 / SP-21 / MW-AC-36, MW-37 / SP-22 / MW-AC-37,
 // MW-38 / SP-23 / MW-AC-38, and MW-39 / SP-24 / MW-AC-39.
+// MW-40 additionally verifies the independently saved overview disclosure.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -352,6 +353,45 @@ async function assertOverviewCast(page) {
   assert.deepEqual([...cast].sort(), [...new Set(expected)].sort(), '俯视人物热点必须与当前公开在场角色一致');
   return cast;
 }
+async function assertOverviewDisclosure(page, collapsed) {
+  const stage = page.locator('.vn-stage'), toggle = page.locator('button[data-overview-toggle]');
+  const view = await stage.getAttribute('data-view');
+  assert.equal(await stage.getAttribute('data-overview-collapsed'), String(collapsed), '小俯视房间偏好必须保持');
+  assert.equal(await toggle.getAttribute('aria-expanded'), String(!collapsed));
+  assert.equal(await toggle.getAttribute('aria-label'), collapsed ? '展开俯视房间' : '收起俯视房间');
+  assert.equal(await page.locator('.vn-overview-frame').isVisible(), view === 'overview' || !collapsed,
+    '收起仅影响立绘模式的小俯视房间，不能隐藏探索全图');
+  if (view === 'overview') {
+    assert.equal(await toggle.isVisible(), false, '探索全图不显示小图收放按钮');
+    return;
+  }
+  assert(await toggle.isVisible(), '小图收起后仍必须能展开');
+  const geometry = await toggle.evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height,
+      visibleWidth: innerWidth, visibleHeight: innerHeight, unobstructed: Boolean(hit && button.contains(hit)) };
+  });
+  assert(geometry.width >= 44 && geometry.height >= 44, '俯视房间收放按钮必须保留44像素触区');
+  assert(geometry.x >= 0 && geometry.y >= 0 && geometry.right <= geometry.visibleWidth + 1 && geometry.bottom <= geometry.visibleHeight + 1 && geometry.unobstructed,
+    '俯视房间收放按钮必须可见且不被对白或其他按钮覆盖');
+  return geometry;
+}
+async function toggleOverviewWithoutAction(page, metrics, collapsed, { storageUnavailable = false } = {}) {
+  const before = await state(page), posts = metrics.posts.length;
+  const input = await page.locator('#single-input').inputValue();
+  const cue = await page.locator('.vn-stage').getAttribute('data-action-event');
+  await page.locator('button[data-overview-toggle]').click();
+  await page.waitForFunction(value => document.querySelector('.vn-stage')?.dataset.overviewCollapsed === String(value), collapsed);
+  const geometry = await assertOverviewDisclosure(page, collapsed);
+  if (!storageUnavailable) assert.equal(await page.evaluate(() => localStorage.getItem('voodoo-overview-collapsed')), String(collapsed), '收放偏好应存于独立界面键');
+  assert.equal(metrics.posts.length, posts, '收起或展开小图不能提交任何行动或预览');
+  assert.deepEqual(await state(page), before, '收起或展开小图不能修改世界、阅读、记录或待确认行动');
+  assert.equal(await page.locator('#single-input').inputValue(), input, '收起或展开小图不能清除未发送草稿');
+  assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), cue, '收起或展开小图不能重演行动');
+  metrics.overviewDisclosureChecks = (metrics.overviewDisclosureChecks || 0) + 1;
+  return geometry;
+}
 async function assertHybridLayout(page, expectedView) {
   await page.waitForFunction(view => document.querySelector('.vn-stage')?.dataset.view === view, expectedView);
   await page.waitForFunction(() => document.querySelector('.vn-overview')?.dataset.status === 'ready');
@@ -363,26 +403,32 @@ async function assertHybridLayout(page, expectedView) {
     const overview = document.querySelector('.vn-overview'), canvas = overview.querySelector('canvas');
     const toggle = document.querySelector('[data-view-toggle]'), toggleBox = box(toggle);
     const hit = document.elementFromPoint(toggleBox.x + toggleBox.width / 2, toggleBox.y + toggleBox.height / 2);
-    return { overview: box(overview), canvas: canvas && { ...box(canvas), pixels: [canvas.width, canvas.height] },
+    return { overviewCollapsed: document.querySelector('.vn-stage').dataset.overviewCollapsed === 'true',
+      overview: box(overview), canvas: canvas && { ...box(canvas), pixels: [canvas.width, canvas.height] },
       toggle: { ...toggleBox, unobstructed: Boolean(hit && toggle.contains(hit)), label: toggle.textContent },
       dialogue: box(document.querySelector('#single-dialogue')), stage: box(document.querySelector('.vn-stage')),
       viewport: { width: innerWidth, height: innerHeight } };
   });
   const { overview, canvas, toggle, dialogue, stage, viewport } = geometry;
   assert(canvas && canvas.pixels.every(size => size > 0), '俯视场景需实际初始化画布');
-  assert(canvas.width > 0 && canvas.height > 0, '人物阅读与探索时都应看见俯视场景');
-  assert(overview.x >= stage.x - 1 && overview.y >= stage.y - 1 && overview.right <= stage.right + 1 && overview.bottom <= stage.bottom + 1,
-    '俯视场景不能越出舞台');
-  assert(canvas.x >= overview.x - 1 && canvas.y >= overview.y - 1 && canvas.right <= overview.right + 1 && canvas.bottom <= overview.bottom + 1,
-    '俯视画布必须被完整容纳');
+  const concealed = expectedView === 'portrait' && geometry.overviewCollapsed;
+  if (concealed) {
+    assert.equal(await page.locator('.vn-overview-frame').isVisible(), false, '明确收起后小图不能仍占人物画面');
+  } else {
+    assert(canvas.width > 0 && canvas.height > 0, '未收起的阅读小图与探索全图都应可见');
+    assert(overview.x >= stage.x - 1 && overview.y >= stage.y - 1 && overview.right <= stage.right + 1 && overview.bottom <= stage.bottom + 1,
+      '俯视场景不能越出舞台');
+    assert(canvas.x >= overview.x - 1 && canvas.y >= overview.y - 1 && canvas.right <= overview.right + 1 && canvas.bottom <= overview.bottom + 1,
+      '俯视画布必须被完整容纳');
+  }
   assert(toggle.width >= 44 && toggle.height >= 44, '视图切换必须保留44像素触区');
   assert(toggle.x >= 0 && toggle.y >= 0 && toggle.right <= viewport.width + 1 && toggle.bottom <= viewport.height + 1 && toggle.unobstructed,
     '视图切换必须可见且不被覆盖');
   assert.match(toggle.label, expectedView === 'portrait' ? /看场景/ : /看人物/);
-  if (expectedView === 'portrait') {
+  if (expectedView === 'portrait' && !concealed) {
     assert(overview.bottom <= dialogue.y + 1, '阅读时小俯视图不能遮住对白');
     assert(overview.width < stage.width * .6, '阅读时俯视场景应缩成小窗');
-  } else {
+  } else if (expectedView === 'overview') {
     assert(Math.min(overview.width, overview.height) >= 100, '探索时俯视场景短边至少100像素，人物和房间才可辨识');
     const overlapWidth = Math.min(overview.right, dialogue.right) - Math.max(overview.x, dialogue.x);
     const overlapHeight = Math.min(overview.bottom, dialogue.bottom) - Math.max(overview.y, dialogue.y);
@@ -392,17 +438,21 @@ async function assertHybridLayout(page, expectedView) {
   await assertOverviewCast(page);
   return geometry;
 }
-async function switchHybridWithoutAction(page, metrics, expectedView) {
+async function switchHybridWithoutAction(page, metrics, expectedView, { preview: previewOpen = false } = {}) {
   const before = await state(page), posts = metrics.posts.length;
+  const beforeInput = await page.locator('#single-input').inputValue();
   const beforeOverview = await page.locator('.vn-overview').boundingBox();
   const cue = await page.locator('.vn-stage').getAttribute('data-action-event');
   await page.locator('[data-view-toggle]').click();
-  const geometry = await assertHybridLayout(page, expectedView);
+  await page.waitForFunction(view => document.querySelector('.vn-stage')?.dataset.view === view, expectedView);
+  const geometry = previewOpen ? await assertIntentPreviewLayout(page) : await assertHybridLayout(page, expectedView);
   assert.equal(metrics.posts.length, posts, '切换俯视/立绘不能提交行动或草稿');
   assert.deepEqual((await state(page)).snapshot, before.snapshot, '切换视图不能改变世界、时间或日程');
   assert.deepEqual((await state(page)).dialogue, before.dialogue, '切换视图不能翻页或改变选项状态');
+  assert.deepEqual((await state(page)).pending, before.pending, '切换视图不能丢弃待确认行动');
+  assert.equal(await page.locator('#single-input').inputValue(), beforeInput, '切换视图不能改写未发送的输入');
   assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), cue, '切换视图不能重演行动');
-  if (expectedView === 'overview') assert(geometry.overview.width > beforeOverview.width && geometry.overview.height > beforeOverview.height,
+  if (expectedView === 'overview' && beforeOverview && !previewOpen) assert(geometry.overview.width > beforeOverview.width && geometry.overview.height > beforeOverview.height,
     '从人物切到场景时俯视图必须实际放大');
   return geometry;
 }
@@ -439,12 +489,27 @@ try {
     await scenario(`hybrid-stage-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       const viewport = { width, height }, rotated = { width: height, height: width };
       metrics.readingGeometry = await assertHybridLayout(page, 'portrait');
+      await assertOverviewDisclosure(page, false);
       await page.screenshot({ path: join(output, metrics.name + '-reading.png') });
+      metrics.collapsedToggleGeometry = await toggleOverviewWithoutAction(page, metrics, true);
+      await page.screenshot({ path: join(output, metrics.name + '-collapsed.png') });
+      await toggleOverviewWithoutAction(page, metrics, false);
+      await assertHybridLayout(page, 'portrait');
+      await toggleOverviewWithoutAction(page, metrics, true);
+      const beforeCollapsedReload = await state(page), collapsedReloadPosts = metrics.posts.length;
+      await page.reload(); await settled(page);
+      await assertOverviewDisclosure(page, true);
+      assert.equal(metrics.posts.length, collapsedReloadPosts, '恢复小图偏好不能执行游戏行动');
+      assert.deepEqual((await state(page)).snapshot, beforeCollapsedReload.snapshot);
+      assert.deepEqual((await state(page)).dialogue, beforeCollapsedReload.dialogue, '刷新保留收起偏好及原阅读游标');
       await switchHybridWithoutAction(page, metrics, 'overview');
+      await assertOverviewDisclosure(page, true);
       await switchHybridWithoutAction(page, metrics, 'portrait');
+      await assertOverviewDisclosure(page, true);
       const reading = await state(page), readingPosts = metrics.posts.length;
       await resizeViewport(page, rotated);
       await assertHybridLayout(page, 'portrait');
+      await assertOverviewDisclosure(page, true);
       assert.deepEqual((await state(page)).dialogue, reading.dialogue, '阅读时旋转不能丢阅读位置');
       assert.deepEqual((await state(page)).snapshot, reading.snapshot);
       assert.equal(metrics.posts.length, readingPosts, '旋转不能提交行动');
@@ -452,6 +517,8 @@ try {
       await walk(page, metrics, 'dossier');
       await waitForPortraits(page);
       metrics.explorationGeometry = await assertHybridLayout(page, 'overview');
+      await assertOverviewDisclosure(page, true);
+      assert.equal(await page.evaluate(() => localStorage.getItem('voodoo-overview-collapsed')), 'true', '翻页与通勤换场不能丢失小图偏好');
       assert.equal((await state(page)).snapshot.roomId, 'office');
       assert((await assertOverviewCast(page)).includes('A'));
       assert((await assertPublicCast(page)).some(item => item.id === 'A'), '两个视图应共享在场的林川');
@@ -467,6 +534,7 @@ try {
         '俯视人物热点必须可见且不能被人物立绘或对白挡住');
       await page.screenshot({ path: join(output, metrics.name + '-exploring.png') });
       await switchHybridWithoutAction(page, metrics, 'portrait');
+      await assertOverviewDisclosure(page, true);
       await switchHybridWithoutAction(page, metrics, 'overview');
       // Rotation must preserve a typed but unsent free-action draft too.
       await openFree(page);
@@ -489,11 +557,18 @@ try {
       assert.equal(metrics.posts.length - beforePosts, 1, '点选人物只能创建一次行动预览');
       assert.deepEqual((await state(page)).snapshot, before.snapshot);
       metrics.previewGeometry = await assertIntentPreviewLayout(page);
+      await switchHybridWithoutAction(page, metrics, 'portrait', { preview: true });
+      await assertOverviewDisclosure(page, true);
+      await toggleOverviewWithoutAction(page, metrics, false);
+      await toggleOverviewWithoutAction(page, metrics, true);
       await resizeViewport(page, rotated);
       await assertIntentPreviewLayout(page);
+      await assertOverviewDisclosure(page, true);
       assert.deepEqual((await state(page)).pending, pending, '预览中旋转不能丢pending');
       assert.deepEqual((await state(page)).snapshot, before.snapshot);
       await resizeViewport(page, viewport);
+      await switchHybridWithoutAction(page, metrics, 'overview', { preview: true });
+      await assertOverviewDisclosure(page, true);
       await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
       assert.equal((await state(page)).pending, undefined);
       assert.deepEqual((await state(page)).snapshot, before.snapshot, '取消场景人物交互不得推进行动');
@@ -502,6 +577,7 @@ try {
       assert.equal(metrics.posts.length - beforePosts, 2, '场景人物预览取消只允许intent与cancel');
       assert(metrics.posts.slice(beforePosts).every(path => !path.endsWith('/confirm')));
       await assertHybridLayout(page, 'overview');
+      await assertOverviewDisclosure(page, true);
       const confirmPosts = metrics.posts.length;
       await page.locator('[data-scene-cast-id="A"]').click();
       await page.locator('#intent-preview').waitFor();
@@ -512,9 +588,50 @@ try {
       assert.equal(await page.locator('#single-input').inputValue(), '问林川：交班记录怎么了', '确认人物热点交互不能清除另一条未发送的自由输入');
       metrics.confirmedNpc = 'A'; metrics.actions++;
       await assertHybridLayout(page, 'portrait');
+      await assertOverviewDisclosure(page, true);
       await readPerformanceToChoices(page, metrics);
       await assertHybridLayout(page, 'overview');
+      await assertOverviewDisclosure(page, true);
+      await switchHybridWithoutAction(page, metrics, 'portrait');
+      await toggleOverviewWithoutAction(page, metrics, false);
+      const beforeExpandedReload = await state(page), expandedReloadPosts = metrics.posts.length;
+      await page.reload(); await settled(page);
+      await assertOverviewDisclosure(page, false);
+      assert.equal(await page.evaluate(() => localStorage.getItem('voodoo-overview-collapsed')), 'false', '明确展开的偏好也要跨刷新保存');
+      assert.equal(metrics.posts.length, expandedReloadPosts, '恢复展开偏好不能执行游戏行动');
+      assert.deepEqual((await state(page)).snapshot, beforeExpandedReload.snapshot);
+      assert.deepEqual((await state(page)).dialogue, beforeExpandedReload.dialogue);
+      await switchHybridWithoutAction(page, metrics, 'portrait');
+      await assertOverviewDisclosure(page, false);
+      await page.screenshot({ path: join(output, metrics.name + '-expanded.png') });
+      metrics.overviewPreferenceRetained = ['page-turn', 'room-change', 'reload-collapsed', 'reload-expanded', 'rotation', 'pending', 'cancel', 'confirm'];
       metrics.rotationPreserved = ['reading', 'draft', 'pending'];
+      if (width === 568) {
+        // Fail only the cosmetic preference store. Game saves and pending
+        // actions must keep their real storage path throughout this check.
+        await page.addInitScript(() => {
+          const getItem = Storage.prototype.getItem, setItem = Storage.prototype.setItem;
+          Storage.prototype.getItem = function (key) {
+            if (key === 'voodoo-overview-collapsed') throw new DOMException('Preference storage unavailable', 'SecurityError');
+            return getItem.call(this, key);
+          };
+          Storage.prototype.setItem = function (key, value) {
+            if (key === 'voodoo-overview-collapsed') throw new DOMException('Preference storage unavailable', 'QuotaExceededError');
+            return setItem.call(this, key, value);
+          };
+        });
+        const beforeStorageFailure = await state(page), storageFailurePosts = metrics.posts.length;
+        await page.reload(); await settled(page);
+        await assertOverviewDisclosure(page, false);
+        assert.equal(metrics.posts.length, storageFailurePosts);
+        assert.deepEqual((await state(page)).snapshot, beforeStorageFailure.snapshot, '界面偏好读取失败不能破坏游戏存档');
+        assert.deepEqual((await state(page)).dialogue, beforeStorageFailure.dialogue);
+        await switchHybridWithoutAction(page, metrics, 'portrait');
+        await toggleOverviewWithoutAction(page, metrics, true, { storageUnavailable: true });
+        await toggleOverviewWithoutAction(page, metrics, false, { storageUnavailable: true });
+        metrics.overviewPreferenceStorageFailure = 'Only preference getItem/setItem deliberately failed; both real UI toggles remained usable without changing game data or emitting page errors.';
+        await page.screenshot({ path: join(output, metrics.name + '-preference-storage-failure.png') });
+      }
     });
   }
   await scenario('hybrid-renderer-unavailable', { width: 568, height: 320 }, async (page, context, metrics) => {

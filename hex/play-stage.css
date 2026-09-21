@@ -108,6 +108,14 @@
 .single-player.is-playing .single-meta { max-width:calc(100% - 170px); }
 .vn-stage[data-view="portrait"] .vn-scene-hotspots { visibility:hidden; }
 .vn-stage[data-view="portrait"] .vn-overview-caption { display:none; }
+/* MW-40: hide only the portrait inset; exploration retains the whole room. */
+.vn-stage[data-view="portrait"][data-overview-collapsed="true"] .vn-overview-frame { visibility:hidden; }
+.vn-overview-toggle { position:absolute; z-index:6; width:44px; height:44px; padding:0; display:grid; place-items:center; border:0; background:transparent; color:#efdec2; cursor:pointer; }
+.vn-overview-toggle[hidden] { display:none; }
+.vn-overview-toggle span { display:grid; place-items:center; width:24px; height:24px; border:1px solid #d7be8880; border-radius:4px; background:#192438ed; font-size:18px; line-height:1; }
+.vn-stage[data-overview-collapsed="true"] .vn-overview-toggle { width:76px; }
+.vn-stage[data-overview-collapsed="true"] .vn-overview-toggle span { width:76px; height:44px; font-size:12px; }
+.vn-overview-toggle:focus-visible { outline:2px solid #eed4ac; outline-offset:1px; border-radius:4px; }
 .vn-stage[data-view="overview"] .vn-overview-shell { left:12px; top:42px; bottom:14px; width:calc(50% - 24px); height:auto; }
 .vn-stage[data-view="overview"] .vn-cast { visibility:hidden; }
 .vn-stage[data-view="overview"] .vn-background { filter:blur(3px) brightness(.3) saturate(.5); }
