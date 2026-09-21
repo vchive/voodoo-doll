@@ -1,0 +1,18 @@
+{
+  "recordedAt": "2026-09-21T07:51:19.949858+00:00",
+  "scope": "最终产品源码，独立内存/临时数据库，测试transport，未调用真实模型",
+  "command": "env -u MODEL_BASE_URL -u MODEL_API_KEY -u MODEL_NAME -u MODEL_PROVIDER PYTHONPATH=. python3 -m unittest discover -s backend/tests -q",
+  "exitCode": 0,
+  "tests": 183,
+  "seconds": 52.129,
+  "stdout": "Ran 183 tests in 52.129s\n\nOK",
+  "sources": {
+    "backend/app/domain/character_context.py": "619229ce64362cd114ddb19f047531fda04824db93812b05effb3b70bc76cb84",
+    "backend/app/domain/perception.py": "4e8b6c593ebfeadb0f8e908e27272aeeb38f4fb68958d978248ca13d85b4d1f3",
+    "backend/app/domain/resolver.py": "199ef5d24f6e65d1e03aba15798aafae694a72a5f7ee71914ee361e2fdc3b0d3",
+    "backend/app/agents/gateway.py": "d28019a2c64a6f918e6c931f4e89f8638b1c9037aa4ebf5513402f4bef954441",
+    "backend/app/signal_story.py": "1c13f0c7c005667e35785355a29730f4cf500cb7d6b5df5804b0b4b76a3b9bdf",
+    "backend/tests/test_character_conversation.py": "eee74db519ed5924f7c88e3dc760c1a5c3f35505f86ba3d2c53940e1750d66ab",
+    "backend/tests/test_signal_story.py": "cfdafaac0461ea2ed82686880553ca29a17d81d27fe138c22e7d98c7f9ccf729"
+  }
+}

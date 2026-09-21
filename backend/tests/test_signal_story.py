@@ -141,7 +141,14 @@ class SignalStoryTests(unittest.TestCase):
                         self.assertNotIn("午饭", answer)
                     if text.startswith("问林川"):
                         answer = next(event["payload"]["text"] for event in result["events"] if event["actor"] == "A")
-                        self.assertIn({"trust": "已经留下", "audit": "已经交出", "protect": "已经收好"}[route], answer)
+                        for ending_phrase in ("已经留下", "已经交出", "已经收好"):
+                            self.assertNotIn(ending_phrase, answer)
+                        # Ordinary life talk no longer repeats the ending;
+                        # an explicit story question can still recall it.
+                        recalled = self.turn("问林川：事故档案现在怎么样？")
+                        self.assertEqual(recalled["snapshot"]["narrative"], completed)
+                        ending_answer = next(event["payload"]["text"] for event in recalled["events"] if event["actor"] == "A")
+                        self.assertIn({"trust": "已经留下", "audit": "已经交出", "protect": "已经收好"}[route], ending_answer)
 
                 restored = SinglePlayerGame(WorldKernel(world_id="signal-complete-copy-" + route, store=EventStore(":memory:")), "complete-copy")
                 imported = restored.import_save({"sourceKey": "voodoo-single-v1", "payload": self.game.export_save()})

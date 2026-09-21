@@ -11,6 +11,7 @@ import hashlib
 from .actions import validate_agent_response
 from .events import stable_seed
 from .models import Event, WorldState
+from .character_context import signal_a_life_response
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,9 @@ class RuleAgent:
     """A local policy with stable output for a given turn and role."""
 
     def propose(self, actor: str, request: Event, state: WorldState) -> AgentProposal:
+        life_response = signal_a_life_response(actor, request, state)
+        if life_response is not None:
+            return AgentProposal(actor, "answer", "YOU", life_response)
         profile = state.agents[actor].profile
         seed = stable_seed(request.turn_id, actor)
         choices = ["answer", "deny", "counter", "silence", "refuse"]

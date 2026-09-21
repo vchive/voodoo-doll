@@ -3,6 +3,7 @@
 // MW-40 additionally verifies the independently saved overview disclosure.
 // MW-41 covers ambiguous multi-character picking through real imported worlds.
 // MW-42 covers resuming the visible portion of an interrupted dialogue line.
+// MW-43 exercises Lin Chuan's everyday conversation and committed recall.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -24,7 +25,7 @@ const output = resolve(root, 'artifacts', 'playtest', stamp);
 const temporary = await mkdtemp(join(tmpdir(), 'voodoo-playtest-'));
 const report = { startedAt: new Date().toISOString(), cases: [], errors: [], sources: {} };
 await mkdir(output, { recursive: true });
-for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-overview-model.ts', 'hex/play-overview.ts', 'hex/play-cast-picker.ts', 'hex/play-cast-picker.css', 'hex/characters.js', 'hex/rooms.js', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
+for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-overview-model.ts', 'hex/play-overview.ts', 'hex/play-cast-picker.ts', 'hex/play-cast-picker.css', 'hex/characters.js', 'hex/rooms.js', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'backend/app/domain/character_context.py', 'backend/app/domain/perception.py', 'backend/app/domain/resolver.py', 'backend/app/agents/gateway.py', 'dist-hex/index.html']) {
   report.sources[path] = createHash('sha256').update(await readFile(join(root, path))).digest('hex');
 }
 report.baseCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -552,6 +553,55 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[568, 320], [844, 390], [390, 844]]) {
+    await scenario(`character-conversation-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      await walk(page, metrics, 'meeting');
+      const original = (await state(page)).snapshot.narrative;
+      await openFree(page);
+      const beforeWork = metrics.posts.length;
+      await page.getByRole('button', { name: '和林川聊聊工作', exact: true }).click();
+      await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).dialogue.lines.some(line => line.speakerId === 'A' && /校对|工作/.test(line.text)), cacheKey);
+      await settled(page);
+      assert.equal(metrics.posts.length - beforeWork, 2, '生活推荐只执行一次预览/确认');
+      assert.deepEqual((await state(page)).snapshot.narrative, original, '工作闲聊不能替玩家听完主线说明');
+      metrics.workReply = (await state(page)).dialogue.lines.find(line => line.speakerId === 'A').text;
+      assert.match(metrics.workReply, /校对|工作/);
+      assert(!metrics.workReply.includes('21:17'), '生活回应不能复读主线事故说明');
+      await assertStageLayout(page);
+      await page.screenshot({ path: join(output, metrics.name + '-work.png') });
+      const perform = async text => {
+        await preview(page, text); await confirm(page); metrics.actions++;
+      };
+      await perform('问林川：我今天带了一把蓝伞。');
+      const beforeCancel = await state(page), cancelPosts = metrics.posts.length;
+      await preview(page, '问林川：我今天带了一把红伞。');
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      assert.deepEqual((await state(page)).snapshot, beforeCancel.snapshot, '取消的话不能成为角色经历');
+      assert.equal(metrics.posts.length - cancelPosts, 2);
+      assert(metrics.posts.slice(cancelPosts).every(path => !path.endsWith('/confirm')));
+      await perform('去地铁站');
+      assert(!(await state(page)).snapshot.guidance.actions.some(action => action.id.startsWith('chat-a-')), '离场后不能仍推荐林川的生活聊天');
+      await perform('去办公室');
+      await page.reload(); await settled(page);
+      await openFree(page);
+      await page.getByRole('button', { name: '问林川还记得什么', exact: true }).click();
+      await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).dialogue.lines.some(line => line.speakerId === 'A' && line.text.includes('蓝伞')), cacheKey);
+      await settled(page);
+      const remembered = (await state(page)).dialogue.lines.find(line => line.speakerId === 'A').text;
+      assert(remembered.includes('蓝伞') && !remembered.includes('红伞'), '只回忆已确认的话，不能记住取消的预览');
+      metrics.rememberedReply = remembered;
+      assert.deepEqual((await state(page)).snapshot.narrative, original);
+      await assertStageLayout(page);
+      await page.screenshot({ path: join(output, metrics.name + '-recall.png') });
+      await page.getByRole('button', { name: '回看', exact: true }).click();
+      assert((await page.locator('#single-backlog').innerText()).includes('蓝伞'));
+      await page.getByRole('button', { name: '收起回看', exact: true }).click();
+      await readToChoices(page, metrics);
+      await nextStoryAction(page, metrics, 'trust', 'station');
+      assert.equal((await state(page)).snapshot.narrative.step, 'day1-choice', '明确主线提问仍可继续教程');
+      metrics.actions += 2;
+    });
+  }
   for (const [width, height] of [[568, 320], [844, 390], [320, 568]]) {
     await scenario(`reading-resume-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       // First use the unmodified, real tutorial opening. Its first sentence

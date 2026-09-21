@@ -8,6 +8,7 @@ rooms, time, schedules and events; no model is required to finish the chapter.
 from __future__ import annotations
 
 import copy
+import re
 import time
 from typing import Any, Mapping, Optional
 
@@ -217,6 +218,38 @@ def _set_next_day(state: WorldState, day: int, minute: int) -> None:
     _clock_set(state, day, minute)
 
 
+def _spoken_text(request: Event) -> str:
+    # The product sends "问林川：…"; match the utterance, not a renamed actor.
+    return re.split(r"[：:]", str(request.payload.get("text", "") or ""), maxsplit=1)[-1].strip()
+
+
+def _story_topic(text: str) -> bool:
+    return any(word in text for word in (
+        "红灯", "信号", "事故", "原稿", "档案", "报告", "回执", "署名", "审计",
+        "证据", "录音", "交班", "06-17", "公开", "隐瞒", "改写", "更正", "记录",
+    ))
+
+
+def _explicit_stance(text: str) -> Optional[str]:
+    # A question, refusal, or description is not a commitment. Keep a final
+    # decision in the player's words; an agent response can never choose it.
+    if re.search(r"[？?]|吗|么|为何|为什么|怎么|是否|能否|要不要|如果|假如|考虑|也许", text):
+        return None
+    # Require the commitment at the start of the utterance. Mentioning what
+    # somebody said, or quoting a choice in ordinary conversation, is not one.
+    decision = re.sub(r"^(?:我们|我)(?:决定|选择|愿意|同意|想要|要|想|会)?", "", text).strip()
+    if re.search(r"(?:不|别|没有|取消|拒绝)[^，。！？?;；]{0,12}(?:署名|审计|保护|相信|保存|保留|提交)", decision):
+        return None
+    decision = re.split(r"[，,。！!;；]", decision, maxsplit=1)[0].strip()
+    if re.fullmatch(r"(?:(?:先)?保护(?:你|林川)|(?:暂(?:时)?不|不要|别)公开)(?:吧)?", decision):
+        return "protect"
+    if re.fullmatch(r"(?:(?:公开|启动|进行|申请)?(?:一次)?审计|(?:保存|保留|提交)(?:全部|所有)?证据|证据(?:一起|全部)?入档)(?:吧)?", decision):
+        return "audit"
+    if re.fullmatch(r"(?:(?:共同|一起|联合)署名|(?:先)?相信你|一起查|把(?:红灯)?记录(?:写回去|留下))(?:吧)?", decision):
+        return "trust"
+    return None
+
+
 def advance_story(state: WorldState, request: Event, started_clock: Mapping[str, Any]) -> Optional[str]:
     if not is_signal_template(state):
         return None
@@ -225,7 +258,7 @@ def advance_story(state: WorldState, request: Event, started_clock: Mapping[str,
         return None
     old = n["step"]
     room = state.agents["YOU"].room_id
-    action, payload, text, target = request.action, request.payload, request.payload.get("text", "") or "", request.target
+    action, payload, text, target = request.action, request.payload, _spoken_text(request), request.target
     facts = n.setdefault("facts", {})
     now = clock_snapshot(state.metadata)
     missed = _deadline_missed(n, now)
@@ -244,14 +277,15 @@ def advance_story(state: WorldState, request: Event, started_clock: Mapping[str,
         n["step"] = "dossier"
     elif old == "dossier" and action == "use" and room == "office" and payload.get("objectId") in ("dossier", "desk"):
         facts["dossierRead"] = True; n["step"] = "meeting"; _append(n, "receipt")
-    elif old == "meeting" and action in ("ask", "tell") and target == "A" and room == "office":
+    elif old == "meeting" and action in ("ask", "tell") and target == "A" and room == "office" and any(word in text for word in ("红灯", "事故", "原稿", "06-17", "改写", "更正")):
         n["step"] = "day1-choice"
     elif old == "day1-choice" and action in ("ask", "tell") and target == "A" and room == "office":
-        if any(word in text for word in ("保护", "不要公开", "暂不公开", "沉默")):
+        stance = _explicit_stance(text)
+        if stance == "protect":
             n.update(choice="protect", day2Route="protect"); _append(n, "care-first")
-        elif any(word in text for word in ("审计", "公开", "证据", "保存")):
+        elif stance == "audit":
             n.update(choice="audit", day2Route="audit"); _append(n, "audit-request")
-        elif any(word in text for word in ("署名", "一起查", "相信", "记录留下")):
+        elif stance == "trust":
             n.update(choice="trust", day2Route="trust"); _append(n, "joint-signature")
         else:
             # An arbitrary reply is not a hidden trust choice. Keep the
@@ -282,14 +316,15 @@ def advance_story(state: WorldState, request: Event, started_clock: Mapping[str,
         _set_next_day(state, 3, 540); n["step"] = "day3-archive"
     elif old == "day3-archive" and room == "office" and action == "use" and payload.get("objectId") in ("dossier", "desk"):
         facts["receiptSeen"] = True; _append(n, "future-receipt"); n["step"] = "day3-hearing"
-    elif old == "day3-hearing" and room == "office" and action in ("ask", "tell") and target == "A":
+    elif old == "day3-hearing" and room == "office" and action in ("ask", "tell") and target == "A" and any(word in text for word in ("回执", "更正预约")):
         n["step"] = "day3-decision"
     elif old == "day3-decision" and room == "office" and action in ("ask", "tell") and target == "A":
-        if any(word in text for word in ("保护", "不要公开", "暂不公开", "沉默")):
+        stance = _explicit_stance(text)
+        if stance == "protect":
             final = "protect"
-        elif any(word in text for word in ("审计", "公开", "证据", "保存")) and facts.get("auditSaved"):
+        elif stance == "audit" and facts.get("auditSaved"):
             final = "audit"
-        elif any(word in text for word in ("署名", "一起查", "相信", "写回", "记录留下")) and facts.get("manualRed") and facts.get("dossierRead"):
+        elif stance == "trust" and facts.get("manualRed") and facts.get("dossierRead"):
             final = "trust"
         else:
             return None
@@ -313,6 +348,11 @@ def story_response(state: WorldState, actor: str, request: Event) -> Optional[st
     n = state.metadata["narrative"]
     room = state.agents["YOU"].room_id
     if state.agents[actor].room_id != room:
+        return None
+    spoken = _spoken_text(request)
+    if actor == "A" and not _story_topic(spoken) and _explicit_stance(spoken) is None:
+        # Ordinary conversation reaches the same isolated adapter as other
+        # worlds. Only authored story topics retain their deterministic prose.
         return None
     if n.get("completed"):
         if actor == "C":
@@ -432,6 +472,12 @@ def scene_actions(state: WorldState) -> list[dict]:
         actions = [_action("signal-return", "返回" + ROOM_LABELS[expected_room], "去" + ROOM_LABELS[expected_room], 5)]
     if step == "day2-station" and "day2-station" in n.get("missedWindows", []) and room == "station":
         actions = [_action("signal-day2-public", "周野已交班，查看公开交班簿", "看看交班簿", 2)]
+    if "A" in state.present and state.agents["A"].room_id == room:
+        a = _names(state).get("A", "林川")
+        actions.extend([
+            _action("chat-a-work", f"和{a}聊聊工作", f"问{a}：今天工作怎么样？", 3),
+            _action("chat-a-memory", f"问{a}还记得什么", f"问{a}：你还记得我上次说过什么吗？", 3),
+        ])
     return actions
 
 

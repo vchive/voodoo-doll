@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List
 
 from .events import events_for_viewer
 from .models import Event, WorldState, canonical_id
+from .character_context import build_character_context
 
 
 def build_context(state: WorldState, viewer: str, events: Iterable[Event] = ()) -> Dict[str, Any]:
@@ -17,6 +18,7 @@ def build_context(state: WorldState, viewer: str, events: Iterable[Event] = ()) 
         if item in state.agents and state.agents[item].room_id == agent.room_id
     ]
     return {
+        **build_character_context(state, viewer),
         "viewer": viewer,
         "room": agent.room_id,
         "present": list(public_present),
