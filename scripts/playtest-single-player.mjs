@@ -1,4 +1,5 @@
-// MW-36 / SP-21 / MW-AC-36 and MW-37 / SP-22 / MW-AC-37.
+// MW-36 / SP-21 / MW-AC-36, MW-37 / SP-22 / MW-AC-37,
+// and MW-38 / SP-23 / MW-AC-38.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -20,7 +21,7 @@ const output = resolve(root, 'artifacts', 'playtest', stamp);
 const temporary = await mkdtemp(join(tmpdir(), 'voodoo-playtest-'));
 const report = { startedAt: new Date().toISOString(), cases: [], errors: [], sources: {} };
 await mkdir(output, { recursive: true });
-for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
+for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
   report.sources[path] = createHash('sha256').update(await readFile(join(root, path))).digest('hex');
 }
 report.baseCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -208,6 +209,121 @@ function trackPage(page, metrics) {
     if (request.method() === 'POST' && request.url().includes('/api/v4/play/')) metrics.posts.push(new URL(request.url()).pathname.replace('/api/v4/play/', ''));
   });
 }
+async function assertStageLayout(page) {
+  const geometry = await page.evaluate(() => {
+    const box = selector => {
+      const rect = document.querySelector(selector).getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
+    };
+    return { stage: box('.vn-stage'), dialogue: box('#single-dialogue'), footer: box('.dialogue-footer'),
+      width: innerWidth, height: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
+  });
+  const { stage, dialogue, footer, width, height } = geometry;
+  assert.equal(geometry.overflow, false, 'Galgame舞台不能横向溢出');
+  assert(stage.width > 0 && stage.height > 0, '舞台必须有可见区域');
+  assert(dialogue.y > stage.y && dialogue.y < stage.bottom && dialogue.bottom <= stage.bottom + 2, '对话窗应叠在舞台底部');
+  assert(dialogue.width > stage.width * .65, '对话窗不应仍是舞台旁的小侧栏');
+  assert(footer.x >= 0 && footer.y >= 0 && footer.right <= width + 1 && footer.bottom <= height + 1, '对话操作需处于可视区域');
+  return geometry;
+}
+async function assertIntentPreviewLayout(page) {
+  const geometry = await page.locator('#intent-preview').evaluate(preview => {
+    const rect = node => {
+      const box = node.getBoundingClientRect();
+      return { x: box.x, y: box.y, right: box.right, bottom: box.bottom, width: box.width, height: box.height };
+    };
+    const text = preview.querySelector('.single-preview');
+    const css = getComputedStyle(text);
+    return { dialogue: rect(document.querySelector('#single-dialogue')), preview: rect(preview), text: rect(text),
+      readableHeight: text.clientHeight - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom),
+      lineHeight: parseFloat(css.lineHeight) || parseFloat(css.fontSize) * 1.5,
+      value: text.textContent.trim(), viewport: { width: innerWidth, height: innerHeight },
+      buttons: [...preview.querySelectorAll('button')].map(button => {
+        const box = rect(button), hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return { ...box, label: button.textContent, unobstructed: Boolean(hit && button.contains(hit)) };
+      }) };
+  });
+  assert(geometry.value.length > 0, '行动预览必须显示玩家即将执行的文字');
+  assert(geometry.readableHeight >= geometry.lineHeight - 1, '行动预览至少保留一整行可读区域，不能被标题和按钮压缩成零');
+  assert(geometry.text.y >= geometry.dialogue.y && geometry.text.bottom <= geometry.dialogue.bottom + 1, '预览内容须位于对话窗内');
+  assert.equal(geometry.buttons.length, 2, '预览保留确认与取消两个入口');
+  for (const button of geometry.buttons) {
+    assert(button.height >= 44, '预览按钮必须保留可点击高度：' + button.label);
+    assert(button.x >= geometry.dialogue.x - 1 && button.y >= geometry.dialogue.y - 1
+      && button.right <= geometry.dialogue.right + 1 && button.bottom <= geometry.dialogue.bottom + 1,
+    '预览按钮不能越出对话窗：' + button.label);
+    assert(button.x >= 0 && button.y >= 0 && button.right <= geometry.viewport.width + 1 && button.bottom <= geometry.viewport.height + 1,
+      '预览按钮必须在可视区域：' + button.label);
+    assert(button.unobstructed, '预览按钮不能被其他界面遮挡：' + button.label);
+  }
+  return geometry;
+}
+async function assertPublicCast(page, loaded = true) {
+  const current = await state(page);
+  const cast = await page.locator('.vn-character:not([data-leaving="true"])').evaluateAll(nodes => nodes.map(node => ({
+    id: node.dataset.castId, active: node.dataset.active, loaded: Boolean(node.querySelector('img')?.naturalWidth),
+  })));
+  for (const item of cast) {
+    assert(current.snapshot.present.includes(item.id), '立绘不能让离场者出现在舞台：' + item.id);
+    const room = current.snapshot.agents?.[item.id]?.roomId;
+    assert(!room || room === current.snapshot.roomId, '立绘位置必须与公开世界相符');
+    assert(!['YOU', 'PLAYER_DOLL'].includes(item.id), '玩家与娃娃不占对面NPC立绘');
+    if (loaded) assert(item.loaded, '在场NPC立绘没有实际加载：' + item.id);
+  }
+  return cast;
+}
+async function readPerformanceToChoices(page, metrics, { loaded = true, reducedMotion = false } = {}) {
+  const before = await state(page), posts = metrics.posts.length;
+  const eventId = await page.locator('.vn-stage').getAttribute('data-action-event');
+  let clicks = 0;
+  while (await page.locator('.dialogue-page').isVisible()) {
+    const current = await state(page);
+    const line = current.dialogue.lines[current.dialogue.index];
+    const stage = await page.locator('.vn-stage').evaluate(node => ({ mode: node.dataset.mode, speaker: node.dataset.speaker }));
+    assert.equal(stage.mode, line.kind);
+    if (reducedMotion) assert.equal(await page.locator('.vn-stage').evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length), 0, '减少动态时对白高亮也不能播放动画');
+    const cast = await assertPublicCast(page, loaded);
+    if (line.kind === 'thought') {
+      assert.equal(line.speakerId, 'YOU', 'NPC私密心声不能进入公开阅读');
+      assert.equal(stage.speaker, 'YOU');
+      assert(cast.every(item => item.active === 'false'), '主角沉思不能点亮其他角色');
+      metrics.thoughtPages = (metrics.thoughtPages || 0) + 1;
+    } else if (line.kind === 'narration') {
+      assert.equal(stage.speaker, 'PLAYER_DOLL');
+      assert.equal(await page.locator('.vn-doll').getAttribute('data-active'), 'true');
+    } else if (/^[A-Z]$/.test(line.speakerId)) {
+      assert.equal(stage.speaker, line.speakerId);
+      assert(cast.some(item => item.id === line.speakerId && item.active === 'true'), '当前说话人应点亮立绘');
+      metrics.spokenIds ||= [];
+      if (!metrics.spokenIds.includes(line.speakerId)) metrics.spokenIds.push(line.speakerId);
+      if (line.speakerId === 'A' && loaded) await page.screenshot({ path: join(output, metrics.name + '-speaking.png') });
+    }
+    await page.locator('.dialogue-page').click();
+    assert(++clicks < 100, '演出页面无法读完');
+  }
+  metrics.readClicks += clicks;
+  assert.equal(metrics.posts.length, posts, '阅读表情或换页不能提交行动');
+  assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), eventId, '阅读不能重新产生动作演出');
+  assert.deepEqual((await state(page)).snapshot, before.snapshot, '阅读不能改变时间或世界');
+  await assertStageLayout(page);
+}
+async function performWithCue(page, metrics, kind, act) {
+  const response = page.waitForResponse(item => item.request().method() === 'POST' && /\/api\/v4\/play\/intent\/[^/]+\/confirm$/.test(new URL(item.url()).pathname));
+  await act();
+  const receipt = await (await response).json();
+  const playerEvent = receipt.events.find(event => event.actor === 'YOU');
+  assert(playerEvent?.eventId, '动作必须来自实际确认回执');
+  await page.waitForFunction(id => document.querySelector('.vn-stage')?.dataset.actionEvent === id, playerEvent.eventId);
+  assert.equal(await page.locator('.vn-stage').getAttribute('data-action'), kind);
+  assert(await page.locator('.vn-action').isVisible(), '确认的动作需要有可见反馈');
+  metrics.performances ||= [];
+  metrics.performances.push({ kind, eventId: playerEvent.eventId, action: playerEvent.action });
+  return receipt;
+}
+async function waitForPortraits(page) {
+  await page.waitForFunction(() => [...document.querySelectorAll('.vn-character:not([data-leaving="true"]) img.vn-portrait')]
+    .every(image => image.complete && image.naturalWidth > 0));
+}
 async function scenario(name, viewport, run) {
   if (process.env.PLAYTEST_CASE && !new RegExp(process.env.PLAYTEST_CASE).test(name)) return;
   const context = await browser.newContext({ viewport, acceptDownloads: true });
@@ -237,6 +353,105 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[844, 390], [568, 320], [390, 844], [320, 568]]) {
+    await scenario(`vn-stage-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      await page.locator('.vn-stage').waitFor();
+      await page.waitForFunction(() => document.querySelector('img.vn-background')?.naturalWidth > 0);
+      metrics.geometry = await assertStageLayout(page);
+      await page.screenshot({ path: join(output, metrics.name + '-arrival.png') });
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), null, '载入故事不能播放旧行动');
+      // Walk the actual recommended commute, inspecting event-driven cues at
+      // each step. No direct backend progression or invented cache is used.
+      for (const kind of ['inspect', 'open', 'move', 'inspect', 'move']) {
+        await waitForPortraits(page);
+        await readPerformanceToChoices(page, metrics);
+        await performWithCue(page, metrics, kind, () => nextStoryAction(page, metrics, 'trust', 'station'));
+      }
+      await waitForPortraits(page);
+      const office = await state(page);
+      assert.equal(office.snapshot.roomId, 'office');
+      assert.equal(office.snapshot.narrative.step, 'dossier');
+      assert((await assertPublicCast(page)).some(item => item.id === 'A'), '办公室必须实际展示林川立绘');
+      await readPerformanceToChoices(page, metrics);
+      const beforePreview = (await state(page)).snapshot;
+      const priorCue = await page.locator('.vn-stage').getAttribute('data-action-event');
+      await preview(page, '使用办公桌');
+      metrics.previewGeometry = await assertIntentPreviewLayout(page);
+      await page.screenshot({ path: join(output, metrics.name + '-preview.png') });
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), priorCue, '预览不能触发动作');
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), priorCue, '取消不能触发动作');
+      assert.deepEqual((await state(page)).snapshot, beforePreview);
+      await preview(page, '使用办公桌');
+      await assertIntentPreviewLayout(page);
+      await performWithCue(page, metrics, 'work', () => confirm(page));
+      await waitForPortraits(page);
+      await readPerformanceToChoices(page, metrics);
+      assert(metrics.spokenIds.includes('A'), '本轮必须实际读到林川说话和高亮');
+      assert(metrics.thoughtPages > 0, '本轮必须实际读到主角心声');
+      await preview(page, '去地铁站');
+      await performWithCue(page, metrics, 'move', () => confirm(page));
+      await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]'));
+      await waitForPortraits(page); await assertPublicCast(page);
+      const afterMove = (await state(page)).snapshot, posts = metrics.posts.length;
+      await page.reload(); await settled(page);
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), null, '刷新只恢复舞台，不重演动作');
+      assert.equal(await page.locator('.vn-action').isVisible(), false);
+      assert.equal(metrics.posts.length, posts);
+      assert.deepEqual(stable((await state(page)).snapshot), stable(afterMove));
+      await assertStageLayout(page);
+      const beforeCredits = await state(page);
+      const beforeCreditsPosts = metrics.posts.length;
+      const beforeCreditsCue = await page.locator('.vn-stage').getAttribute('data-action-event');
+      await menu(page, '美术署名');
+      await page.locator('dialog.vn-credits').waitFor();
+      assert(await page.locator('dialog.vn-credits a').count(), '署名需要提供素材来源');
+      await page.locator('dialog.vn-credits').getByRole('button', { name: '回到游戏', exact: true }).click();
+      await page.locator('dialog.vn-credits').waitFor({ state: 'detached' });
+      assert.equal(metrics.posts.length, beforeCreditsPosts, '查看署名并返回不能执行游戏行动');
+      assert.deepEqual((await state(page)).snapshot, beforeCredits.snapshot);
+      assert.deepEqual((await state(page)).dialogue, beforeCredits.dialogue, '查看署名并返回应保留阅读位置');
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), beforeCreditsCue);
+      metrics.creditsReturnedWithoutAction = true;
+      await assertStageLayout(page);
+    });
+  }
+  await scenario('vn-reduced-motion', { width: 568, height: 320 }, async (page, context, metrics) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload(); await settled(page);
+    await readPerformanceToChoices(page, metrics);
+    await performWithCue(page, metrics, 'inspect', () => nextStoryAction(page, metrics, 'trust', 'station'));
+    assert.equal(await page.locator('.vn-stage').evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length), 0, '减少动态时舞台不能播放动画');
+    await readPerformanceToChoices(page, metrics);
+    await performWithCue(page, metrics, 'open', () => nextStoryAction(page, metrics, 'trust', 'station'));
+    assert.equal(await page.locator('.vn-stage').evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length), 0);
+    assert.equal((await state(page)).snapshot.narrative.step, 'station');
+    await preview(page, '去办公室');
+    await performWithCue(page, metrics, 'move', () => confirm(page));
+    await waitForPortraits(page);
+    await preview(page, '问林川：你好');
+    await performWithCue(page, metrics, 'speak', () => confirm(page));
+    await readPerformanceToChoices(page, metrics, { reducedMotion: true });
+    assert(metrics.spokenIds.includes('A'), '减少动态模式也必须实际展示说话人');
+    metrics.reducedMotion = true;
+  });
+  await scenario('vn-art-fallback', { width: 844, height: 390 }, async (page, context, metrics) => {
+    await page.route('**/*', route => route.request().resourceType() === 'image' ? route.abort() : route.continue());
+    await page.reload(); await settled(page);
+    await page.waitForFunction(() => document.querySelector('.vn-stage')?.dataset.backgroundFallback === 'true');
+    await preview(page, '去办公室');
+    await performWithCue(page, metrics, 'move', () => confirm(page));
+    await page.locator('.vn-character[data-cast-id="A"] .vn-portrait-fallback').waitFor();
+    await page.waitForFunction(() => document.querySelector('.vn-character[data-cast-id="A"] img.vn-portrait')?.hidden);
+    assert.equal(await page.locator('.vn-character[data-cast-id="A"] img.vn-portrait').isVisible(), false);
+    await readPerformanceToChoices(page, metrics, { loaded: false });
+    assert(await page.locator('[data-story-action="true"]').first().isVisible(), '图片失败仍能选择行动');
+    await preview(page, '开门');
+    await performWithCue(page, metrics, 'open', () => confirm(page));
+    assert(await page.locator('.dialogue-page').isVisible(), '图片失败仍能读到动作反馈');
+    assert.equal((await state(page)).snapshot.roomId, 'office');
+    metrics.artFailure = 'All image requests deliberately aborted; text, recommendations and confirmed actions stayed usable.';
+  });
   for (const [width, height] of [[844, 390], [568, 320], [390, 844]]) {
     await scenario(`ending-v2-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       const fixture = await completedTemplateSave('rainy-office-v2');
@@ -280,6 +495,26 @@ try {
       await openFree(page);
       for (const name of ['观察周围', '开门看看']) assert(await page.locator('#single-quick-actions').getByRole('button', { name, exact: true }).isVisible());
       await page.getByRole('button', { name: '收起自由行动', exact: true }).click();
+      // A completed-story choice window is shorter than ordinary reading.
+      // Preview must expand it without inheriting the ending-only geometry.
+      const endingBeforePreview = await state(page);
+      const endingCue = await page.locator('.vn-stage').getAttribute('data-action-event');
+      const endingPreviewPosts = metrics.posts.length;
+      await preview(page, '观察这里');
+      metrics.endingPreviewGeometry = await assertIntentPreviewLayout(page);
+      await page.screenshot({ path: join(output, metrics.name + '-preview.png') });
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), endingCue, '结尾预览不能触发演出');
+      assert.deepEqual((await state(page)).snapshot, endingBeforePreview.snapshot);
+      await page.getByRole('button', { name: '先不做', exact: true }).click();
+      await page.locator('#intent-preview').waitFor({ state: 'detached' }); await settled(page);
+      assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), endingCue, '结尾取消预览不能产生动作cue');
+      assert.deepEqual((await state(page)).snapshot, endingBeforePreview.snapshot, '结尾取消预览不得改变世界或结局');
+      assert.deepEqual((await state(page)).dialogue, endingBeforePreview.dialogue, '结尾取消预览应恢复原阅读和选项');
+      assert.equal((await state(page)).pending, undefined);
+      assert.equal(metrics.posts.length - endingPreviewPosts, 2, '结尾预览取消只允许草稿与取消请求');
+      assert(metrics.posts.slice(endingPreviewPosts).every(path => !path.endsWith('/confirm')), '结尾取消预览不得确认行动');
+      assert.deepEqual(stable((await session(page)).snapshot), stable(explored));
+      await assertEndingChoices(page);
       beforePosts = metrics.posts.length;
       await page.locator('[data-ending-action="library"]').click();
       await page.locator('#single-return-story').waitFor();
@@ -378,7 +613,15 @@ try {
 
   await scenario('missed-day1', { width: 844, height: 390 }, async (page, context, metrics) => {
     await walk(page, metrics, 'day1-choice');
+    await waitForPortraits(page);
+    const beforeCast = await assertPublicCast(page);
+    assert(beforeCast.some(item => item.id === 'A' && item.loaded), '等待前必须实际加载林川立绘');
+    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待60分钟'); await confirm(page);
+    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]'));
+    metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     await readToChoices(page, metrics);
     let current = await state(page);
     assert.equal(current.snapshot.narrative.ending, 'missed');
@@ -392,8 +635,16 @@ try {
 
   await scenario('missed-day3', { width: 844, height: 390 }, async (page, context, metrics) => {
     await walk(page, metrics, 'day3-hearing');
+    await waitForPortraits(page);
+    const beforeCast = await assertPublicCast(page);
+    assert(beforeCast.some(item => item.id === 'A' && item.loaded), '第三日等待前必须实际加载林川立绘');
+    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待120分钟'); await confirm(page);
     await preview(page, '等待60分钟'); await confirm(page);
+    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]'));
+    metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     await readToChoices(page, metrics);
     const current = await state(page);
     assert.equal(current.snapshot.narrative.ending, 'missed');
@@ -408,7 +659,16 @@ try {
 
   for (const branch of ['station', 'kitchen']) await scenario(`missed-${branch}`, { width: 667, height: 375 }, async (page, context, metrics) => {
     await walk(page, metrics, 'day2-' + branch, 'trust', branch);
+    const scheduledId = branch === 'station' ? 'C' : 'B';
+    await waitForPortraits(page);
+    const beforeCast = await assertPublicCast(page);
+    assert(beforeCast.some(item => item.id === scheduledId && item.loaded), '等待前必须实际加载支线人物立绘：' + scheduledId);
+    metrics.scheduleDeparture = { id: scheduledId, beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待120分钟'); await confirm(page);
+    await page.waitForFunction(id => !document.querySelector(`.vn-character[data-cast-id="${id}"]`), scheduledId);
+    metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     const current = await state(page);
     assert.equal(current.snapshot.narrative.facts.tapeHeard, false);
     assert.equal(current.snapshot.narrative.facts.manualWarning, false);

@@ -1,5 +1,23 @@
 # 美术来源与署名
 
+## 当前 Galgame 演出层（2026-09-21）
+
+本轮为 Galgame 对话舞台接入实际位图立绘和场景图。角色映射仅为本项目的默认舞台造型，不代表原作者创作了本项目的角色或故事。所有图片随应用构建本地提供，不请求第三方图床；没有使用商业 Galgame 截图或生成模型仿画。
+
+| 当前素材 | 作者 / 来源 | 许可与改动 |
+|---|---|---|
+| `hex/assets/vn/characters/linchuan/*.webp`：浅棕发、绿色开衫男，平静 / 笑 / 担忧 | **Kainico**，*Anime Style VN Sprites*，Boy1；[原发布帖](https://lemmasoft.renai.us/forums/viewtopic.php?f=52&t=51594)，[OpenGameArt 镜像](https://opengameart.org/content/lemmasoft-assets-portraits) | 镜像的逐作者来源清单声明 **CC BY**，未注明版本。使用原作者身体和表情图层合成，统一裁除透明空边、等比缩小、转 WebP；没有重画表情 |
+| `hex/assets/vn/characters/shenqing/*.webp`：棕长发、紫色开衫女，平静 / 担忧 / 生气 / 惊讶 | **Kainico**，同上，Girl2 | 同上；只使用包内实际表情 |
+| `hex/assets/vn/characters/zhouye/*.webp`：黑发、皮夹克男，平静 / 生气 / 惊讶 | **Kainico**，同上，Boy2 | 同上；只使用包内实际表情 |
+| `hex/assets/vn/backgrounds/home.webp`：卧室 | **spiral atlas**，[*Visual Novel House Backgrounds*](https://opengameart.org/content/visual-novel-house-backgrounds) | **CC BY 3.0**；原 `single bedroom.jpg` 转 WebP，未重绘场景。原作者的模型、绘画及其他上游署名完整保留于 [本地署名记录](hex/assets/vn/licenses/spiral-atlas-credits.txt) 和 [作者署名页](https://spiralatlas.github.io/credits/) |
+| `hex/assets/vn/backgrounds/{kitchen,hall,parlor}.webp`：厨房、走廊、客厅 | **spiral atlas**，同上 | **CC BY 3.0**；分别由原 `kitchen.jpg`、`hallway.jpg`、`lounge.jpg` 转 WebP，未改画面、未将卧室图片冒充其他房间；上游署名同上 |
+| `hex/assets/vn/backgrounds/office.webp`：办公室 | **DasBilligeAlien**，[*Visual Novel Tutorial Set*](https://opengameart.org/content/visual-novel-tutorial-set) | **CC0 1.0**；原 `VN_tutorial_assets_background.png` 转 WebP，未重绘场景 |
+| `hex/assets/vn-scenes/station.webp`：地铁站 | **Kace Rodriguez**，[*BART platform at Embarcadero station, April 2016*](https://commons.wikimedia.org/wiki/File:BART_platform_at_Embarcadero_station,_April_2016.jpg) | **CC0 1.0**；原公共交通场景照片经尺寸与色调处理适配舞台。来源及逐文件改动见该目录来源记录 |
+
+Kainico 素材的许可依据保留为未经改写的 [逐作者来源 CSV](hex/assets/vn/licenses/lemmasoft-portraits-sources.csv)。下载镜像由 **ShatteredReality / Exuin** 整理，其汇总页面自身标注 **CC BY-SA 3.0**；该汇总许可与逐作者的原画许可分别记录，不把集合中其他作者的许可套给 Kainico，也不把未注明版本的 `CC BY` 擅写成 `CC BY 4.0`。原帖本轮返回浏览器验证页，许可核对依据为公开镜像的明确作者条目。包内原始图层已逐项校验 ZIP CRC；来源、文件指纹、尺寸与转换方式见 [素材清单](hex/assets/vn/manifest.json)。本轮只提取 Kainico 的上述三个人物，没有采用候选 Kyuu / YunaRoe 包中带有禁止再分发条款的素材。
+
+原始来源声明、背景包内署名和适用的 CC BY 3.0、CC BY-SA 3.0、CC0 1.0 许可文本位于 `hex/assets/vn/licenses/`。这些素材的许可不替仓库整体设定软件许可证；人物原稿仍归原作者，不能声称为本项目原创绘画。
+
 ## 新手故事的文学来源（2026-09-20）
 
 《红灯下的第三次回声》借鉴 Charles Dickens 1866 年短篇 [The Signal-Man](https://www.gutenberg.org/ebooks/1289) 的铁路值班、反复警报与结尾呼应结构。游戏中文叙述、角色、档案调查与分支结局为本项目重新编写；未复制现成中译文或商业 Galgame 台词。阅读与改编区别见[研究记录](docs/research/2026-09-20-signal-man-adaptation.md)。
@@ -8,11 +26,11 @@
 
 更新：2026-09-18，VIS-01 精致像素人物升级。
 
-## 当前实际使用：项目原创像素绘制
+## 保留的探索层：项目原创像素绘制
 
 - `hex/characters.js`：32×48 像素人物，Canvas 整数像素绘制并生成 Pixi 纹理；由本项目编写，没有临摹或修改下列第三方图集。
 - `hex/stage.js`：16 像素逻辑网格、六套地板、家具、窗光、烛台与缝线娃娃均由本项目的 Pixi 绘制代码产生。
-- 当前活动人物与舞台未使用外部人物包或图像生成模型，没有远程图片请求，也没有对付费 Donarg 图块的运行依赖。用户随后要求以实际下载比较画质：下载的候选仅在 `.local-assets/visual-candidates/` 本地自测，未注入游戏或正式构建。
+- 这一像素探索层未使用外部人物包或图像生成模型，没有远程图片请求，也没有对付费 Donarg 图块的运行依赖；新增 Galgame 位图演出层的来源见本文件顶部。用户此前要求以实际下载比较画质：像素候选仅在 `.local-assets/visual-candidates/` 本地自测，未注入游戏或正式构建。
 - 原创绘制代码随项目管理，未引入额外第三方素材许可要求。本文件不替仓库设定总的软件许可证。
 
 ### LPC 自测比较层（可选、本地）
@@ -84,4 +102,4 @@
 
 同时核查 [LimeZu Modern Interiors](https://limezu.itch.io/moderninteriors)、[Modern Exteriors](https://limezu.itch.io/modernexteriors)、[Raroki Characters](https://raroki.itch.io/characters)：本机请求、IPv4 与备用读取仍超时，浏览器提供器也未能建立会话，未拿到包，因此**不声称已看过图或已比较质量**，没有购买或绕过付费下载。当前结论基于真正下载到的文件。
 
-选择：本轮继续使用已实现的五种原创精致像素人物，它们已具备四向步态、现代差异穿搭与一致的视觉比例。外部素材调查是实际下载、解包、看图后的判断，不因“搜索结果有某包”就替换成不完整或古装角色；后续可单独验证 24×32 现代图层或获得 LimeZu 官方可用包后升级。
+历史选择（2026-09-18）：当时继续使用已实现的五种原创精致像素人物，它们已具备四向步态、现代差异穿搭与一致的视觉比例。该层现保留在旧模式；2026-09-21 默认单人舞台已采用本文件顶部登记的 Galgame 立绘和背景。外部像素素材调查是当时下载、解包、看图后的判断；后续可单独验证 24×32 现代图层或获得 LimeZu 官方可用包后升级旧层。

@@ -1,0 +1,2009 @@
+{
+  "startedAt": "2026-09-21T03:32:39.611Z",
+  "cases": [
+    {
+      "name": "vn-stage-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 5,
+      "readClicks": 43,
+      "posts": [
+        "story",
+        "story/story-643942eb060b4648/confirm",
+        "intent",
+        "intent/d8746584-1cb0-4bf3-aa5a-2e404ef6a8d4/confirm",
+        "intent",
+        "intent/446038ef-5e19-48e8-bc9b-42f1c8dea028/confirm",
+        "intent",
+        "intent/38a098af-074d-47a3-a9e8-b6a3406d5d63/confirm",
+        "intent",
+        "intent/ad9559b9-ae57-42b4-9730-e477f6738a24/confirm",
+        "intent",
+        "intent/41c7f149-3a51-4a85-8a19-365add79d8bc/confirm",
+        "intent",
+        "intent/604e6458-46ad-461e-9706-90fdaaaa3c8c/cancel",
+        "intent",
+        "intent/535f695f-eccb-4e89-a47b-853990aae4c5/confirm",
+        "intent",
+        "intent/9e2ef4aa-043f-485b-a599-d59fa30296e5/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 51,
+          "width": 818,
+          "height": 288,
+          "right": 831,
+          "bottom": 339
+        },
+        "dialogue": {
+          "x": 27,
+          "y": 210.046875,
+          "width": 790,
+          "height": 120.953125,
+          "right": 817,
+          "bottom": 331
+        },
+        "footer": {
+          "x": 44,
+          "y": 281,
+          "width": 756,
+          "height": 45,
+          "right": 800,
+          "bottom": 326
+        },
+        "width": 844,
+        "height": 390,
+        "overflow": false
+      },
+      "thoughtPages": 14,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "a88bdf5d-dc36-5cae-ba79-959b98149e47",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "def1fcd7-b2e9-551b-8ad0-a088b7581d1e",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "da3df5fc-2ad0-5220-b5dd-49fb80c85fd7",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "90adab8b-b4d3-5db7-957a-4eefa61bde64",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "fb26a38c-9d9a-55ab-a987-cba61326cf46",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "50ad79e3-6eda-5203-8af0-310b75a89763",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "1bc5feed-3d07-5ab9-88f1-2b12644ca19c",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 123.640625,
+          "right": 817,
+          "bottom": 331,
+          "width": 790,
+          "height": 207.359375
+        },
+        "preview": {
+          "x": 44,
+          "y": 136.640625,
+          "right": 800,
+          "bottom": 322,
+          "width": 756,
+          "height": 185.359375
+        },
+        "text": {
+          "x": 44,
+          "y": 165.640625,
+          "right": 800,
+          "bottom": 268,
+          "width": 756,
+          "height": 102.359375
+        },
+        "readableHeight": 86,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 276,
+            "right": 140,
+            "bottom": 322,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 276,
+            "right": 228,
+            "bottom": 322,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-568x320",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 5,
+      "readClicks": 68,
+      "posts": [
+        "story",
+        "story/story-3096cfb92a4440a5/confirm",
+        "intent",
+        "intent/0ec91fbe-2806-4d04-aee6-eab02dcc0e01/confirm",
+        "intent",
+        "intent/5d60e8d3-49e1-45d7-a9cd-3f160e847677/confirm",
+        "intent",
+        "intent/e3634f21-3b3f-4281-a4fe-be139a59a24d/confirm",
+        "intent",
+        "intent/e950ed65-6fb9-49ca-a2f9-0c1c18aee5be/confirm",
+        "intent",
+        "intent/e8b84fc4-0a05-45dd-8788-c6ecae79c164/confirm",
+        "intent",
+        "intent/c19ad62f-d82a-4296-a000-8f8f151b4acf/cancel",
+        "intent",
+        "intent/f3ce51f3-ac24-4837-9bc4-e6d15b70a9c0/confirm",
+        "intent",
+        "intent/b193b079-33b1-4997-89bb-0675023b36dd/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 51,
+          "width": 542,
+          "height": 218,
+          "right": 555,
+          "bottom": 269
+        },
+        "dialogue": {
+          "x": 27,
+          "y": 147,
+          "width": 514,
+          "height": 114,
+          "right": 541,
+          "bottom": 261
+        },
+        "footer": {
+          "x": 44,
+          "y": 211,
+          "width": 480,
+          "height": 45,
+          "right": 524,
+          "bottom": 256
+        },
+        "width": 568,
+        "height": 320,
+        "overflow": false
+      },
+      "thoughtPages": 21,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "8415fc53-85a6-5773-8375-85dc16ab5d7e",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "e35a470c-c04c-59ad-91fc-8eceae583887",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "1d9a42a8-dff6-50bc-a450-445de105a846",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "cf19cd83-aec6-5635-bb77-ed961fea7ddb",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "1d2a35d9-e748-5048-8fbb-584f91c777aa",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "d7c24dfc-2239-5f63-99f5-d736d59c29e2",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "8ab780e7-663d-53bb-bb68-bf586e8d569a",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 95,
+          "right": 541,
+          "bottom": 261,
+          "width": 514,
+          "height": 166
+        },
+        "preview": {
+          "x": 44,
+          "y": 108,
+          "right": 524,
+          "bottom": 252,
+          "width": 480,
+          "height": 144
+        },
+        "text": {
+          "x": 44,
+          "y": 137,
+          "right": 524,
+          "bottom": 198,
+          "width": 480,
+          "height": 61
+        },
+        "readableHeight": 45,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 568,
+          "height": 320
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 206,
+            "right": 140,
+            "bottom": 252,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 206,
+            "right": 228,
+            "bottom": 252,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 5,
+      "readClicks": 43,
+      "posts": [
+        "story",
+        "story/story-4fb85622511c4cd1/confirm",
+        "intent",
+        "intent/84492fbb-5905-4fe2-be79-c21363d8fcfe/confirm",
+        "intent",
+        "intent/2333dced-76a2-4f77-95be-cea61769fa3c/confirm",
+        "intent",
+        "intent/077a4b66-47f8-4971-8032-d89a0d9a2ef0/confirm",
+        "intent",
+        "intent/f051034a-3bcd-4f6f-a855-0f490fb2fa62/confirm",
+        "intent",
+        "intent/fac67071-3e5c-4b98-ab29-b2acb2c710f7/confirm",
+        "intent",
+        "intent/9bd98c84-9032-4a4f-9030-ce49f7cedf68/cancel",
+        "intent",
+        "intent/16d6fe4d-36c1-4fd4-b802-5f7e189a58d0/confirm",
+        "intent",
+        "intent/820f64ef-2d1c-4416-a755-88e4de2037a1/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 17,
+          "y": 109,
+          "width": 356,
+          "height": 677,
+          "right": 373,
+          "bottom": 786
+        },
+        "dialogue": {
+          "x": 27,
+          "y": 491.671875,
+          "width": 336,
+          "height": 284.328125,
+          "right": 363,
+          "bottom": 776
+        },
+        "footer": {
+          "x": 42,
+          "y": 724,
+          "width": 306,
+          "height": 45,
+          "right": 348,
+          "bottom": 769
+        },
+        "width": 390,
+        "height": 844,
+        "overflow": false
+      },
+      "thoughtPages": 14,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "9839cf85-3846-58bb-9273-ea598c33b6bf",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "0bcfc9d9-02a9-52a2-8d02-a6006d9327b4",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "c4552144-c3ae-599e-a5c8-8f4289834820",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "4104112a-ebb1-54d3-8c65-25e0b78407de",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "954a2df6-f960-5dcb-bf3c-85c1ae439510",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "2b7f28be-51c2-5b38-8269-be2def42d101",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "9bba9dda-658d-527b-bb46-56946be12080",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 288.5625,
+          "right": 363,
+          "bottom": 776,
+          "width": 336,
+          "height": 487.4375
+        },
+        "preview": {
+          "x": 44,
+          "y": 301.5625,
+          "right": 346,
+          "bottom": 767,
+          "width": 302,
+          "height": 465.4375
+        },
+        "text": {
+          "x": 44,
+          "y": 330.5625,
+          "right": 346,
+          "bottom": 713,
+          "width": 302,
+          "height": 382.4375
+        },
+        "readableHeight": 366,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 721,
+            "right": 140,
+            "bottom": 767,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 721,
+            "right": 228,
+            "bottom": 767,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-stage-320x568",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "actions": 5,
+      "readClicks": 74,
+      "posts": [
+        "story",
+        "story/story-d3e93ef638984eda/confirm",
+        "intent",
+        "intent/19dbb791-60a0-4256-b1e1-e2ce548d857e/confirm",
+        "intent",
+        "intent/e0e809a3-ed3b-4111-a5bc-72d1707e9a92/confirm",
+        "intent",
+        "intent/bf8a67fc-058b-4fea-8281-c300d50effeb/confirm",
+        "intent",
+        "intent/524f2784-9cac-475b-aef7-0e40fd85fce2/confirm",
+        "intent",
+        "intent/110c61ce-575f-4769-822e-2cce9f36ed31/confirm",
+        "intent",
+        "intent/4f9ece84-a374-477b-a19d-304b16da7cb8/cancel",
+        "intent",
+        "intent/68a2a86c-d72e-4eb6-8a4f-274ffd7330af/confirm",
+        "intent",
+        "intent/d636b96d-f6ee-403d-a6de-fee2d471aa27/confirm"
+      ],
+      "errors": [],
+      "geometry": {
+        "stage": {
+          "x": 13,
+          "y": 109,
+          "width": 294,
+          "height": 401,
+          "right": 307,
+          "bottom": 510
+        },
+        "dialogue": {
+          "x": 23,
+          "y": 331.59375,
+          "width": 274,
+          "height": 168.40625,
+          "right": 297,
+          "bottom": 500
+        },
+        "footer": {
+          "x": 38,
+          "y": 448,
+          "width": 244,
+          "height": 45,
+          "right": 282,
+          "bottom": 493
+        },
+        "width": 320,
+        "height": 568,
+        "overflow": false
+      },
+      "thoughtPages": 21,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "b8da7b28-800d-5da1-a377-fd7830f6b64f",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "e19d0fe9-4843-55bd-80ef-cf82d40b442d",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "101066be-59c8-5dca-a5d5-bd21f328277f",
+          "action": "move"
+        },
+        {
+          "kind": "inspect",
+          "eventId": "51d37f0b-b673-51f9-908c-7a4d744b7718",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "3b963717-2329-53f4-a10c-72d23328078d",
+          "action": "move"
+        },
+        {
+          "kind": "work",
+          "eventId": "37173b80-7360-5b68-bb76-fcbfeab2be48",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "89e2768f-4b4d-5600-91ff-49307b1408fa",
+          "action": "move"
+        }
+      ],
+      "previewGeometry": {
+        "dialogue": {
+          "x": 23,
+          "y": 211.28125,
+          "right": 297,
+          "bottom": 500,
+          "width": 274,
+          "height": 288.71875
+        },
+        "preview": {
+          "x": 40,
+          "y": 224.28125,
+          "right": 280,
+          "bottom": 491,
+          "width": 240,
+          "height": 266.71875
+        },
+        "text": {
+          "x": 40,
+          "y": 253.28125,
+          "right": 280,
+          "bottom": 437,
+          "width": 240,
+          "height": 183.71875
+        },
+        "readableHeight": 168,
+        "lineHeight": 22.4,
+        "value": "使用办公桌",
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "buttons": [
+          {
+            "x": 40,
+            "y": 445,
+            "right": 136,
+            "bottom": 491,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 144,
+            "y": 445,
+            "right": 224,
+            "bottom": 491,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "spokenIds": [
+        "A"
+      ],
+      "creditsReturnedWithoutAction": true,
+      "passed": true
+    },
+    {
+      "name": "vn-reduced-motion",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 2,
+      "readClicks": 22,
+      "posts": [
+        "story",
+        "story/story-d6b14b5483aa4f42/confirm",
+        "intent",
+        "intent/6cc3a214-0464-44f5-bd81-cbf1dcd84fd6/confirm",
+        "intent",
+        "intent/de5a879a-a8e9-4416-9ea2-85d10c92727a/confirm",
+        "intent",
+        "intent/c3956c15-212e-47ae-a454-a4dd38717693/confirm",
+        "intent",
+        "intent/17a3eddd-e1d9-4ecb-86ff-154599f88ad0/confirm"
+      ],
+      "errors": [],
+      "thoughtPages": 6,
+      "performances": [
+        {
+          "kind": "inspect",
+          "eventId": "26fb5dbe-de2e-54c6-926f-749c76304c0a",
+          "action": "observe"
+        },
+        {
+          "kind": "open",
+          "eventId": "fe27c7e3-c010-53bd-8603-5e114b6f6075",
+          "action": "use"
+        },
+        {
+          "kind": "move",
+          "eventId": "175a79c3-1cc3-564d-a40a-9989a09e8c25",
+          "action": "move"
+        },
+        {
+          "kind": "speak",
+          "eventId": "50a6d16f-0408-56c4-946f-c9d397bc5ea5",
+          "action": "ask"
+        }
+      ],
+      "spokenIds": [
+        "A"
+      ],
+      "reducedMotion": true,
+      "passed": true
+    },
+    {
+      "name": "vn-art-fallback",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 6,
+      "posts": [
+        "story",
+        "story/story-98334e42e8014ef3/confirm",
+        "intent",
+        "intent/eb9f7c5e-ef82-4574-9841-c43028441ed0/confirm",
+        "intent",
+        "intent/cde558a1-a606-4bb2-b51a-823a78eab4df/confirm"
+      ],
+      "errors": [],
+      "performances": [
+        {
+          "kind": "move",
+          "eventId": "bc00d4a3-1f37-553b-b67c-09e040f4dada",
+          "action": "move"
+        },
+        {
+          "kind": "open",
+          "eventId": "a0e61e23-1b8d-53f3-b8cc-546e0b95b024",
+          "action": "use"
+        }
+      ],
+      "thoughtPages": 2,
+      "artFailure": "All image requests deliberately aborted; text, recommendations and confirmed actions stayed usable.",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-844x390",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-3cf76a97245d419c/confirm",
+        "save/import",
+        "intent",
+        "intent/f1032b62-7540-4e37-8580-defc1f74b231/confirm",
+        "intent",
+        "intent/aaeb4747-ad45-4f92-b871-19a5a30c4e9e/cancel",
+        "story",
+        "story/story-117f0913ba1e4bb0/cancel",
+        "story",
+        "story/story-aa433531b1aa44eb/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 123.640625,
+          "right": 817,
+          "bottom": 331,
+          "width": 790,
+          "height": 207.359375
+        },
+        "preview": {
+          "x": 44,
+          "y": 136.640625,
+          "right": 800,
+          "bottom": 322,
+          "width": 756,
+          "height": 185.359375
+        },
+        "text": {
+          "x": 44,
+          "y": 165.640625,
+          "right": 800,
+          "bottom": 268,
+          "width": 756,
+          "height": 102.359375
+        },
+        "readableHeight": 86,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 276,
+            "right": 140,
+            "bottom": 322,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 276,
+            "right": 228,
+            "bottom": 322,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-568x320",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-5ef625ad90c14640/confirm",
+        "save/import",
+        "intent",
+        "intent/a176f0d1-013e-493e-ab92-fca162a5ccb6/confirm",
+        "intent",
+        "intent/09519b3d-3346-4983-ba98-c3a41bdc624f/cancel",
+        "story",
+        "story/story-4da3872b8b3b43eb/cancel",
+        "story",
+        "story/story-1822e9ef6a2a4f3f/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 95,
+          "right": 541,
+          "bottom": 261,
+          "width": 514,
+          "height": 166
+        },
+        "preview": {
+          "x": 44,
+          "y": 108,
+          "right": 524,
+          "bottom": 252,
+          "width": 480,
+          "height": 144
+        },
+        "text": {
+          "x": 44,
+          "y": 137,
+          "right": 524,
+          "bottom": 198,
+          "width": 480,
+          "height": 61
+        },
+        "readableHeight": 45,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 568,
+          "height": 320
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 206,
+            "right": 140,
+            "bottom": 252,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 206,
+            "right": 228,
+            "bottom": 252,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v2-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 1,
+      "readClicks": 5,
+      "posts": [
+        "story",
+        "story/story-1f1ec1e472504091/confirm",
+        "save/import",
+        "intent",
+        "intent/25c55d00-5325-4202-a981-46abff7dc44a/confirm",
+        "intent",
+        "intent/728e696f-e5ec-406c-9598-b73ddab79dd2/cancel",
+        "story",
+        "story/story-daddf8c71d7847a1/cancel",
+        "story",
+        "story/story-bc1c7a5ce4014cab/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "fixtureSteps": 21,
+      "initialChoices": "结局已保留。换个故事，或去别处走走。\n\n打开故事库\n打开地图",
+      "moveFeedback": [
+        "你来到地铁站。可以先观察这里，或打开面前的门。"
+      ],
+      "endingPreviewGeometry": {
+        "dialogue": {
+          "x": 27,
+          "y": 288.5625,
+          "right": 363,
+          "bottom": 776,
+          "width": 336,
+          "height": 487.4375
+        },
+        "preview": {
+          "x": 44,
+          "y": 301.5625,
+          "right": 346,
+          "bottom": 767,
+          "width": 302,
+          "height": 465.4375
+        },
+        "text": {
+          "x": 44,
+          "y": 330.5625,
+          "right": 346,
+          "bottom": 713,
+          "width": 302,
+          "height": 382.4375
+        },
+        "readableHeight": 366,
+        "lineHeight": 22.4,
+        "value": "观察这里",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "buttons": [
+          {
+            "x": 44,
+            "y": 721,
+            "right": 140,
+            "bottom": 767,
+            "width": 96,
+            "height": 46,
+            "label": "就这样做",
+            "unobstructed": true
+          },
+          {
+            "x": 148,
+            "y": 721,
+            "right": 228,
+            "bottom": 767,
+            "width": 80,
+            "height": 46,
+            "label": "先不做",
+            "unobstructed": true
+          }
+        ]
+      },
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "ending-v1-postscript",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 6,
+      "readClicks": 36,
+      "posts": [
+        "story",
+        "story/story-c8b1e81f01ff47aa/confirm",
+        "save/import",
+        "intent",
+        "intent/3c811f2b-3cfe-46ac-8e2a-a9cb3b565bf4/confirm",
+        "intent",
+        "intent/2b649168-712f-4b67-8b37-e058c3828e64/confirm",
+        "intent",
+        "intent/d88845cb-73f8-4685-9c37-691a03df5bb9/confirm",
+        "intent",
+        "intent/800d0976-a66e-4399-a335-c5d3c180f4d2/confirm",
+        "intent",
+        "intent/536031f5-871a-44ab-8b03-4bb1df02a421/confirm",
+        "intent",
+        "intent/9637b244-7115-4e89-96d3-5d7fb4cfffc0/confirm"
+      ],
+      "errors": [],
+      "ending": "trust",
+      "passed": true
+    },
+    {
+      "name": "trust-station",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 21,
+      "readClicks": 152,
+      "posts": [
+        "story",
+        "story/story-55bd312e16c0440a/confirm",
+        "intent",
+        "intent/417b848f-cc63-4f34-b541-9186966c80b6/confirm",
+        "intent",
+        "intent/f5c57367-225f-48f2-b87c-67a7fd0e2ced/confirm",
+        "intent",
+        "intent/9ed96c14-6ef6-4125-ab41-6b47772caf42/confirm",
+        "intent",
+        "intent/5bf1efb9-69df-4cbf-89b2-ccb3f1377421/confirm",
+        "intent",
+        "intent/97ff1ce5-2585-4f08-97ae-238169452635/confirm",
+        "intent",
+        "intent/347a5e85-ca4f-4ff8-920f-fa636e7e86ec/confirm",
+        "intent",
+        "intent/aa2a45a2-645a-4032-a78c-0ddafe7c7e23/confirm",
+        "intent",
+        "intent/2a74ac98-1702-4b01-b3ba-a645791b285c/confirm",
+        "intent",
+        "intent/13dacc5e-df2c-441e-a57b-492c82ed70b2/confirm",
+        "intent",
+        "intent/81e79b1a-6bb5-448a-a5e1-b7596e7cd420/confirm",
+        "intent",
+        "intent/036f207e-d1d2-4225-997d-61fda0d73bf6/confirm",
+        "intent",
+        "intent/e0f1354b-511e-4e25-9f2a-d80ee2c2afa9/confirm",
+        "intent",
+        "intent/042a0e54-8861-484b-99c3-869d5f4e027e/confirm",
+        "intent",
+        "intent/7d73b6be-1f50-48d8-a6be-ccb61a92b89c/confirm",
+        "intent",
+        "intent/d966b386-752c-4220-9e42-404c6c1df1b1/confirm",
+        "intent",
+        "intent/804f22e2-9403-422c-9a59-de14e803f131/confirm",
+        "intent",
+        "intent/474afa77-1498-447f-8e98-47fdb83df1d0/confirm",
+        "intent",
+        "intent/a9bcf61c-310f-4db5-b87f-0a86c04d4bfa/confirm",
+        "intent",
+        "intent/d07e7b3c-9671-44ed-8e52-40341a0f45ba/confirm",
+        "intent",
+        "intent/88721383-bfcd-4cd3-ad6c-a8aa5a82e53d/confirm",
+        "intent",
+        "intent/158b2c5c-d619-4020-995d-f0055b0b09eb/confirm"
+      ],
+      "errors": [],
+      "ending": "trust",
+      "branch": "station",
+      "passed": true
+    },
+    {
+      "name": "audit-station",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 21,
+      "readClicks": 245,
+      "posts": [
+        "story",
+        "story/story-1112f6d615974616/confirm",
+        "intent",
+        "intent/5324884c-e668-4e29-a0d9-0ee22326ce6c/confirm",
+        "intent",
+        "intent/e3d64b4a-ebd3-4d67-86e7-1c3efd381053/confirm",
+        "intent",
+        "intent/8b3a2f11-50d7-427d-8403-3b0f50db04bb/confirm",
+        "intent",
+        "intent/4022a225-8a38-462c-8224-2c19c21bbdbf/confirm",
+        "intent",
+        "intent/707d0608-905c-4fce-b22c-4a79ce63ca7d/confirm",
+        "intent",
+        "intent/6c690835-9f91-4042-85a4-a1d75da47472/confirm",
+        "intent",
+        "intent/7b400df2-c4b7-4ce7-8e3c-3163e34693ad/confirm",
+        "intent",
+        "intent/b93d8183-be05-44d5-8968-cb408e8d20b6/confirm",
+        "intent",
+        "intent/9eedcf71-9946-4115-9b7a-f1e282bd047e/confirm",
+        "intent",
+        "intent/2b91daa5-d09c-4685-9af7-a93ba31d2b8f/confirm",
+        "intent",
+        "intent/34c9d5fc-8a91-481a-9f6c-a7cc44227015/confirm",
+        "intent",
+        "intent/5cc8c9aa-9b88-4d9b-977b-408eca411fe5/confirm",
+        "intent",
+        "intent/af3d2993-ac4c-4ab4-bef7-39429c298470/confirm",
+        "intent",
+        "intent/def92278-a141-4a65-837b-aa37b93278c4/confirm",
+        "intent",
+        "intent/b42ec387-a9c6-4f6d-8a0a-964829a0f274/confirm",
+        "intent",
+        "intent/7948182d-c3b2-4621-ba69-62eb9b923399/confirm",
+        "intent",
+        "intent/7d54f689-3321-40c8-8f40-bc6c3ff9caa2/confirm",
+        "intent",
+        "intent/51ae1524-8a73-4ed3-b3fd-eb8fd090d4bb/confirm",
+        "intent",
+        "intent/73d2e054-0ad7-4e17-88b7-c201ae3c10f4/confirm",
+        "intent",
+        "intent/fc0d54a4-a32c-471c-81fb-1b4832bc4334/confirm",
+        "intent",
+        "intent/48a548a3-c69c-4c41-ba77-9947f287b7f5/confirm"
+      ],
+      "errors": [],
+      "ending": "audit",
+      "branch": "station",
+      "passed": true
+    },
+    {
+      "name": "protect-kitchen",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 21,
+      "readClicks": 190,
+      "posts": [
+        "story",
+        "story/story-0840133202154cd1/confirm",
+        "intent",
+        "intent/ed661034-d308-4943-9a97-a1b5a9fa3a0d/confirm",
+        "intent",
+        "intent/1ee74820-15b4-4495-83de-096ab8206744/confirm",
+        "intent",
+        "intent/14d62c6b-2f5c-46c2-8ae5-e6473f6a2f3c/confirm",
+        "intent",
+        "intent/13115993-b530-45f9-a0ca-55b1f26c5f59/confirm",
+        "intent",
+        "intent/e4ee948d-76e2-4b36-aeed-18f38d106f1b/confirm",
+        "intent",
+        "intent/5f7d38f9-93e1-486a-9a3b-70e0302f7d2a/confirm",
+        "intent",
+        "intent/496b4757-f079-48a9-96dd-c4bfbada5566/confirm",
+        "intent",
+        "intent/92945593-a3fe-4d01-9b08-e6b2d5015199/confirm",
+        "intent",
+        "intent/1011cb74-d15d-4530-9dee-aff773f31eed/confirm",
+        "intent",
+        "intent/628e9a15-25b9-4b60-905d-9dc1cff98f9f/confirm",
+        "intent",
+        "intent/304139b4-5f9f-46c2-aa05-81a8c1f063ef/confirm",
+        "intent",
+        "intent/e58e3aae-74cd-4562-a3a1-57effab41b3d/confirm",
+        "intent",
+        "intent/2084b56d-892f-4f26-891e-b63458d1f0c5/confirm",
+        "intent",
+        "intent/568a1a95-c0ff-4f24-99f1-ff26f68c9f0a/confirm",
+        "intent",
+        "intent/00eb7b06-6781-433b-b96b-d1294989cf6b/confirm",
+        "intent",
+        "intent/46a4f371-d8e4-4886-86f0-22841af70e08/confirm",
+        "intent",
+        "intent/36fbcce3-99ef-42f2-b16b-84475f99bf28/confirm",
+        "intent",
+        "intent/d3a3aeea-ce35-4dff-b701-a7a1c7ddc1d7/confirm",
+        "intent",
+        "intent/9f8b60f1-267d-46eb-9c83-6000762477b8/confirm",
+        "intent",
+        "intent/cea48bdd-9a5f-4fd5-8adb-56c2c478e283/confirm",
+        "intent",
+        "intent/8d0ad748-b0ea-465f-81bf-6c4bb522481f/confirm"
+      ],
+      "errors": [],
+      "ending": "protect",
+      "branch": "kitchen",
+      "passed": true
+    },
+    {
+      "name": "trust-kitchen",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 21,
+      "readClicks": 151,
+      "posts": [
+        "story",
+        "story/story-f296aa4773ac483b/confirm",
+        "intent",
+        "intent/964d9412-3a66-4db8-8c06-f88169e7cff5/confirm",
+        "intent",
+        "intent/6cdbbdd3-1567-48ba-a550-9d2bc03b31eb/confirm",
+        "intent",
+        "intent/dd3442a9-dc7a-4bee-95f3-978d6fa35350/confirm",
+        "intent",
+        "intent/b29a6361-1875-49b0-8e09-8319a1121852/confirm",
+        "intent",
+        "intent/fc4c99b7-8dac-4b3c-8a1c-2ed6db3579c5/confirm",
+        "intent",
+        "intent/befe412c-ab21-4786-b882-551d9f7f5eff/confirm",
+        "intent",
+        "intent/50fd2861-888e-4d80-81b5-732df809fa4c/confirm",
+        "intent",
+        "intent/4c9018da-a826-4a4a-a6d9-bbeb60cb1e3c/confirm",
+        "intent",
+        "intent/76da395e-1fcd-472c-b52d-5823e9d68cda/confirm",
+        "intent",
+        "intent/9365d278-c05d-4538-bef8-335edf6e496e/confirm",
+        "intent",
+        "intent/42bb70cc-f58d-4168-a665-f609a2f41a93/confirm",
+        "intent",
+        "intent/bf16ba31-0591-47ee-ad56-f3fc0f5fe9a6/confirm",
+        "intent",
+        "intent/c695fd87-d36f-4e52-97d3-91f20b255d11/confirm",
+        "intent",
+        "intent/a4ebe83d-7442-4784-b299-072140d1aaae/confirm",
+        "intent",
+        "intent/3cfd5337-7993-4dd6-9aee-095806680c2f/confirm",
+        "intent",
+        "intent/1b51eb7d-470d-46a8-a5e8-0c0a4b6ae599/confirm",
+        "intent",
+        "intent/7ca3f028-83f8-4446-8f9b-70462f5efb18/confirm",
+        "intent",
+        "intent/28e6bbd0-493c-408f-9661-8df7c1422107/confirm",
+        "intent",
+        "intent/62c94d16-7cd1-499f-b91e-1ce03c04edbb/confirm",
+        "intent",
+        "intent/42c0be93-113e-4901-a726-c3faccaddb2d/confirm",
+        "intent",
+        "intent/27dc8859-87d1-4560-99c5-88b043e3fd2a/confirm"
+      ],
+      "errors": [],
+      "ending": "trust",
+      "branch": "kitchen",
+      "passed": true
+    },
+    {
+      "name": "audit-kitchen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 21,
+      "readClicks": 151,
+      "posts": [
+        "story",
+        "story/story-c2022a65edc34648/confirm",
+        "intent",
+        "intent/a0a19c84-6104-45fd-9f3c-2743533033fe/confirm",
+        "intent",
+        "intent/5951da58-bd98-4e5e-8b1c-44cf8313a879/confirm",
+        "intent",
+        "intent/a1820b4f-6131-4d6c-8e26-0811348376d6/confirm",
+        "intent",
+        "intent/b3e42b7f-f6f3-478c-8c1a-b93cb5eb250a/confirm",
+        "intent",
+        "intent/41421a75-9220-4f93-94cf-e2503212994c/confirm",
+        "intent",
+        "intent/8bd58c18-e9b0-4edc-a386-f70a16c0ccdc/confirm",
+        "intent",
+        "intent/62038694-5730-4060-ac4a-5fb0f6f8b479/confirm",
+        "intent",
+        "intent/90a712dd-8a42-46db-9371-46652ab5612d/confirm",
+        "intent",
+        "intent/15429f22-d8a1-491b-9157-342c6d43823b/confirm",
+        "intent",
+        "intent/0c780e5e-e9dc-40df-8a26-f35148854b34/confirm",
+        "intent",
+        "intent/bf568b45-3d11-4517-a8a1-4aaee0e8e7ec/confirm",
+        "intent",
+        "intent/a4bd8d93-9887-4d7c-a8bc-6304d3117f9b/confirm",
+        "intent",
+        "intent/399390ce-dd64-494e-a5ff-26701cb0ba69/confirm",
+        "intent",
+        "intent/1cea075f-1096-45b0-8be4-be787e2bc6ea/confirm",
+        "intent",
+        "intent/78c2ff0a-d9d5-482f-b554-801660802475/confirm",
+        "intent",
+        "intent/11a640c0-1208-4f48-befa-04e0a8f2d6c4/confirm",
+        "intent",
+        "intent/24e91dec-0cf3-4f81-b1e6-75624c559318/confirm",
+        "intent",
+        "intent/220373d8-f914-40e7-872d-4738d434c16d/confirm",
+        "intent",
+        "intent/ae0457e8-9e44-47e0-8e47-8ecf02bc11df/confirm",
+        "intent",
+        "intent/fa258a0f-c7fb-41e1-a5b9-0ead46d9e992/confirm",
+        "intent",
+        "intent/1b45ba79-36d5-4dc8-a214-51dfc3a541a5/confirm"
+      ],
+      "errors": [],
+      "ending": "audit",
+      "branch": "kitchen",
+      "passed": true
+    },
+    {
+      "name": "protect-station",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 21,
+      "readClicks": 188,
+      "posts": [
+        "story",
+        "story/story-4738a498f85d45f8/confirm",
+        "intent",
+        "intent/319e622c-e743-44dc-b7bb-805bd07794f3/confirm",
+        "intent",
+        "intent/c667c756-12c9-45ff-9191-2958a9a440df/confirm",
+        "intent",
+        "intent/a77ff7ed-470b-44cc-a814-2662d186bf00/confirm",
+        "intent",
+        "intent/3b53ada0-e6e6-4d74-9201-441baf4dd55e/confirm",
+        "intent",
+        "intent/eb4d97eb-7322-4c18-8cb0-bae3f6a32acc/confirm",
+        "intent",
+        "intent/3b0f22f1-4814-4f99-b612-c5cef28bb083/confirm",
+        "intent",
+        "intent/257e74f4-414d-48a0-a880-82428edc9263/confirm",
+        "intent",
+        "intent/e9fcc110-9dfe-4db3-b802-403e2bf71c7d/confirm",
+        "intent",
+        "intent/3ab37732-063f-47d4-ba13-2e634e8765df/confirm",
+        "intent",
+        "intent/c58e2026-3ed3-4a13-b572-0bef680f1e99/confirm",
+        "intent",
+        "intent/bea283dc-ef99-4963-b1cd-c3d1d213785a/confirm",
+        "intent",
+        "intent/e54e3753-99b5-4c24-ada2-36507d061290/confirm",
+        "intent",
+        "intent/f84b15a0-c3cc-4731-8f31-cf034255f400/confirm",
+        "intent",
+        "intent/88e0c671-7e28-404a-9763-89f4927882db/confirm",
+        "intent",
+        "intent/67dd7d83-cc5a-4c71-b326-6d9fc8dd3641/confirm",
+        "intent",
+        "intent/9c5b320d-b416-4fe5-a2b0-95748df3d6ad/confirm",
+        "intent",
+        "intent/2eb1648f-83f4-491d-9e9d-d01e191d16a1/confirm",
+        "intent",
+        "intent/71394c42-ce69-4574-9dcc-b4200ffe667d/confirm",
+        "intent",
+        "intent/92cc3a41-34be-49b4-b8e2-e7162dfc5f34/confirm",
+        "intent",
+        "intent/615cd8b1-23de-45da-ab56-5fa0e5b39572/confirm",
+        "intent",
+        "intent/0ee3628f-919e-489d-858f-839f56157bf6/confirm"
+      ],
+      "errors": [],
+      "ending": "protect",
+      "branch": "station",
+      "passed": true
+    },
+    {
+      "name": "missed-day1",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 7,
+      "readClicks": 61,
+      "posts": [
+        "story",
+        "story/story-2c105ba0cd7f4746/confirm",
+        "intent",
+        "intent/5b2a9a24-f6ff-4301-8eaf-60e5a7efe472/confirm",
+        "intent",
+        "intent/6355ef36-4306-424c-8338-7ab6dbf18f2e/confirm",
+        "intent",
+        "intent/39ded09b-a956-45b4-b9de-ebf6c48b54e8/confirm",
+        "intent",
+        "intent/e8b56e04-4838-453b-9255-eb98e0978cd6/confirm",
+        "intent",
+        "intent/b2f9ee59-dfa5-42ae-bc68-a23b75d79bca/confirm",
+        "intent",
+        "intent/57175e42-2c95-42c9-8d17-d7a68551bbd4/confirm",
+        "intent",
+        "intent/5610b184-2e7f-4a5d-b5c3-ae480bac14fa/confirm",
+        "intent",
+        "intent/6e75a051-5625-4f39-846c-5fd207ee630d/confirm",
+        "intent",
+        "intent/111ef84b-9cb0-4376-a03f-dddb965a1212/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "missed-day3",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 18,
+      "readClicks": 135,
+      "posts": [
+        "story",
+        "story/story-494b3487f0204114/confirm",
+        "intent",
+        "intent/0f8c1487-f6a6-4e4c-a05f-aa06868c6bb6/confirm",
+        "intent",
+        "intent/80ecca48-240a-4190-9946-8dbf834ddfe0/confirm",
+        "intent",
+        "intent/a7e60c47-2dfd-42c0-80ab-4d2cb2592f04/confirm",
+        "intent",
+        "intent/edcc5510-e6b5-4d2f-b97e-146cb74558b1/confirm",
+        "intent",
+        "intent/2db84b63-0abf-446e-bfee-f3d38a8e4ea4/confirm",
+        "intent",
+        "intent/f28a9082-4947-4b16-8c34-e07e11727ae7/confirm",
+        "intent",
+        "intent/ed40d44b-71ac-4c4a-8db1-e9d84ab703ad/confirm",
+        "intent",
+        "intent/986d9cd9-fe50-47e3-a2d3-5784b87c04f2/confirm",
+        "intent",
+        "intent/1ec3e1b4-a312-4068-922b-770d13a52b7e/confirm",
+        "intent",
+        "intent/652cb60e-62bc-4282-bb6f-6267eff999ae/confirm",
+        "intent",
+        "intent/d4f704de-b01b-44d6-bb2d-d73deb891e31/confirm",
+        "intent",
+        "intent/c39039ff-3533-415c-96db-7f555bb30024/confirm",
+        "intent",
+        "intent/9eea7196-1548-4a28-8008-587263ed7868/confirm",
+        "intent",
+        "intent/969e510f-dc66-48a7-9eb4-80a213a2b0e6/confirm",
+        "intent",
+        "intent/35d2a2a0-b724-4f96-85f3-469119fb410f/confirm",
+        "intent",
+        "intent/58c816a8-6d5e-407c-9080-7d5b57903ad0/confirm",
+        "intent",
+        "intent/be65ffda-ac61-4db7-9a8f-0eda24d18293/confirm",
+        "intent",
+        "intent/a88b12ac-900b-4372-8246-3b942adc8f4d/confirm",
+        "intent",
+        "intent/9b1d4be0-0790-4117-b20b-c2898b7a30e2/confirm",
+        "intent",
+        "intent/0cc927bf-e381-432d-ab31-b45fdab9a85a/confirm",
+        "intent",
+        "intent/76e9a4b2-6ede-4296-90b8-a290e066828f/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "missed-station",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 21,
+      "readClicks": 195,
+      "posts": [
+        "story",
+        "story/story-9d28cd18f0be4389/confirm",
+        "intent",
+        "intent/c356c47b-c120-49c5-89f1-71d2e8112120/confirm",
+        "intent",
+        "intent/cb7adce5-e406-4f26-9a77-37983f9365cd/confirm",
+        "intent",
+        "intent/f0699baf-4c6b-4002-a861-c7c4af1930f0/confirm",
+        "intent",
+        "intent/e44ef634-5901-4b99-8ec7-98d5c0cb2dcb/confirm",
+        "intent",
+        "intent/45cd6f04-a482-4fe2-9334-fc4bdd71e0f0/confirm",
+        "intent",
+        "intent/910b0ada-7327-4e97-ac4c-6eb717ab5c4c/confirm",
+        "intent",
+        "intent/90b33550-6e3b-4fbd-bf00-6d63dc59b270/confirm",
+        "intent",
+        "intent/f766d10b-c0fb-4189-ac13-698b23c4fc14/confirm",
+        "intent",
+        "intent/61fb3a5b-ffec-4460-8a53-084e6db51b24/confirm",
+        "intent",
+        "intent/dbf25c51-0e89-4d9f-9cca-dce688b6d8e0/confirm",
+        "intent",
+        "intent/fbe34d70-e869-4284-a39e-86444febf5f1/confirm",
+        "intent",
+        "intent/fcc75aa7-3b32-487f-a577-776c2a416f20/confirm",
+        "intent",
+        "intent/a3994765-fb67-409f-8bcf-be5c3eab131c/confirm",
+        "intent",
+        "intent/b8f79ae7-3ad8-4707-943e-1fede55b0243/confirm",
+        "intent",
+        "intent/b7725800-facc-474a-b08d-47087279a85a/confirm",
+        "intent",
+        "intent/43e20f75-79b2-4a73-8254-12c0b8236613/confirm",
+        "intent",
+        "intent/c1fc24aa-3dde-4d33-935f-9d1a8c432104/confirm",
+        "intent",
+        "intent/88973de2-8247-466e-b2ec-215c735f6212/confirm",
+        "intent",
+        "intent/bbed47e3-b372-4e5e-96c0-10c72fe1bd3d/confirm",
+        "intent",
+        "intent/d6d92e5b-5ffb-46e6-beb2-9e6dd7bd86c5/confirm",
+        "intent",
+        "intent/aef2dac6-1c5c-4767-9d01-364114d2f3b2/confirm",
+        "intent",
+        "intent/851327e7-6254-4dc9-8959-2f6d3428d6ad/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "missed-kitchen",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 20,
+      "readClicks": 193,
+      "posts": [
+        "story",
+        "story/story-c14372471cd2405e/confirm",
+        "intent",
+        "intent/b6937816-a227-4bc2-9c79-e474187cb258/confirm",
+        "intent",
+        "intent/2f01f508-e733-4eab-8981-d95611b9746a/confirm",
+        "intent",
+        "intent/c838cc6c-9488-47e4-a192-a1b187fe2408/confirm",
+        "intent",
+        "intent/d68cb909-8b3c-4eff-9600-79f3f94b75c6/confirm",
+        "intent",
+        "intent/279190f4-c29e-4ca1-abdc-287ac7838275/confirm",
+        "intent",
+        "intent/8a03694e-ef1b-4b4d-826d-b8ee46f6348a/confirm",
+        "intent",
+        "intent/69bce6fa-cf6e-446f-a56b-df4352ce294e/confirm",
+        "intent",
+        "intent/215b82a3-36af-49c1-bb52-77c4b3a7a6bd/confirm",
+        "intent",
+        "intent/7a97fa8c-8da3-4c12-b38a-4efeb5858deb/confirm",
+        "intent",
+        "intent/7662139c-2598-443e-a817-e12a387bc676/confirm",
+        "intent",
+        "intent/7bdae205-c323-4dc4-aff6-6034894f0319/confirm",
+        "intent",
+        "intent/091f518e-6858-4ce1-9a79-0d9dd25815ae/confirm",
+        "intent",
+        "intent/38754e72-f013-402a-b072-4c17714ee639/confirm",
+        "intent",
+        "intent/a7f970b0-e522-4992-a8e3-54be4bb4b2c8/confirm",
+        "intent",
+        "intent/bbaf1c2e-16fe-4adf-8e63-db38055b452e/confirm",
+        "intent",
+        "intent/c85ea3cc-bbc6-4157-a625-a174dfa4d79d/confirm",
+        "intent",
+        "intent/8313dc25-d0b8-4a67-8ad6-5867209e4090/confirm",
+        "intent",
+        "intent/9cb9c649-9e7e-4dc9-9aea-fcf54aaad7f1/confirm",
+        "intent",
+        "intent/3720a6e3-2158-4e58-b5ff-84015d9e207e/confirm",
+        "intent",
+        "intent/5f3d6af2-644a-4057-a9d1-e3bb4ee25f91/confirm",
+        "intent",
+        "intent/158cda07-4525-4e30-b9d6-61f9c45268ae/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "save-recovery",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 21,
+      "readClicks": 158,
+      "posts": [
+        "story",
+        "story/story-02f0265e31d6435f/confirm",
+        "intent",
+        "intent/1ba631ac-f355-4776-b70b-a015e3c1f95a/confirm",
+        "intent",
+        "intent/77748bd1-fa09-4dd2-92ea-664e7fa8d7ed/confirm",
+        "intent",
+        "intent/364ae6fd-5b01-44f3-a084-7d08588b1557/confirm",
+        "intent",
+        "intent/589906ba-2e48-49ce-bd0d-4b7eb5de6ac5/confirm",
+        "intent",
+        "intent/41d3fee4-f866-41ff-a3a1-3a2dc50d068a/confirm",
+        "intent",
+        "intent/c34c2d6a-9169-48bf-bf7c-b059c400de58/confirm",
+        "intent",
+        "intent/0d277fbc-886e-4e57-bbee-2123153dabc7/confirm",
+        "intent",
+        "intent/de629587-f79b-442e-9733-b6c9c66f3ba9/confirm",
+        "intent",
+        "intent/1f0ed92b-5a2f-4054-8fea-7c2ca5485c0d/confirm",
+        "intent",
+        "intent/337f25f4-42c9-4d8b-b6f9-06ca16ef3495/confirm",
+        "intent",
+        "intent/532b5664-a95f-4e83-9be5-347bacbac1c8/confirm",
+        "intent",
+        "intent/cf53286d-4d38-4992-aaec-1160d7de7ed6/cancel",
+        "intent",
+        "intent",
+        "intent/cfc933b1-c122-4e22-b767-211b550a6d83/confirm",
+        "save/import",
+        "intent",
+        "intent/2f7e6d9d-295d-4d70-b332-12909b62daed/confirm",
+        "intent",
+        "intent/3aff734d-3406-4358-a89c-ac000dcfe869/confirm",
+        "intent",
+        "intent/c315859e-27b2-4305-a64f-5db247483e4f/confirm",
+        "intent",
+        "intent/92b56a97-3fe5-41bd-9ce9-3f0b90da5b1c/confirm",
+        "intent",
+        "intent/944b98c8-778b-4c4c-871d-79dae3c91843/confirm",
+        "intent",
+        "intent/c3747f1f-f955-4187-9c27-42bbbee1bf57/confirm",
+        "intent",
+        "intent/628632b0-cdbe-42ca-b104-d6ed03e12323/confirm",
+        "intent",
+        "intent/2edcab47-38f9-4d11-b406-0a4a51f111fb/confirm",
+        "intent",
+        "intent/ba914275-620c-4f3c-82c0-edd8b67a2c62/confirm",
+        "intent",
+        "intent/1165ee7c-db7a-4616-a098-e4d865032aa3/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "save-independent-session",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 21,
+      "readClicks": 168,
+      "posts": [
+        "story",
+        "story/story-9e10afeb6a514b9d/confirm",
+        "intent",
+        "intent/d3dba5c7-2f10-45ae-aae6-540e8436f5d1/confirm",
+        "intent",
+        "intent/ccfacfea-6644-4add-90cf-ea3f0afdf1fa/confirm",
+        "intent",
+        "intent/16a2653a-4572-49eb-8a2b-16288e509767/confirm",
+        "intent",
+        "intent/c403ebbd-884c-4bc6-9491-3e5932961cfd/confirm",
+        "intent",
+        "intent/88f52c39-a2e0-4580-96b0-bfd396a7044b/confirm",
+        "intent",
+        "intent/2d22c200-c329-4f6b-a835-d7854a7d1940/confirm",
+        "intent",
+        "intent/90d84966-14ea-4be1-99b2-e9819908d429/confirm",
+        "intent",
+        "intent/3aff53db-4dbb-4034-a74d-90e03c0585a4/confirm",
+        "intent",
+        "intent/d7c7b37c-22a7-4bb1-a7ed-4e1ca6908d8e/confirm",
+        "intent",
+        "intent/37d7dabe-57b7-401e-a87d-9121ea043602/confirm",
+        "intent",
+        "intent/e3013239-d3b5-4507-8741-4911598d221d/confirm",
+        "story",
+        "story/story-9285048695b0481e/confirm",
+        "save/import",
+        "intent",
+        "intent/3b0c3566-a8a4-4219-8336-1be45a3d4c1a/confirm",
+        "intent",
+        "intent/949c6390-3472-4ad0-bcc8-02d0383c58ac/confirm",
+        "intent",
+        "intent/afb352a5-aa0e-4171-a1b9-003f163786de/confirm",
+        "intent",
+        "intent/20191b23-a285-4401-891f-fb22772bc3c4/confirm",
+        "intent",
+        "intent/7b3aaf2a-43e2-42c9-8345-39726460bbe6/confirm",
+        "intent",
+        "intent/a99589e2-ebe1-4539-b08d-0351651f5438/confirm",
+        "intent",
+        "intent/a6b983d5-c4a0-4083-8d85-962acdfffeb7/confirm",
+        "intent",
+        "intent/04104396-2af5-4123-8e4c-fd9e7a3c1b1c/confirm",
+        "intent",
+        "intent/fc278e33-c580-4fdf-b46a-77e7bd85544d/confirm",
+        "intent",
+        "intent/1c6c7f79-17fe-4ea8-a222-46eff1188369/confirm",
+        "save/import",
+        "intent",
+        "intent/d718a655-6b00-4f1a-9ebf-a31e5e2e98f5/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "confirmation-retry",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-5263d82d442d4ac7/confirm",
+        "intent",
+        "intent/e470eac8-e2d0-4b05-b963-2b4f94fb5bb2/confirm",
+        "intent/e470eac8-e2d0-4b05-b963-2b4f94fb5bb2/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "cancel-after-lost-response",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-726bb67635704d23/confirm",
+        "intent",
+        "intent/01e85d25-caf7-413a-bb69-c70888d46d75/confirm",
+        "intent/01e85d25-caf7-413a-bb69-c70888d46d75/cancel",
+        "intent/01e85d25-caf7-413a-bb69-c70888d46d75/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "cancel-without-network",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-ec17789ebffe46ef/confirm",
+        "intent",
+        "intent/b5e84889-9127-491c-82e7-ab59f7adf5f5/cancel",
+        "intent/b5e84889-9127-491c-82e7-ab59f7adf5f5/cancel"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "offline-reconnect",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 22,
+      "readClicks": 158,
+      "posts": [
+        "story",
+        "story/story-5938f3dec54a496f/confirm",
+        "intent",
+        "save/import",
+        "intent",
+        "intent/893e2755-238c-4d6f-bf9f-58c3a284dd46/confirm",
+        "intent",
+        "intent/03806cac-ff4a-45cf-a3de-2abd8c21b303/confirm",
+        "intent",
+        "intent/dc525985-cf56-4310-bddf-084121044b28/confirm",
+        "intent",
+        "intent/7e188e5e-c926-4e58-b727-78efb130f52f/confirm",
+        "intent",
+        "intent/f3b46bbf-ee4e-437b-ba1c-64e2de900005/confirm",
+        "intent",
+        "intent/c633068b-841a-4dcc-93f0-fbd405acd65e/confirm",
+        "intent",
+        "intent/5ea2ed0a-0ed9-40e8-9d73-58e22955b61b/confirm",
+        "intent",
+        "intent/e8b3485c-059e-4cda-94a7-686664a1b9d8/confirm",
+        "intent",
+        "intent/7890430e-7711-4106-8693-87eb46d421e5/confirm",
+        "intent",
+        "intent/c4751a97-c201-4d36-89da-812007ecf748/confirm",
+        "intent",
+        "intent/aa79b262-24d2-4722-bc2b-272e1de68c1d/confirm",
+        "intent",
+        "intent/ee5d1651-aac6-4736-92e7-6e4249af1957/confirm",
+        "intent",
+        "intent/391a16d2-6e05-42d4-8fbd-0bff4425f51c/confirm",
+        "intent",
+        "intent/774ba42b-6193-498e-aa9c-81ce6004bf40/confirm",
+        "intent",
+        "intent/3c9e38d6-9154-4dca-975c-21d0de5a232d/confirm",
+        "intent",
+        "intent/873f6782-24f9-4af5-9158-3dc2658cfe18/confirm",
+        "intent",
+        "intent/82df5d2e-c578-4ef9-9481-d9d757925743/confirm",
+        "intent",
+        "intent/ba56b29a-8d90-4a3d-85a2-5b58064f6d65/confirm",
+        "intent",
+        "intent/00fe84c3-01e3-410d-bcc9-c7bbbd677043/confirm",
+        "intent",
+        "intent/c0434a01-b1d0-4fb6-ade3-978fb250c75a/confirm",
+        "intent",
+        "intent/51c0797c-4803-4970-a2bf-cd439b99ab4e/confirm",
+        "intent",
+        "intent/667965f3-1dcf-427c-bbd6-055a828f2ade/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "damaged-preview-cache",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-995f3c64932e45a3/confirm",
+        "intent",
+        "intent/84f3e424-6738-4bc2-b0e4-fda2f15532c5/cancel"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "story-cancel-after-restart",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-c06f6e061bb74c4f/confirm",
+        "story",
+        "story/story-c0a097ab022b4e2e/confirm",
+        "story/story-c0a097ab022b4e2e/cancel",
+        "story/story-c0a097ab022b4e2e/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "story-cancel-without-network",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-74fc2da47353472d/confirm",
+        "story",
+        "story/story-d28482263528447e/cancel",
+        "story/story-d28482263528447e/cancel"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "expired-preview-recovery",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-7acbc02b49304cd8/confirm",
+        "intent",
+        "intent/000da55f-38e0-4507-99c4-1158965f7c55/cancel",
+        "story",
+        "story/story-38d043eb90374770/cancel"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "other-tab-intent-retry",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-48e9271556884afb/confirm",
+        "intent",
+        "intent/cf97a3dc-19e4-4627-9d2f-a1ecf2c43eba/confirm",
+        "intent/cf97a3dc-19e4-4627-9d2f-a1ecf2c43eba/confirm",
+        "intent",
+        "intent/5ae42bec-3117-4577-8b53-022dc2edcda5/confirm",
+        "intent/cf97a3dc-19e4-4627-9d2f-a1ecf2c43eba/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "other-tab-intent-cancel",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-0d3409ea30cd4150/confirm",
+        "intent",
+        "intent/f2a57eaa-bd1d-419d-aec0-26dedddc2bc2/confirm",
+        "intent/f2a57eaa-bd1d-419d-aec0-26dedddc2bc2/confirm",
+        "intent",
+        "intent/389dc3df-8dec-49d6-b29f-601ae1ed3c0c/confirm",
+        "intent/f2a57eaa-bd1d-419d-aec0-26dedddc2bc2/cancel",
+        "intent/f2a57eaa-bd1d-419d-aec0-26dedddc2bc2/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "other-tab-story-retry",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-aae0c228e6a74b33/confirm",
+        "story",
+        "story/story-10e39c81d2654dee/confirm",
+        "story/story-10e39c81d2654dee/confirm",
+        "intent",
+        "intent/549c4deb-8083-4f0f-86a9-f556df6513aa/confirm",
+        "story/story-10e39c81d2654dee/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "other-tab-story-cancel",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-30dae1e8defd47f5/confirm",
+        "story",
+        "story/story-3c72259b71494f81/confirm",
+        "story/story-3c72259b71494f81/confirm",
+        "intent",
+        "intent/da3acc26-b0a5-4f47-84c6-297dcf15a5bc/confirm",
+        "story/story-3c72259b71494f81/cancel",
+        "story/story-3c72259b71494f81/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "name": "known-newer-snapshot",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 0,
+      "readClicks": 0,
+      "posts": [
+        "story",
+        "story/story-a5fa611287a6402e/confirm",
+        "intent",
+        "intent/8be91371-0bb5-4156-a1f1-a02b215aace1/confirm",
+        "intent",
+        "intent/178ee9f9-455a-4cdd-bc08-13d501f77fed/confirm",
+        "intent/8be91371-0bb5-4156-a1f1-a02b215aace1/confirm"
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "sources": {
+    "scripts/playtest-single-player.mjs": "827f6aee225f257f5e3b613ce12ed7b87617c64b91fe9d24be61ae11efb0fad2",
+    "hex/play.ts": "1e4a0c277cb00a585c9e16845ed7cdbae5e6cd43b9e88443d78eac423be66db6",
+    "hex/play-state.ts": "887b5efc0bf9ede3238ea456e0b6f4c91718c6a39ee2815f3b70bca85d8e08d2",
+    "hex/play-guidance.ts": "36128fbba1217a0e96f8b0dc94d888f5e4d290348221fbaae43faf9ea72e2409",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play-local.ts": "c8bf992779ce8fdaed276d62c1af08bb3d351aa1d25418bf1904958b9864a262",
+    "hex/play-recovery.ts": "fa08a8634ef48f4f1ea69fc4d85ca56040169485c0a45fdfac82abaa12d2c4ee",
+    "hex/play-performance.ts": "73d23ff6b6af40e034129c2d74f3e9521acfda489a055aad613d890a48f0ce24",
+    "hex/play-stage.ts": "5123cd43d1d99629565ec29f4917b4d4a63efeee5f24220342cec8182744844b",
+    "hex/play-stage.css": "03dda0fffb8c4413ddc01c9f2fae46e7a0545ee5b0594ab54bd6f54363e399bb",
+    "hex/play-art.ts": "59415a6c903a083c8d32e683af5d1a73f4dc5d9d9ee92c6389e317340d12521b",
+    "hex/play.css": "f45852dee5642af32d97d8d16617666784692987d790d37f9df1fcb41a5e4eaf",
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/narrative.py": "7eba8d245c378da07241384e8b69f5a9c04e4dbae38d7e7220f74e8f51679f39",
+    "backend/app/signal_story.py": "6b7798a2c8a4b0c18339574e2db22cab09ab730f551e9704ec3625704a55cff3",
+    "dist-hex/index.html": "f800760847739cf242c8bd4232eccba5437f9a557854ae5a6ea3503835a78a43"
+  },
+  "baseCommit": "5718cf17a4425974fe77c754674898bde28c82b8",
+  "browser": "153.0.8010.52",
+  "finishedAt": "2026-09-21T03:35:12.979Z",
+  "passed": true,
+  "database": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/voodoo-playtest-PYH5LR/world.sqlite3"
+}

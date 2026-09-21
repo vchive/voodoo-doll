@@ -1,0 +1,360 @@
+{
+  "startedAt": "2026-09-21T03:36:27.432Z",
+  "cases": [
+    {
+      "name": "missed-day1",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 7,
+      "readClicks": 61,
+      "posts": [
+        "story",
+        "story/story-720424df0b3445b3/confirm",
+        "intent",
+        "intent/4549a687-1166-45b8-a60d-ea79f10ec8f4/confirm",
+        "intent",
+        "intent/958bb3f0-9f4e-474e-ace0-a2ba0bb3129a/confirm",
+        "intent",
+        "intent/6402fc44-fe5b-4c22-aed4-a0ffb91c82a0/confirm",
+        "intent",
+        "intent/5da928b2-2963-4572-9b7b-496b3afce991/confirm",
+        "intent",
+        "intent/76ef9cd1-e458-44a6-a883-e92ab48d5a7d/confirm",
+        "intent",
+        "intent/a0901648-1726-4c2e-85f8-25af1ae1c7c3/confirm",
+        "intent",
+        "intent/75ee25e3-4ab1-454a-9c2a-60e3d183b4f5/confirm",
+        "intent",
+        "intent/fdebdc2c-798c-44b9-96fa-d3fd71382d11/confirm",
+        "intent",
+        "intent/456036cd-a025-4728-be65-34ff0e078d12/confirm"
+      ],
+      "errors": [],
+      "scheduleDeparture": {
+        "id": "A",
+        "beforeCast": [
+          {
+            "id": "A",
+            "active": "false",
+            "loaded": true
+          }
+        ],
+        "beforeClock": {
+          "day": 1,
+          "minute": 567,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 7,
+          "anchorEpoch": 1789961790.57429,
+          "anchorDay": 1,
+          "anchorMinute": 567
+        },
+        "afterCast": [],
+        "afterClock": {
+          "day": 1,
+          "minute": 627,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 8,
+          "anchorEpoch": 1789961791.091836,
+          "anchorDay": 1,
+          "anchorMinute": 627
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "missed-day3",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actions": 18,
+      "readClicks": 135,
+      "posts": [
+        "story",
+        "story/story-5adc1c6cc1d14bf2/confirm",
+        "intent",
+        "intent/d48db5ec-8464-4664-8084-b4f00c684c37/confirm",
+        "intent",
+        "intent/1fbd45db-ec04-4ce1-af9d-721d76f96565/confirm",
+        "intent",
+        "intent/0ee6e505-eb7c-42ae-b3f0-0e8bd355fe4b/confirm",
+        "intent",
+        "intent/ee92c6c4-0186-44e9-959d-f2fe792dbbb9/confirm",
+        "intent",
+        "intent/301a6c07-bb40-4bfc-b0bc-102398f673a4/confirm",
+        "intent",
+        "intent/7add81e1-3591-43fb-9396-b6b9a75d8863/confirm",
+        "intent",
+        "intent/40b7cc6c-3546-4376-bda5-b56195e50f8a/confirm",
+        "intent",
+        "intent/3e260811-cde9-4841-ab41-a1e4e0ac0dbc/confirm",
+        "intent",
+        "intent/c2d5bdbb-876b-42bd-8f5f-02d18a66c743/confirm",
+        "intent",
+        "intent/7478b3df-6f24-4d8f-8ea8-64121b7fa7df/confirm",
+        "intent",
+        "intent/cd59c6b9-c754-4820-961f-2346c77d1fdb/confirm",
+        "intent",
+        "intent/0fc62b16-7893-4c34-be3a-58705c819516/confirm",
+        "intent",
+        "intent/52c4acad-8df7-4791-a6f5-0fd454ab7a47/confirm",
+        "intent",
+        "intent/097b00e3-53ec-4d85-952c-0e3483bbeb29/confirm",
+        "intent",
+        "intent/24a1bb6c-4781-4ec7-b12d-5c8bc9513b47/confirm",
+        "intent",
+        "intent/6ff5af30-8c27-48ef-aa8c-f94f36981486/confirm",
+        "intent",
+        "intent/c0977ec3-9fe6-4f2d-977c-364c71fdd1b5/confirm",
+        "intent",
+        "intent/fe20040f-d24b-4048-8159-ac017e432514/confirm",
+        "intent",
+        "intent/73ded882-3215-4d0f-9778-e25e17752dbb/confirm",
+        "intent",
+        "intent/9c94438e-b199-4a19-b0ef-53b99f7dcd75/confirm",
+        "intent",
+        "intent/03a7bd6c-c149-4be4-a0ce-b407eb9d60e0/confirm",
+        "save/import"
+      ],
+      "errors": [],
+      "scheduleDeparture": {
+        "id": "A",
+        "beforeCast": [
+          {
+            "id": "A",
+            "active": "false",
+            "loaded": true
+          }
+        ],
+        "beforeClock": {
+          "day": 3,
+          "minute": 553,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 20,
+          "anchorEpoch": 1789961798.041631,
+          "anchorDay": 3,
+          "anchorMinute": 553
+        },
+        "afterCast": [],
+        "afterClock": {
+          "day": 3,
+          "minute": 733,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 22,
+          "anchorEpoch": 1789961798.659431,
+          "anchorDay": 3,
+          "anchorMinute": 733
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "missed-station",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 21,
+      "readClicks": 195,
+      "posts": [
+        "story",
+        "story/story-60d474c4a9614691/confirm",
+        "intent",
+        "intent/184c1524-ec50-4c8c-aeb0-43c5d58aaafc/confirm",
+        "intent",
+        "intent/fbbe3263-f0eb-47a7-8816-2a70e1a7c5de/confirm",
+        "intent",
+        "intent/57302cbf-f412-461e-bc50-1f98eeadb686/confirm",
+        "intent",
+        "intent/2f7a162f-b099-43cc-93dd-e1ff281b913c/confirm",
+        "intent",
+        "intent/21e5179e-650b-4a9c-a894-62286a987108/confirm",
+        "intent",
+        "intent/ec7d89f2-12d2-441b-8461-6f365d13dc2a/confirm",
+        "intent",
+        "intent/e34b5348-3925-438a-8eb9-27fa47f76b5b/confirm",
+        "intent",
+        "intent/8089f932-cfa7-4799-8d34-59bf1da74b5a/confirm",
+        "intent",
+        "intent/585dc3a3-24f8-4896-8be3-e0aa86aafdb5/confirm",
+        "intent",
+        "intent/c5e0ef83-258c-439a-8d7f-68bdaa376716/confirm",
+        "intent",
+        "intent/582c4aeb-03db-4c60-8a16-13ac6741686f/confirm",
+        "intent",
+        "intent/bb7d0a87-ad78-4d22-a1a3-d492fb91d64a/confirm",
+        "intent",
+        "intent/cf053b73-78d6-42ac-949e-2053a6203160/confirm",
+        "intent",
+        "intent/1241a2cf-9548-4369-8236-182e6a983de1/confirm",
+        "intent",
+        "intent/d487799c-479f-4bf2-bb41-03c109dae9f6/confirm",
+        "intent",
+        "intent/d1e967e4-655e-4fa5-a9f8-baaf832e3e71/confirm",
+        "intent",
+        "intent/273e85cc-db10-43b8-a815-031aac980f9a/confirm",
+        "intent",
+        "intent/cfd297d0-4d6b-4aac-94a0-0c1994ee5b7b/confirm",
+        "intent",
+        "intent/5e4426d6-34b6-46c9-b280-132ed7801eb5/confirm",
+        "intent",
+        "intent/7f3c69ec-00b0-454f-85af-00b8f6d050f5/confirm",
+        "intent",
+        "intent/7348a186-149e-4f17-97ca-400842d069da/confirm",
+        "intent",
+        "intent/53c72234-3ede-4826-95fa-f9de084687c2/confirm"
+      ],
+      "errors": [],
+      "scheduleDeparture": {
+        "id": "C",
+        "beforeCast": [
+          {
+            "id": "C",
+            "active": "false",
+            "loaded": true
+          }
+        ],
+        "beforeClock": {
+          "day": 2,
+          "minute": 605,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 12,
+          "anchorEpoch": 1789961804.111691,
+          "anchorDay": 2,
+          "anchorMinute": 605
+        },
+        "afterCast": [],
+        "afterClock": {
+          "day": 2,
+          "minute": 725,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 13,
+          "anchorEpoch": 1789961804.5963788,
+          "anchorDay": 2,
+          "anchorMinute": 725
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "missed-kitchen",
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "actions": 20,
+      "readClicks": 193,
+      "posts": [
+        "story",
+        "story/story-6bc00a7d3e6e49b7/confirm",
+        "intent",
+        "intent/56610c43-4fb2-4abf-919d-0684cdf62ea0/confirm",
+        "intent",
+        "intent/531342c5-2d73-42fb-bd05-bd84f58715c1/confirm",
+        "intent",
+        "intent/febd6b10-1f06-4f32-b516-033e14b972be/confirm",
+        "intent",
+        "intent/5ee2765b-e663-4a1b-819a-2f7c0e194c2f/confirm",
+        "intent",
+        "intent/8ca8e4ea-215d-49f1-8bc6-953ce859760a/confirm",
+        "intent",
+        "intent/72088156-f3cd-47b0-b527-f720bac0a2d4/confirm",
+        "intent",
+        "intent/4e09ffb1-5e9e-4c2b-b082-f1e6c5339ace/confirm",
+        "intent",
+        "intent/c03d1168-4eb4-454c-891e-c2d2d6bac30d/confirm",
+        "intent",
+        "intent/826b2cc3-8d57-4678-ad84-138396460255/confirm",
+        "intent",
+        "intent/1e96ff8c-b3aa-475f-a5fd-f83e58b9076a/confirm",
+        "intent",
+        "intent/b38c747e-9ca5-4605-a233-fe278620aff5/confirm",
+        "intent",
+        "intent/e24f4ad9-7ff6-4cf1-8661-1e63e5527ebf/confirm",
+        "intent",
+        "intent/75b67f73-d8e4-4235-922d-29dd110ccd8e/confirm",
+        "intent",
+        "intent/e0094120-264e-4c6b-85ac-dddae30f07b0/confirm",
+        "intent",
+        "intent/cb1f6429-21e5-477c-bc54-2d0e65fa3eae/confirm",
+        "intent",
+        "intent/3956aa10-6d6f-403c-b200-212623ba60ec/confirm",
+        "intent",
+        "intent/85a46bfc-cbbc-4273-80f7-9c65c5080921/confirm",
+        "intent",
+        "intent/eff05e6b-a996-48bb-9402-a4c963d881d6/confirm",
+        "intent",
+        "intent/80ac56f3-f57d-41df-8aae-fad2c4366d8c/confirm",
+        "intent",
+        "intent/2478c1ce-1d8a-4eb9-9fb7-42c821396a73/confirm",
+        "intent",
+        "intent/7827331f-05f6-4e3b-99a9-fd2beb27d68f/confirm"
+      ],
+      "errors": [],
+      "scheduleDeparture": {
+        "id": "B",
+        "beforeCast": [
+          {
+            "id": "B",
+            "active": "false",
+            "loaded": true
+          }
+        ],
+        "beforeClock": {
+          "day": 2,
+          "minute": 605,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 12,
+          "anchorEpoch": 1789961813.6186829,
+          "anchorDay": 2,
+          "anchorMinute": 605
+        },
+        "afterCast": [],
+        "afterClock": {
+          "day": 2,
+          "minute": 725,
+          "timezone": "Asia/Shanghai",
+          "speed": 1,
+          "clockVersion": 13,
+          "anchorEpoch": 1789961814.159101,
+          "anchorDay": 2,
+          "anchorMinute": 725
+        }
+      },
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "sources": {
+    "scripts/playtest-single-player.mjs": "79bc9de63db2cf354e1a883cc9e114c4e75ebf3366747dbbb5c87b00d5ea51c2",
+    "hex/play.ts": "1e4a0c277cb00a585c9e16845ed7cdbae5e6cd43b9e88443d78eac423be66db6",
+    "hex/play-state.ts": "887b5efc0bf9ede3238ea456e0b6f4c91718c6a39ee2815f3b70bca85d8e08d2",
+    "hex/play-guidance.ts": "36128fbba1217a0e96f8b0dc94d888f5e4d290348221fbaae43faf9ea72e2409",
+    "hex/play-dialogue.ts": "a091064b80814da4aeb770eef877210acea13489cd5ae1e1573ffd914a0988f6",
+    "hex/play-local.ts": "c8bf992779ce8fdaed276d62c1af08bb3d351aa1d25418bf1904958b9864a262",
+    "hex/play-recovery.ts": "fa08a8634ef48f4f1ea69fc4d85ca56040169485c0a45fdfac82abaa12d2c4ee",
+    "hex/play-performance.ts": "73d23ff6b6af40e034129c2d74f3e9521acfda489a055aad613d890a48f0ce24",
+    "hex/play-stage.ts": "5123cd43d1d99629565ec29f4917b4d4a63efeee5f24220342cec8182744844b",
+    "hex/play-stage.css": "03dda0fffb8c4413ddc01c9f2fae46e7a0545ee5b0594ab54bd6f54363e399bb",
+    "hex/play-art.ts": "59415a6c903a083c8d32e683af5d1a73f4dc5d9d9ee92c6389e317340d12521b",
+    "hex/play.css": "f45852dee5642af32d97d8d16617666784692987d790d37f9df1fcb41a5e4eaf",
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/narrative.py": "7eba8d245c378da07241384e8b69f5a9c04e4dbae38d7e7220f74e8f51679f39",
+    "backend/app/signal_story.py": "6b7798a2c8a4b0c18339574e2db22cab09ab730f551e9704ec3625704a55cff3",
+    "dist-hex/index.html": "f800760847739cf242c8bd4232eccba5437f9a557854ae5a6ea3503835a78a43"
+  },
+  "baseCommit": "5718cf17a4425974fe77c754674898bde28c82b8",
+  "browser": "153.0.8010.52",
+  "finishedAt": "2026-09-21T03:36:59.006Z",
+  "passed": true,
+  "database": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/voodoo-playtest-OPpzXS/world.sqlite3"
+}

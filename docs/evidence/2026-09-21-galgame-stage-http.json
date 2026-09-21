@@ -1,0 +1,272 @@
+{
+  "checkedAt": "2026-09-21T03:34:05.966053+00:00",
+  "base": "http://127.0.0.1:18766",
+  "assets": [
+    {
+      "path": "/assets/BitmapFont-8Dq_3Gym.js",
+      "status": 200,
+      "bytes": 12805,
+      "sha256": "61d87b291c4558232a2d1d151be24d6c60884b1c01af9417cd848794ffda19b2",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/BufferResource-B1vXUsco.js",
+      "status": 200,
+      "bytes": 11109,
+      "sha256": "3d22721974415a498fdae8dfea195c1b6947c6644316557372ffe694cb405a2e",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/CanvasRenderer-CcPRoutf.js",
+      "status": 200,
+      "bytes": 17883,
+      "sha256": "cf50aa985e9d012fcb0cc9fdfdc2126586cd58a852c8d6507f4eb948b7955ea7",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/Filter-D5Lkm8YJ.js",
+      "status": 200,
+      "bytes": 902,
+      "sha256": "ad5bceddeba6eba1bb133b6d3ac4293359ea81a15b4189400ae6b7fc41518a03",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/RenderTargetSystem-RI2-VSd3.js",
+      "status": 200,
+      "bytes": 53423,
+      "sha256": "d6b495934a5948af85dc127fc47721e7f40355d090ff4f74690d36050685b974",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/WebGLRenderer-DDH-XnD7.js",
+      "status": 200,
+      "bytes": 72503,
+      "sha256": "472d2eb48d92f99d4800547cb74a69aa1469c9886cae6b3e9f36f7845409e39f",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/WebGPURenderer-DfHIshgo.js",
+      "status": 200,
+      "bytes": 48510,
+      "sha256": "9e433d0172ffe89d8939aa2b1dc90a114674da7fee4f97cdcbbf2375875a84b1",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/angry-Co9OoY93.webp",
+      "status": 200,
+      "bytes": 98354,
+      "sha256": "de1984c53ec746520b67ce6f7e0f6d475a8cfc4f448345eb0bf3383dcf5e9f6a",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/angry-DlDMJA28.webp",
+      "status": 200,
+      "bytes": 101164,
+      "sha256": "701b2389ee5cbae5269da17e271c22bdcaa8bd9d38d15629e297f03bc18b74bb",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/app-C3nL7xZ2.js",
+      "status": 200,
+      "bytes": 383311,
+      "sha256": "ddbde0bfc3a91459caa481a9e4738992e0cc74d19c53555fca9a2d90525ca59b",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/browserAll-DWwOQ3fX.js",
+      "status": 200,
+      "bytes": 43121,
+      "sha256": "26be5183c60b7a32cac54ed6870b774570610d8655b0490d28cdc3c9277c5117",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/concerned-Csgr0pdv.webp",
+      "status": 200,
+      "bytes": 101086,
+      "sha256": "9d6c046acde0c1778bce17174c6023720838a2f509443927ec77884f742c9170",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/concerned-CuotftN6.webp",
+      "status": 200,
+      "bytes": 98508,
+      "sha256": "7a3751a8a70eff150c0851e1565010ceedf51c9e7f4a28965eddb3d392b90c29",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/hall-Ck14WJ6x.webp",
+      "status": 200,
+      "bytes": 62258,
+      "sha256": "1d0e5031ce7476a4478bd89c885b3e57111af7f6eee688c78d96d7065ec62637",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/happy-BaYW2fLb.webp",
+      "status": 200,
+      "bytes": 98354,
+      "sha256": "395a18a98a7aae4249d3bcc3d98618a74132959f788e9749d72ff9f47cef022b",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/home-BxMZ-YHX.webp",
+      "status": 200,
+      "bytes": 118490,
+      "sha256": "88722a9cebcf6b51d8241cd08815503b35f6f1ec78f24a25d9c8e95280ff25a6",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/index-CV4SKRs3.css",
+      "status": 200,
+      "bytes": 23490,
+      "sha256": "60bad7956b6cd6044ff3a1f0caa26e268e57ee0129996336b4078b2de6e96662",
+      "matchesBuild": true,
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/assets/index-DS5ayz73.js",
+      "status": 200,
+      "bytes": 1181,
+      "sha256": "2c71f73ac61cb243390f89c9b77c5d3ec0281e94249f77f25882365c41b6700e",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/kitchen-CJLXMe0A.webp",
+      "status": 200,
+      "bytes": 83962,
+      "sha256": "b29104f5d1a3905c729a7754981588eaada351676dad5b4ba02ebebe2f96f235",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/neutral-BD0gamOM.webp",
+      "status": 200,
+      "bytes": 98486,
+      "sha256": "45210ebe1179e8fe81a16764fad10a3f65bb2a5d85cc7b56567a20cf033befef",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/neutral-DsTODG3a.webp",
+      "status": 200,
+      "bytes": 101162,
+      "sha256": "3530c53167290f3421e0a9356413a86f90dc8cbfde5b92419f88a454a97d5215",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/neutral-TjB8CyTi.webp",
+      "status": 200,
+      "bytes": 98420,
+      "sha256": "13ac3b244a09a8dec8605c1544045474a19957d3306a50b896967809bbacad03",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/office-4SfhUEtf.webp",
+      "status": 200,
+      "bytes": 70906,
+      "sha256": "354851b97b8fb5aea66d0947d256a58ef24f52e9489d945420a823e60ad14a4b",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/parlor-BQWkvQYT.webp",
+      "status": 200,
+      "bytes": 110512,
+      "sha256": "5ff938272581a93759fb5e7a295643ee1d9c2d6968bb02ca5cdcb67f4608350b",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/play-CH0KCtXH.js",
+      "status": 200,
+      "bytes": 59747,
+      "sha256": "15513bcaca85e75ef17eb5f66617740623953228eaba28589e3cd9fba59155a7",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/play-D9SoQG6f.css",
+      "status": 200,
+      "bytes": 8588,
+      "sha256": "3bf09a3d01c11fc1a61b2a49601e0ff31bfed66c524e36460fcd0e9640fbe741",
+      "matchesBuild": true,
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/assets/preload-helper-PPVm8Dsz.js",
+      "status": 200,
+      "bytes": 1232,
+      "sha256": "0bcb72f8ec0d95f592f3a84b3554b9ef5a5325ff5416a9114d6913e03c1c9eb4",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/assets/station-CeCbmI2s.webp",
+      "status": 200,
+      "bytes": 195828,
+      "sha256": "13487d667497a25547a090f664ce55d583c6de0000144806971910809fe8cde8",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/surprised-C6YtAH9D.webp",
+      "status": 200,
+      "bytes": 101222,
+      "sha256": "0c71154dea6554c7718932ad119a531d5ee3a4dca7b0ea582105c7a2e20b2ee4",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/surprised-DCKRd0GR.webp",
+      "status": 200,
+      "bytes": 98320,
+      "sha256": "5aa3c23ab3c44025d3e7ad061aba21646b4560f3287147625510a70f0ad39559",
+      "matchesBuild": true,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/assets/webworkerAll-CuTxUTWu.js",
+      "status": 200,
+      "bytes": 15570,
+      "sha256": "a7a6a0418c2f6eda1ef7025334cfa4fa517995890d0d6bd1b90edb082dfb3a23",
+      "matchesBuild": true,
+      "contentType": "text/javascript; charset=utf-8"
+    }
+  ],
+  "healthz": {
+    "path": "/healthz",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "index": {
+    "path": "/",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "matchesBuild": true
+  },
+  "savePreservation": {
+    "database": "/tmp/voodoo-review.sqlite3",
+    "backup": "/tmp/voodoo-review-before-galgame-stage-20260921-113329.sqlite3",
+    "businessTables": 9,
+    "rows": 3368,
+    "allComparedTablesUnchanged": true
+  }
+}

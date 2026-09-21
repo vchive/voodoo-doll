@@ -1,0 +1,184 @@
+Source: https://spiralatlas.github.io/credits/
+Retrieved: 2026-09-21
+Format: visible HTML text; whitespace normalized; wording not rewritten.
+
+Credits and Acknowledgements 
+
+ Spiral Atlas Games 
+
+ brightness_4 
+ brightness_2 
+ brightness_5 
+
+ Home 
+
+ About 
+
+ Blog 
+
+ Tags 
+
+ Credits and Acknowledgements 
+These are assets used across my 3D Blender projects and visual novels. Most
+are creative commons, but a few were commercial purchases. Not all
+actually require credit to be given but this way the file can also
+stand as a recommendation of useful assets. Some assets have
+been added to this list that I didn’t end up actually using. 
+ Acknowledgement of Country 
+I acknowledge the Whadjuk people of Noongar Boodjar as the Traditional Custodians of the Country in which this game was created. I recognise their continued connection to the land and waters of this beautiful place, and acknowledge that they never ceded sovereignty. I respect all Whadjuk Elders and Ancestors, and any First Nations people reading. 
+ 2D art 
+
+ Tree
+ & Grass Brushes by Leaf_kim 
+ Black
+ Horse 1 , The
+ Dragon of the Apocalypse , Abyss ,
+ Dark
+ Angel By SuicideOmen
+ Everything linked to in the Spritemaker credits 
+ Many other public
+ domain paintings and other images. If it’s a poster or in a frame,
+ I probably didn’t draw it myself, especially if it looks like a
+ Van Gogh painting.
+
+ 3D models under Creative Commons Attribution 
+You can also see my
+collections of assets at my sketchfab account . The following assets were released under Creative
+ Commons Attribution :
+
+ "Office chair"
+ (https://skfb.ly/onZ6s) by AHMED KCHIKICH
+ (https://skfb.ly/6RIED) by jspurlin
+ "Ikea idanas
+ single bed" (https://skfb.ly/oAzJt) by ditovirnantio
+ "Shapespark low
+ poly curtains kit" (https://skfb.ly/oxzyQ) by Shapespark
+ "Floor Lamp"
+ (https://skfb.ly/6S9CH) by HippoStance 
+ "Curtains"
+ (https://skfb.ly/otCBs) by Heliona 
+ "Stairs"
+ (https://skfb.ly/opQSZ) by FantasyDragon 
+ "Toaster"
+ (https://skfb.ly/6RGEy) by Artem P 
+ "Bathroom rev1"
+ (https://skfb.ly/6UKnr) by Neospace 
+ "Low-poly Papers
+ Set" (https://skfb.ly/o8yVS) by Hox_Lira 
+ "whiskey"
+ (https://skfb.ly/otV6W) by landout 
+ "painting
+ folder" (https://skfb.ly/o7OWE) by zhenxinfrozen
+ "Cup"
+ (https://skfb.ly/orROy) by Dmytro Nikonov 
+ "World's Best
+ Boss Mug" (https://skfb.ly/6zzUS) by Christian Gentry
+ "Low poly mug"
+ (https://skfb.ly/6SxwJ) by hexenfree 
+ "Lowpoly Novel"
+ (https://skfb.ly/oJuBu) by Blarb 
+ "Small silver
+ jewlery box" (https://skfb.ly/6WKST) by Asylum Nox
+ "ribbon"
+ (https://skfb.ly/oNSXn) by deokpal 
+ "Teddy bears"
+ (https://skfb.ly/otFMG) by hectopod 
+ "Ribbon"
+ (https://skfb.ly/6AKvI) by tokei 
+ "Plush Unicorn"
+ (https://skfb.ly/6WZCC) by C.U.V 
+ "donut pillows"
+ (https://skfb.ly/ouyzN) by Stevie3D 
+ "Cute Bear"
+ (https://skfb.ly/oKnCY) by ahmedhafiene98 
+ "Cute Bunny"
+ (https://skfb.ly/oAv9O) by Ndevisuals 
+ "Octopus in jar"
+ (https://skfb.ly/6XuwH) by Philip Osborne 
+ "Cute_British_Octopus"
+ (https://skfb.ly/6XtXE) by Ilovepancakesss 
+ "Dragon_Sketch"
+ (https://skfb.ly/oBwoQ) by GranHauZ 
+ "Transit Tool"
+ (https://skfb.ly/6XUtA) by Philip Osborne 
+ "Cactus" ()
+ by Yury Misiyuk 
+ "Jumeau Doll"
+ (https://skfb.ly/6wUwB) by Connections XR 
+ "Classic
+ Edwardian Wall Curio Shelf" (https://skfb.ly/oznPQ) by Michaela
+ Blanchfield 
+ "Wooden Wall
+ Shelf" (https://skfb.ly/6TZVJ) by Russell Anderson
+ "Steampunk
+ Handwritten Typewriter" () by MartyPCSR 
+ "Modern Small
+ Shelf" (https://skfb.ly/6zy9w) by Blender3D 
+ "Persian Qashqai
+ Rug" (https://skfb.ly/o8YG8) by mfb64 
+ "Birdbaths"
+ (https://skfb.ly/oFDLy) by Full Barrel Productions 
+ "Sandy Rock"
+ (https://skfb.ly/6Xq8s) by lukica 
+ "Simple Rock IV"
+ (https://skfb.ly/PXxw) by bilgehan.korkmaz 
+ "CC0 - Mailbox"
+ () by plaggy 
+ "Dirty Shovel"
+ (https://skfb.ly/6TNV6) by tediuminteractive 
+ "Fence russia 2"
+ (https://skfb.ly/6WRTT) by DOMNIN 
+ "Curtain" (https://skfb.ly/6G6SW) by aaronwildman46 
+ "Cortina Curtain New 2.0" (https://skfb.ly/oOxsH) by RomanSn 
+ "Medical Examination Room" (https://skfb.ly/6WO9V) by DotBow 
+ "Clay mouth" (https://skfb.ly/6Xrn6) by onikoge 
+ "Stylized Rocks Formation Asset Pack" (https://skfb.ly/6TSNS) by Gebus 
+ "Monobloc Plastic Garden Chair" (https://skfb.ly/oyZ6I) by Kuutti Siitonen 
+ "Rainbow Spheres in a Spiral Light" (https://skfb.ly/oEnqt) by Kalabaris 
+ "Parking Lot UF" (https://skfb.ly/oxDtY) by hkang2 
+ "Generic Sedan Car" (https://skfb.ly/oIOJC) by MMC Works 
+ "Lowpoly Generic SUV Police" (https://skfb.ly/oQJFT) by mk2design 
+ "1991 Honda Civic EG6" (https://skfb.ly/6TqJ9) by rifdanzz 
+ "Power Lines High voltage electricity" (https://skfb.ly/oQtxp) by Mehdi Shahsavan 
+ "Old Alley" (https://skfb.ly/oVOSC) by Rufoncio 
+ "CC0 - Mailbox" (https://skfb.ly/oWLKw) by plaggy 
+ "Medical Supplies Collection" (https://skfb.ly/o8qXS) by Miguel Adão 
+ "Skeleton" (https://skfb.ly/SnDY) by Diego Luján García 
+ "Cookies in the jar" (https://skfb.ly/oBZ6w) by sheana 
+ "Cash Register" (https://skfb.ly/orBWs) by nathanielmoore 
+ "Desert Ruins" (https://skfb.ly/6Xt9x) by Inknot
+ "Chinese Cloisonné Vase - Low Poly/Game-Ready" (https://skfb.ly/orxqQ) by revenorror
+ "Module 2 - Chinese Lantern" (https://skfb.ly/pxFqs) by brookeheaman
+ "Bookcase" (https://skfb.ly/6txQU) by 杭州维界科技有限公司
+ "Fireplace" (https://skfb.ly/6UUFs) by Mark Bai
+ "Ornament Collection" (https://skfb.ly/oNpzX) by GameDevMoot
+
+ 3D models which do not require attribution 
+This is just a few notable models. 
+
+ Books
+ https://www.blenderkit.com/asset-gallery-detail/f8123f8a-c689-447d-89e3-8cc8e5f03703/ 
+ Clock
+ https://www.blenderkit.com/asset-gallery-detail/9550e175-8e1f-4d76-a3e1-572d994d4e80/ 
+ Table
+ https://www.blenderkit.com/asset-gallery-detail/d90a729f-7e97-41e5-a9c3-650381f3d06a/ 
+ utensils
+ https://www.blenderkit.com/asset-gallery-detail/dc33b0de-5c64-4ad8-ac09-925d82e44f84/ 
+ chair
+ https://www.blenderkit.com/asset-gallery-detail/193ea5f6-8c8c-4dc5-8b9a-84b8297318ef/ 
+ kitchen
+ https://www.blenderkit.com/asset-gallery-detail/8a3fb1a2-a360-495d-af18-c495f1473c63/ 
+ drying
+ rack
+ https://www.blenderkit.com/asset-gallery-detail/2943a5bb-591f-4bc2-9924-2a947ddc7e66/ 
+ bathroom
+ https://www.blenderkit.com/asset-gallery-detail/5ca41474-0e40-4ef9-a111-bd0307871ad0/
+ Buildings Pack 
+
+ Purchased 3D models 
+ Victorian Street 
+ Rino's Diner 
+ Grand Palace Environment 
+ One
+ Bedroom Apartment by Virtual
+ Bakery

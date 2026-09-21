@@ -1,0 +1,208 @@
+{
+  "created": "2026-09-21",
+  "assets": [
+    {
+      "file": "characters/linchuan/neutral.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy1/Boy 1/Expressions/Friendly Merged.PNG",
+      "sourceBody": "Boy1/Boy 1/Color.PNG",
+      "size": [
+        541,
+        1536
+      ],
+      "sha256": "45210ebe1179e8fe81a16764fad10a3f65bb2a5d85cc7b56567a20cf033befef",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/linchuan/happy.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy1/Boy 1/Expressions/Happy-laugh Merged.PNG",
+      "sourceBody": "Boy1/Boy 1/Color.PNG",
+      "size": [
+        541,
+        1536
+      ],
+      "sha256": "395a18a98a7aae4249d3bcc3d98618a74132959f788e9749d72ff9f47cef022b",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/linchuan/concerned.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy1/Boy 1/Expressions/Uncomfortable Merged.PNG",
+      "sourceBody": "Boy1/Boy 1/Color.PNG",
+      "size": [
+        541,
+        1536
+      ],
+      "sha256": "7a3751a8a70eff150c0851e1565010ceedf51c9e7f4a28965eddb3d392b90c29",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/shenqing/neutral.webp",
+      "author": "Kainico",
+      "sourceLayer": "Girl2/Girl 2/Expressions/Normal-RBF Merged.PNG",
+      "sourceBody": "Girl2/Girl 2/Color.PNG",
+      "size": [
+        428,
+        1536
+      ],
+      "sha256": "3530c53167290f3421e0a9356413a86f90dc8cbfde5b92419f88a454a97d5215",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/shenqing/concerned.webp",
+      "author": "Kainico",
+      "sourceLayer": "Girl2/Girl 2/Expressions/Sad Merged.PNG",
+      "sourceBody": "Girl2/Girl 2/Color.PNG",
+      "size": [
+        428,
+        1536
+      ],
+      "sha256": "9d6c046acde0c1778bce17174c6023720838a2f509443927ec77884f742c9170",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/shenqing/angry.webp",
+      "author": "Kainico",
+      "sourceLayer": "Girl2/Girl 2/Expressions/Frustrated Merged.PNG",
+      "sourceBody": "Girl2/Girl 2/Color.PNG",
+      "size": [
+        428,
+        1536
+      ],
+      "sha256": "701b2389ee5cbae5269da17e271c22bdcaa8bd9d38d15629e297f03bc18b74bb",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/shenqing/surprised.webp",
+      "author": "Kainico",
+      "sourceLayer": "Girl2/Girl 2/Expressions/Speechless Merged.PNG",
+      "sourceBody": "Girl2/Girl 2/Color.PNG",
+      "size": [
+        428,
+        1536
+      ],
+      "sha256": "0c71154dea6554c7718932ad119a531d5ee3a4dca7b0ea582105c7a2e20b2ee4",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/zhouye/neutral.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy2/Boy 2/Expressions/RBF Merged.PNG",
+      "sourceBody": "Boy2/Boy 2/Color.PNG",
+      "size": [
+        444,
+        1536
+      ],
+      "sha256": "13ac3b244a09a8dec8605c1544045474a19957d3306a50b896967809bbacad03",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/zhouye/angry.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy2/Boy 2/Expressions/Angry Merged.PNG",
+      "sourceBody": "Boy2/Boy 2/Color.PNG",
+      "size": [
+        444,
+        1536
+      ],
+      "sha256": "de1984c53ec746520b67ce6f7e0f6d475a8cfc4f448345eb0bf3383dcf5e9f6a",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "characters/zhouye/surprised.webp",
+      "author": "Kainico",
+      "sourceLayer": "Boy2/Boy 2/Expressions/Surprised Merged.PNG",
+      "sourceBody": "Boy2/Boy 2/Color.PNG",
+      "size": [
+        444,
+        1536
+      ],
+      "sha256": "5aa3c23ab3c44025d3e7ad061aba21646b4560f3287147625510a70f0ad39559",
+      "sourceId": "kainico"
+    },
+    {
+      "file": "backgrounds/home.webp",
+      "sourceFile": "Spiral Atlas VN House Backgrounds/single bedroom.jpg",
+      "size": [
+        1920,
+        1080
+      ],
+      "sha256": "88722a9cebcf6b51d8241cd08815503b35f6f1ec78f24a25d9c8e95280ff25a6",
+      "sourceId": "spiral-atlas"
+    },
+    {
+      "file": "backgrounds/office.webp",
+      "sourceFile": "VN_tutorial_assets_background.png",
+      "size": [
+        2484,
+        1200
+      ],
+      "sha256": "354851b97b8fb5aea66d0947d256a58ef24f52e9489d945420a823e60ad14a4b",
+      "sourceId": "belle"
+    },
+    {
+      "file": "backgrounds/kitchen.webp",
+      "sourceFile": "Spiral Atlas VN House Backgrounds/kitchen.jpg",
+      "sourceId": "spiral-atlas",
+      "size": [
+        1920,
+        1080
+      ],
+      "sha256": "b29104f5d1a3905c729a7754981588eaada351676dad5b4ba02ebebe2f96f235"
+    },
+    {
+      "file": "backgrounds/hall.webp",
+      "sourceFile": "Spiral Atlas VN House Backgrounds/hallway.jpg",
+      "sourceId": "spiral-atlas",
+      "size": [
+        1920,
+        1080
+      ],
+      "sha256": "1d0e5031ce7476a4478bd89c885b3e57111af7f6eee688c78d96d7065ec62637"
+    },
+    {
+      "file": "backgrounds/parlor.webp",
+      "sourceFile": "Spiral Atlas VN House Backgrounds/lounge.jpg",
+      "sourceId": "spiral-atlas",
+      "size": [
+        1920,
+        1080
+      ],
+      "sha256": "5ff938272581a93759fb5e7a295643ee1d9c2d6968bb02ca5cdcb67f4608350b"
+    }
+  ],
+  "sources": {
+    "kainico": {
+      "title": "Anime Style VN Sprites",
+      "author": "Kainico",
+      "source": "https://lemmasoft.renai.us/forums/viewtopic.php?f=52&t=51594",
+      "mirror": "https://opengameart.org/content/lemmasoft-assets-portraits",
+      "archive": "https://opengameart.org/sites/default/files/portraits_cc_by_3_0.zip",
+      "license": "CC BY (version not specified in the upstream per-author source index)",
+      "licenseEvidence": "licenses/lemmasoft-portraits-sources.csv",
+      "compilationCredit": "ShatteredReality / Exuin",
+      "compilationLicense": "CC-BY-SA-3.0",
+      "modifications": "Composited the original body and expression layers; trimmed shared transparent margins; proportionally resized to height 1536; encoded WebP. No facial redrawing or AI generation."
+    },
+    "spiral-atlas": {
+      "title": "Visual Novel House Backgrounds",
+      "author": "spiral atlas",
+      "source": "https://opengameart.org/content/visual-novel-house-backgrounds",
+      "archive": "https://opengameart.org/sites/default/files/spiral_atlas_vn_house_backgrounds.zip",
+      "license": "CC-BY-3.0",
+      "licenseFile": "licenses/CC-BY-3.0.txt",
+      "attributionFile": "licenses/spiral-atlas-credits.txt",
+      "modifications": "JPEG encoded as WebP; no scene edits."
+    },
+    "belle": {
+      "title": "Visual Novel Tutorial Set",
+      "author": "DasBilligeAlien",
+      "source": "https://opengameart.org/content/visual-novel-tutorial-set",
+      "archive": "https://opengameart.org/sites/default/files/Belle%20Tutorial.zip",
+      "license": "CC0-1.0",
+      "licenseFile": "licenses/CC0-1.0.txt",
+      "modifications": "PNG encoded as WebP; no scene edits."
+    }
+  }
+}

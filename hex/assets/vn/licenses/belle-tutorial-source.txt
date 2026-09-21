@@ -1,0 +1,78 @@
+Source: https://opengameart.org/content/visual-novel-tutorial-set
+Retrieved: 2026-09-21
+Format: visible HTML text; whitespace normalized; wording not rewritten.
+
+Visual Novel Tutorial Set | OpenGameArt.org 
+
+ Skip to main content 
+
+ User login 
+
+ OpenID 
+
+ What is OpenID? 
+
+ Username or e-mail * 
+
+ Password * 
+
+ Log in using OpenID 
+ Cancel OpenID login 
+ Create new account 
+ Request new password 
+
+ Register 
+
+ Home 
+ Browse 2D Art 
+ 3D Art 
+ Concept Art 
+ Textures 
+ Music 
+ Sound Effects 
+ Documents 
+ Featured Tutorials 
+
+ Submit Art 
+ Collect My Collections 
+ Art Collections 
+
+ Forums 
+ FAQ 
+ Leaderboards All Time Total Points 
+ Comments 
+ Favorites (All) 
+ Favorites (2D) 
+ Favorites (3D) 
+ Favorites (Concept Art) 
+ Favorites (Music) 
+ Favorites (Sound) 
+ Favorites (Textures) 
+
+ Weekly Total Points 
+ Comments 
+ Favorites (All) 
+ Favorites (2D) 
+ Favorites (3D) 
+ Favorites (Concept Art) 
+ Favorites (Music) 
+ Favorites (Sound) 
+ Favorites (Textures) 
+
+ ❤ Donate 
+
+ Search 
+
+ Visual Novel Tutorial Set 
+
+ Author:  DasBilligeAlien Sunday, August 7, 2016 - 03:04 Art Type:  2D Art Tags:  visual novel girl guy woman man office License(s):  CC0 Collections:  Anime and Manga CC0 Backgrounds CC0 Portraits characters Figure References MetalTek Ren'Py: Assets visualnovel/anime/manga CC0 Favorites:  9 
+
+ Preview:  I planned on making a tutorial for the open source VN maker Belle . As I have other priorities at the moment, I will release just the assets. 
+ They are a not finished. Only a basic state and one background. Maybe I will find the time to update the set with more stuff. 
+ It was done in Krita.  
+ Zip includes: 
+ - Krita File 
+ - Dude default state as PNG 
+ - Girl default state as PNG 
+ - Backgournd as PNG 
+ File(s):  Belle Tutorial.zip 13.7 Mb [ 791 download(s)] Log in or register to post comments

@@ -6,7 +6,7 @@
 
 ## 当前架构
 
-- 前端：TypeScript + PixiJS，构建输出为 `dist-hex/`。
+- 前端：TypeScript，默认单人界面为场景背景、人物立绘与底部对白窗；旧模式保留 PixiJS。构建输出为 `dist-hex/`。
 - 权威后端：Python FastAPI World Kernel + SQLite。
 - Agent 边界：模型只提交结构化提案；World Kernel 校验能力、在场、可见性、版本和工具参数后原子提交。
 - 无模型回退：服务端未配置模型时仍可完成教程；断开世界服务后可在本机观察、移动、开门和等待，剧情进度保留。
@@ -36,6 +36,7 @@ Python 启动器不会自动读取 Node 的 `.env` 文件。模型密钥和生�
 
 - 首次故事搭建的预览、确认和取消。
 - 在地点间移动、询问在场角色、操作已注册物件。
+- 三位主要人物的默认立绘与表情、六张场景背景、说话高亮及已确认动作的轻量演出；来源见 [美术署名](CREDITS.md)。没有素材的人物/地点仍可继续文字玩法。
 - 匿名 cookie 世界隔离、刷新和 SQLite 重启恢复。
 - 当前存档导入导出，以及 `voodoo-hex-v5`、`voodoo-cabinet-v1` 旧档导入。
 - 无模型本地规则回退；旧档和非法导入不会覆盖原始浏览器 key。
@@ -85,7 +86,7 @@ npm run test:play
 
 ```text
 backend/        Python World Kernel、FastAPI、SQLite 与测试
-hex/            TypeScript/PixiJS 单人前端和 API 客户端
+hex/            TypeScript 单人前端、立绘舞台、旧 PixiJS 模式和 API 客户端
 contracts/      跨语言事件与动作契约
 docs/specs/     SDD 需求、方案、任务和验收
 server/ shared/ Node/Pi legacy-v2 回滚路径

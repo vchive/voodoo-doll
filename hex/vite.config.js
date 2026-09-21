@@ -9,7 +9,7 @@ const repoRoot = resolve(here, '..');
 
 export default defineConfig({
   root: here,
-  // 舞台与人物由原创像素代码生成；不复制 public 中保留的历史付费素材。
+  // 默认舞台仅打包显式引用的已署名素材；不复制 public 中的历史付费素材。
   publicDir: false,
   base: './',
   build: {

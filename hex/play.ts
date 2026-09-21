@@ -1,10 +1,6 @@
-// These modules are the existing Pixi renderer.  Their public surface is
-// deliberately small, but they are plain JavaScript, so keep the boundary
-// untyped instead of making the new client depend on generated declarations.
-// @ts-ignore -- legacy renderer module
-import { createStage } from './stage.js';
-// @ts-ignore -- legacy renderer module
-import { ROOMS, assignSpots } from './rooms.js';
+import { createGalgameStage, type GalgameStage } from './play-stage';
+import { ART_CREDITS, GALGAME_ART } from './play-art';
+import './play-stage.css';
 import { PlayApiClient, PlayApiError, type IntentDraftResponse, type PlayEvent, type PlayProfile, type PlaySnapshot, type SessionResponse, type StoryDraftResponse, type StoryInput } from './play-api';
 import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompletedLocalWorld, initialPlaySnapshot, normalizeLocalState, PLAY_OFFLINE_BACKUP_KEY, PLAY_STORAGE_KEY, restorePendingStoryDraft, shouldKeepLocalBranch, type LocalLogEntry, type LocalLogKind, type LocalState } from './play-state';
 
@@ -19,14 +15,13 @@ const readingObservers = new WeakMap<HTMLElement, () => void>();
 
 const STORAGE_KEY = PLAY_STORAGE_KEY;
 const LEGACY_KEY = 'voodoo-hex-v5';
-const ROOM_TO_STAGE: Record<string, string> = { office: 'office', kitchen: 'kitchen', street: 'street', bar: 'bar', parlor: 'bedroom', home: 'bedroom', bedroom: 'bedroom', hall: 'corridor', station: 'corridor', garden: 'street', attic: 'office' };
 const ROOM_LABELS: Record<string, string> = { parlor: '会客厅', bedroom: '卧室', hall: '走廊', station: '地铁站', office: '办公室', home: '家里', kitchen: '厨房', street: '街上', garden: '花园', attic: '阁楼', bar: '酒吧' };
 const TUTORIAL_STORY: StoryInput = { templateId: 'signal-rain-v1', dollName: '小墨', names: { A: '林川', B: '沈青', C: '周野' }, story: '红灯下的第三次回声。三天里，你要完成档案馆的工作，追查地铁站第三次警报与 06-17 交班记录，听见沈青保存的录音，再决定和林川共同署名、公开审计，还是先保护仍在照护父亲的他。' };
 const TRAVEL_ROOMS = ['parlor', 'bedroom', 'hall', 'office', 'home', 'bar', 'kitchen', 'street', 'station', 'garden', 'attic'];
 
 type IntentHandler = (value: string, direct?: boolean) => void;
 
-type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: IntentHandler; onLibrary?: () => void };
+type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: IntentHandler; onLibrary?: () => void; performance?: GalgameStage };
 
 function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T; }
 function text(value: unknown, fallback = ''): string { return typeof value === 'string' ? value : fallback; }
@@ -133,8 +128,7 @@ function renderSnapshot(ui: Ui, state: LocalState): void {
   const snapshot = state.snapshot;
   ui.state.textContent = `${state.offline ? '本地试玩 · ' : ''}${roomLabel(snapshot.roomId)} · ${clockText(snapshot.clock)}`;
   const ids = snapshot.present || ['YOU'];
-  // `renderSnapshot` can run before or after the Pixi stage is created.  Keep
-  // the existing host so a re-render never detaches the canvas from Pixi.
+  // Keep the presentation host across state updates and action feedback.
   if (!ui.content.querySelector('#single-stage-host')) {
     const stageHost = document.createElement('div'); stageHost.className = 'single-stage'; stageHost.id = 'single-stage-host'; ui.content.prepend(stageHost);
   }
@@ -173,10 +167,9 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-function stageModel(state: LocalState): { room: any; actors: Array<{ castId: string; spot: any }>; ambient: Record<string, unknown> } {
-  const stageId = ROOM_TO_STAGE[state.snapshot.roomId] || 'bedroom'; const room = ROOMS[stageId as keyof typeof ROOMS] || ROOMS.bedroom; const ids = (state.snapshot.present || ['YOU']).filter((id) => ['YOU', 'A', 'B', 'C', 'Z'].includes(id)); const spots = assignSpots(stageId, ids); return { room, actors: ids.map((castId) => ({ castId, spot: spots[castId] })), ambient: state.snapshot.environment || {} };
+async function renderStage(ui: Ui, state: LocalState, stage: GalgameStage | null): Promise<void> {
+  stage?.update(state.snapshot, state.profile, state.dialogue?.lines[state.dialogue.index], state.dialogue?.choicesOpen);
 }
-async function renderStage(ui: Ui, state: LocalState, stage: any): Promise<void> { stage?.setModel(stageModel(state)); }
 
 function setEntryEnabled(ui: Ui, enabled: boolean): void {
   ui.input.disabled = !enabled;
@@ -229,9 +222,11 @@ function renderDialogue(ui: Ui, state: LocalState): void {
   state.dialogue = restoreDialogue(state.snapshot, state.dialogue);
   const playback = state.dialogue;
   const line = playback.lines[playback.index];
+  ui.performance?.update(state.snapshot, state.profile, line, playback.choicesOpen);
   host.dataset.kind = line.kind;
   host.dataset.choices = String(playback.choicesOpen);
   host.dataset.ending = String(!state.offline && isAtStoryEnd(state.snapshot.guidance));
+  delete host.dataset.preview;
   host.innerHTML = `<div class="dialogue-nameplate"><span class="dialogue-speaker"></span><small class="dialogue-kind"></small></div><button type="button" class="dialogue-page" aria-label="继续阅读"><span class="dialogue-text" aria-live="polite"></span><span class="dialogue-next" aria-hidden="true">▾</span></button><section id="single-guidance" class="single-guidance" aria-label="选择行动"></section><div class="dialogue-footer"><span class="dialogue-position"></span><div class="dialogue-controls"></div></div>`;
   host.querySelector('.dialogue-speaker')!.textContent = playback.choicesOpen ? (!state.offline && isAtStoryEnd(state.snapshot.guidance) ? '这一段故事已结束' : '你打算怎么做？') : displayName(line.kind === 'narration' ? 'PLAYER_DOLL' : line.speakerId, state.profile);
   host.querySelector('.dialogue-kind')!.textContent = playback.choicesOpen ? '' : line.kind === 'thought' ? '心声' : line.kind === 'narration' || line.speakerId === 'PLAYER_DOLL' ? '巫毒娃娃' : '对白';
@@ -414,7 +409,8 @@ function renderQuickActions(ui: Ui, state: LocalState, onIntent: IntentHandler):
   details.append(travel); host.append(details);
 }
 
-function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: IntentHandler): void {
+function setupPlayContent(ui: Ui, state: LocalState, stage: GalgameStage | null, onIntent: IntentHandler): void {
+  stage?.settle();
   // Keep the input node (and any unsent draft) when rebuilding the play surface.
   const oldReading = ui.content.querySelector<HTMLElement>('#single-dialogue');
   if (oldReading) readingObservers.get(oldReading)?.();
@@ -423,9 +419,8 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
   ui.content.innerHTML = `<section class="single-play-scene"><p class="single-rotate-hint">横过手机，场景看得更完整</p><div class="single-theater"><div id="single-meta" class="single-meta"></div><div id="single-stage-host" class="single-stage"></div><section id="single-dialogue" class="single-dialogue" aria-label="故事对话窗"></section></div><nav id="single-play-tools" class="single-play-tools" aria-label="其他玩法"></nav><section id="single-explore" class="single-secondary" aria-label="自由行动" hidden><div class="single-panel-heading"><h2>自由行动</h2></div><div class="single-panel-body"><div id="single-compose-slot"></div><div id="single-exploration-actions" class="single-action-row"></div><div id="single-quick-actions"></div></div></section><section id="single-notebook" class="single-secondary" aria-label="手记与日程" hidden><div class="single-panel-heading"><h2>手记 · 日程</h2></div><div id="single-notebook-body" class="single-panel-body"></div></section></section>`;
   ui.content.querySelector('#single-compose-slot')!.append(compose);
   compose.classList.remove('single-hidden');
-  const canvas = stage?.app?.canvas as HTMLCanvasElement | undefined;
   const stageHost = ui.content.querySelector('#single-stage-host')!;
-  if (canvas) stageHost.appendChild(canvas);
+  if (stage) stageHost.appendChild(stage.element);
   else stageHost.textContent = '舞台暂时打不开，文字玩法仍可继续。';
   const tools = ui.content.querySelector('#single-play-tools')!;
   for (const [id, label] of [['single-explore', '自由行动'], ['single-notebook', '手记 · 日程'], ['single-history', '回看']]) {
@@ -457,6 +452,7 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: any, onIntent: Inten
 }
 
 function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: string }, submit: (data: StoryInput) => Promise<void> | void, legacyAvailable = false, localRecoveryAvailable = false): void {
+  ui.performance?.settle();
   const legacyHint = legacyAvailable ? '<p class="single-notice">发现旧模式的本机记录。它不会被自动覆盖；如需查看，请用地址后面的 <code>?legacy=1</code> 打开旧模式，再导出后从右上角导入。</p>' : '';
   const recoveryHint = localRecoveryAvailable ? '<p class="single-notice">发现这台设备上的试玩进度，但当前浏览器会话是一个新世界。旧进度仍保留；可先从右上角导出，再导入到当前世界，或重新确认下面的故事。</p>' : '';
   const reading = ui.content.querySelector<HTMLElement>('#single-dialogue');
@@ -511,7 +507,10 @@ function renderIntentPreview(ui: Ui, draft: IntentDraftResponse, confirm: () => 
   openPlayPanel(ui);
   ui.content.querySelector('#intent-preview')?.remove();
   const host = ui.content.querySelector<HTMLElement>('#single-dialogue');
-  if (host) Array.from(host.children).forEach((node) => { (node as HTMLElement).hidden = true; });
+  if (host) {
+    host.dataset.preview = 'true';
+    Array.from(host.children).forEach((node) => { (node as HTMLElement).hidden = true; });
+  }
   const card = document.createElement('section'); card.id = 'intent-preview';
   card.innerHTML = '<h2>要这样行动吗？</h2><div class="single-preview"></div><div class="single-actions"></div>';
   card.querySelector('.single-preview')!.textContent = text(draft.preview?.text, draft.ack);
@@ -593,7 +592,7 @@ function renderIntentEvents(ui: Ui, state: LocalState, events: PlayEvent[], snap
 }
 
 async function run(): Promise<void> {
-  const ui = buildUi(); const api = new PlayApiClient(); let stage: any = null; const existingLocal = loadLocal(); const legacyAvailable = !existingLocal && (() => { try { return Boolean(localStorage.getItem(LEGACY_KEY)); } catch { return false; } })(); let state: LocalState = existingLocal || emptyLocalState(); let session: SessionResponse | null = null;
+  const ui = buildUi(); const api = new PlayApiClient(); let stage: GalgameStage | null = null; const existingLocal = loadLocal(); const legacyAvailable = !existingLocal && (() => { try { return Boolean(localStorage.getItem(LEGACY_KEY)); } catch { return false; } })(); let state: LocalState = existingLocal || emptyLocalState(); let session: SessionResponse | null = null;
   const setState = (message: string) => { ui.state.textContent = message; };
   let serverProfileReady = false;
   let localRecoveryAvailable = false;
@@ -647,7 +646,7 @@ async function run(): Promise<void> {
   if (!session && (state.profile.dollName && state.profile.story)) { setState('本地试玩 · 可随时重连'); } else if (!session) { setState('暂时离线 · 先在本机试玩'); }
   const showPlay = async () => {
     if (!stage) {
-      try { stage = await createStage(ui.root.querySelector('#single-stage-host') || ui.root); }
+      try { stage = createGalgameStage(GALGAME_ART); ui.performance = stage; }
       catch { stage = null; setState(`${state.offline ? '本地试玩 · ' : ''}舞台暂时不可用，文字玩法仍可继续`); }
     }
     let busy = false;
@@ -705,6 +704,7 @@ async function run(): Promise<void> {
             state.dialogue = advanced ? restoreDialogue(state.snapshot, state.dialogue)
               : dialogueAfterAction(state.snapshot, committed.events || [], state.dialogue, !continuingAfterEnd);
             renderIntentEvents(ui, state, committed.events || [], committed.snapshot, committed.profile);
+            if (!advanced) stage?.perform(committed.events || []);
             saveLocal(state);
           }
           intentOpen = false;
@@ -1018,7 +1018,19 @@ async function run(): Promise<void> {
     } catch { setState('离线备份暂时无法读取，当前进度不受影响。'); }
   });
   offlineBackupButton.id = 'single-offline-backup';
-  ui.root.querySelector('#single-tools')!.append(libraryButton, exportButton, importButton, reconnectButton, backupButton, offlineBackupButton);
+  const creditsButton = button('美术署名', () => {
+    const modal = document.createElement('dialog'); modal.className = 'vn-credits';
+    const title = document.createElement('h2'); title.textContent = '美术署名'; modal.append(title);
+    for (const entry of ART_CREDITS) {
+      const p = document.createElement('p'); const link = document.createElement('a');
+      link.textContent = entry.author; link.href = entry.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      p.append(link, document.createTextNode(` · ${entry.work}\n${entry.license}`)); modal.append(p);
+    }
+    modal.append(button('回到游戏', () => modal.close()));
+    modal.addEventListener('close', () => { modal.remove(); });
+    ui.root.append(modal); modal.showModal();
+  });
+  ui.root.querySelector('#single-tools')!.append(libraryButton, exportButton, importButton, reconnectButton, backupButton, offlineBackupButton, creditsButton);
   ui.root.querySelector('#single-tools')!.addEventListener('click', (event) => {
     if ((event.target as HTMLElement).closest('button')) ui.root.querySelector<HTMLDetailsElement>('.single-menu')!.open = false;
   });
