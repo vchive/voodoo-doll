@@ -2,6 +2,7 @@
 // MW-38 / SP-23 / MW-AC-38, and MW-39 / SP-24 / MW-AC-39.
 // MW-40 additionally verifies the independently saved overview disclosure.
 // MW-41 covers ambiguous multi-character picking through real imported worlds.
+// MW-42 covers resuming the visible portion of an interrupted dialogue line.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -508,6 +509,20 @@ async function switchHybridWithoutAction(page, metrics, expectedView, { preview:
     '从人物切到场景时俯视图必须实际放大');
   return geometry;
 }
+async function readingPosition(page) {
+  return page.locator('.dialogue-page').evaluate(node => ({ top: node.scrollTop, max: node.scrollHeight - node.clientHeight,
+    height: node.clientHeight, text: node.querySelector('.dialogue-text').textContent }));
+}
+async function assertReadingPosition(page, before, message) {
+  await page.waitForFunction(top => {
+    const node = document.querySelector('.dialogue-page');
+    return node && node.clientHeight > 0 && Math.abs(node.scrollTop - top) <= 1;
+  }, before.top);
+  const after = await readingPosition(page);
+  assert.equal(after.text, before.text, message + '：应恢复同一句');
+  assert(Math.abs(after.top - before.top) <= 1, message + '：应恢复句内已读位置');
+  return after;
+}
 async function scenario(name, viewport, run) {
   if (process.env.PLAYTEST_CASE && !new RegExp(process.env.PLAYTEST_CASE).test(name)) return;
   const context = await browser.newContext({ viewport, acceptDownloads: true });
@@ -537,6 +552,103 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[568, 320], [844, 390], [320, 568]]) {
+    await scenario(`reading-resume-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      // First use the unmodified, real tutorial opening. Its first sentence
+      // already scrolls on 568x320, reproducing the reported cancellation loss.
+      const initial = await readingPosition(page);
+      if (initial.max > 4) await page.locator('.dialogue-page').click();
+      const realPosition = await readingPosition(page), realBefore = await state(page), realPosts = metrics.posts.length;
+      if (width === 568) assert(realPosition.top > 0, '短横屏真实首句必须实际滚动后再测取消');
+      await preview(page, '开门');
+      assert.equal((await state(page)).pending.kind, 'intent');
+      await assertIntentPreviewLayout(page);
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      metrics.realTutorial = { before: realPosition, after: await assertReadingPosition(page, realPosition, '真实首句取消预览') };
+      assert.deepEqual((await state(page)).snapshot, realBefore.snapshot);
+      assert.deepEqual((await state(page)).dialogue, realBefore.dialogue);
+      assert.equal((await state(page)).pending, undefined);
+      assert.equal(await page.locator('#single-input').inputValue(), '开门');
+      assert.equal(metrics.posts.length - realPosts, 2);
+      assert(metrics.posts.slice(realPosts).every(path => !path.endsWith('/confirm')));
+      // Replace only this isolated browser's reading cache with three long
+      // presentation lines. This is a layout fixture, not new story content
+      // or a fabricated authoritative world. Real action APIs stay untouched.
+      await page.evaluate(key => {
+        const current = JSON.parse(localStorage.getItem(key));
+        current.dialogue.lines = [
+          { speakerId: 'PLAYER_DOLL', kind: 'narration', text: '这是第一句排版夹具，用来检查中途停下阅读后是否能接着读。'.repeat(24) },
+          { speakerId: 'YOU', kind: 'thought', text: '这是第二句排版夹具，新的一句必须从开头阅读，不能继承上一句的末尾。'.repeat(20) },
+          { speakerId: 'PLAYER_DOLL', kind: 'narration', text: '这是第三句排版夹具，读到这里才算读完。' },
+        ];
+        current.dialogue.index = 0; current.dialogue.choicesOpen = false;
+        localStorage.setItem(key, JSON.stringify(current));
+      }, cacheKey);
+      await page.reload(); await settled(page);
+      assert.match((await readingPosition(page)).text, /^这是第一句排版夹具/);
+      metrics.fixtureScope = 'Only the isolated browser dialogue cache has three display-only fixture lines; no backend story, snapshot or action result is replaced.';
+      for (let count = 0; count < 3; count++) await page.locator('.dialogue-page').click();
+      const middle = await readingPosition(page), fixtureBefore = await state(page), fixturePosts = metrics.posts.length;
+      assert(middle.top > 0 && middle.top < middle.max - 4, '测试必须停在实际长句中段');
+      await page.locator('.dialogue-controls').getByRole('button', { name: '行动', exact: true }).click();
+      assert.equal((await state(page)).dialogue.choicesOpen, true);
+      await page.getByRole('button', { name: '返回对白', exact: true }).click();
+      metrics.returnFromChoices = { before: middle, after: await assertReadingPosition(page, middle, '行动窗口返回对白') };
+      assert.deepEqual((await state(page)).dialogue, fixtureBefore.dialogue);
+      assert.deepEqual((await state(page)).snapshot, fixtureBefore.snapshot);
+      assert.equal(metrics.posts.length, fixturePosts, '打开行动窗口返回不能提交世界动作');
+      await preview(page, '开门');
+      assert.deepEqual((await state(page)).snapshot, fixtureBefore.snapshot);
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      metrics.returnFromPreview = { before: middle, after: await assertReadingPosition(page, middle, '长句取消预览') };
+      assert.deepEqual((await state(page)).dialogue, fixtureBefore.dialogue);
+      assert.deepEqual((await state(page)).snapshot, fixtureBefore.snapshot);
+      assert.equal((await state(page)).pending, undefined);
+      assert.equal(await page.locator('#single-input').inputValue(), '开门');
+      assert.equal(metrics.posts.length - fixturePosts, 2);
+      assert(metrics.posts.slice(fixturePosts).every(path => !path.endsWith('/confirm')));
+      await page.screenshot({ path: join(output, metrics.name + '-resumed.png') });
+      const libraryPosts = metrics.posts.length;
+      await menu(page, '故事库');
+      await page.locator('#single-return-story').click(); await settled(page);
+      metrics.returnFromLibrary = { before: middle, after: await assertReadingPosition(page, middle, '故事库回到当前故事') };
+      assert.deepEqual((await state(page)).dialogue, fixtureBefore.dialogue);
+      assert.deepEqual((await state(page)).snapshot, fixtureBefore.snapshot);
+      assert.equal(metrics.posts.length, libraryPosts, '打开故事库再返回不能执行行动');
+      // Finish just the first line. Reaching its bottom and changing lines
+      // must not carry that old bottom offset into the unread second line.
+      for (let guard = 0; guard < 100; guard++) {
+        const position = await readingPosition(page);
+        if (position.max - position.top <= 4) break;
+        await page.locator('.dialogue-page').click();
+        assert(guard < 99, '长句无法滚到末尾');
+        assert.equal((await state(page)).dialogue.index, 0, '滚动正文不能提前换句');
+      }
+      await page.locator('.dialogue-page').click();
+      await page.waitForFunction(key => JSON.parse(localStorage.getItem(key)).dialogue.index === 1, cacheKey);
+      const nextLine = await readingPosition(page);
+      assert.match(nextLine.text, /^（这是第二句排版夹具/);
+      assert.equal(nextLine.top, 0, '下一句必须从顶部开始，不能继承上一句书签');
+      await page.locator('.dialogue-page').click();
+      assert.equal((await state(page)).dialogue.index, 1, '点击第二句应先滚动其未读正文，不能被旧句尾书签跳到第三句');
+      const secondMiddle = await readingPosition(page);
+      assert(secondMiddle.top > 0 && secondMiddle.top < secondMiddle.max, '第二句必须实际进入未读内容');
+      const beforeCommit = await state(page);
+      await preview(page, '开门');
+      const response = page.waitForResponse(item => item.request().method() === 'POST' && /\/api\/v4\/play\/intent\/[^/]+\/confirm$/.test(new URL(item.url()).pathname));
+      await confirm(page); const receipt = await (await response).json();
+      const afterCommit = await state(page), committedLine = await readingPosition(page);
+      assert(afterCommit.snapshot.worldVersion > beforeCommit.snapshot.worldVersion, '新世界版本必须来自实际确认');
+      assert.equal(afterCommit.snapshot.worldVersion, receipt.snapshot.worldVersion);
+      assert.equal(afterCommit.dialogue.index, 0, '确认新动作后的新段落从首句开始');
+      assert.equal(committedLine.top, 0, '新世界段落不能继承旧长句中部的滚动书签');
+      assert(!committedLine.text.includes('排版夹具'), '已确认结果应恢复真实世界的对白');
+      assert.equal(afterCommit.pending, undefined);
+      metrics.newLine = { top: nextLine.top, afterFirstRead: secondMiddle.top, indexAfterFirstRead: 1 };
+      metrics.newWorld = { beforeVersion: beforeCommit.snapshot.worldVersion, afterVersion: afterCommit.snapshot.worldVersion, top: committedLine.top, index: afterCommit.dialogue.index };
+      metrics.actions++; await assertStageLayout(page);
+    });
+  }
   for (const [width, height] of [[568, 320], [844, 390], [320, 568]]) {
     await scenario(`multi-cast-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       const names = width === 320 ? { A: '林川（档案馆的值班同事）', B: '沈青（档案馆的夜班同事）', C: '周野（地铁站的值班同事）' }

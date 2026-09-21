@@ -1,0 +1,288 @@
+{
+  "scope": "MW-42 修复前只读实际试玩；独立临时服务和测试数据库，未改用户存档、世界业务代码或构建。",
+  "realTutorial": {
+    "source": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/mw42-flow-audit-7UCPyV/report.json",
+    "coverage": "568x320/844x390真实新手开场→自由行动→开门预览→取消；568真实首句scrollTop7回0，index和worldVersion不变。",
+    "report": {
+      "base": "http://127.0.0.1:60053",
+      "temp": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/mw42-flow-audit-7UCPyV",
+      "cases": [
+        {
+          "viewport": {
+            "width": 568,
+            "height": 320
+          },
+          "posts": [
+            "/api/v4/play/story",
+            "/api/v4/play/story/story-72d3459bc341449e/confirm",
+            "/api/v4/play/intent",
+            "/api/v4/play/intent/64b5f51b-412c-4e85-b380-5634b3c8a7ed/cancel",
+            "/api/v4/play/intent"
+          ],
+          "errors": [],
+          "before": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 47,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<body><main id=\"single-player-root\" class=\"single-player is-playing\" data-open-panel=\"\" style=\"--play-viewport-height: 320px; --play-viewport-top: 0px;\"><header class=\"single-top\"><div class=\"single-brand\">✶ 巫柜</div><details class=\"single-menu\"><summ"
+          },
+          "afterScroll": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 7,
+            "scrollHeight": 54,
+            "clientHeight": 47,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<button type=\"button\" class=\"dialogue-page\" aria-label=\"继续阅读\"><span class=\"dialogue-text\" aria-live=\"polite\">闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。</span><span class=\"dialogue-next\" aria-hidden=\"true\">▾</span></button>"
+          },
+          "panelOpen": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 7,
+            "scrollHeight": 54,
+            "clientHeight": 47,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "single-explore",
+            "active": "<div class=\"single-panel-heading\" tabindex=\"-1\"><h2>自由行动</h2><button class=\"single-button\" type=\"button\" aria-label=\"收起自由行动\">收起</button></div>"
+          },
+          "preview": {
+            "index": 0,
+            "choices": false,
+            "pending": {
+              "kind": "intent",
+              "id": "64b5f51b-412c-4e85-b380-5634b3c8a7ed",
+              "text": "开门",
+              "preview": {
+                "text": "开门",
+                "action": "use",
+                "payload": {
+                  "objectId": "parlorDoor",
+                  "verb": "open",
+                  "gameMinutes": 2
+                },
+                "target": []
+              }
+            },
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 0,
+            "clientHeight": 0,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<section id=\"intent-preview\" tabindex=\"-1\"><h2>要这样行动吗？</h2><div class=\"single-preview\">开门</div><div class=\"single-actions\"><button class=\"single-button primary\" type=\"button\">就这样做</button><button class=\"single-button\" type=\"button\">先不做</button></div>"
+          },
+          "cancelled": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 47,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<section id=\"single-dialogue\" class=\"single-dialogue\" aria-label=\"故事对话窗\" data-kind=\"narration\" data-choices=\"false\" data-ending=\"false\" tabindex=\"-1\"><div class=\"dialogue-nameplate\"><span class=\"dialogue-speaker\">小墨</span><small class=\"dialogue-kind\""
+          },
+          "retainedInput": "开门",
+          "closed": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 47,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<button class=\"single-button\" type=\"button\" data-panel=\"single-explore\" aria-controls=\"single-explore\" aria-expanded=\"false\">自由行动</button>"
+          },
+          "rejected": {
+            "index": 0,
+            "choices": true,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 0,
+            "clientHeight": 0,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾",
+            "position": "",
+            "panel": "",
+            "active": "<body><main id=\"single-player-root\" class=\"single-player is-playing\" data-open-panel=\"\" style=\"--play-viewport-height: 320px; --play-viewport-top: 0px;\"><header class=\"single-top\"><div class=\"single-brand\">✶ 巫柜</div><details class=\"single-menu\"><summ"
+          }
+        },
+        {
+          "viewport": {
+            "width": 844,
+            "height": 390
+          },
+          "posts": [
+            "/api/v4/play/story",
+            "/api/v4/play/story/story-0d51c5e4201f4859/confirm",
+            "/api/v4/play/intent",
+            "/api/v4/play/intent/00d67671-27e0-4b8e-a46b-a8adf0df911b/cancel",
+            "/api/v4/play/intent"
+          ],
+          "errors": [],
+          "before": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 54,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<body><main id=\"single-player-root\" class=\"single-player is-playing\" data-open-panel=\"\" style=\"--play-viewport-height: 390px; --play-viewport-top: 0px;\"><header class=\"single-top\"><div class=\"single-brand\">✶ 巫柜</div><details class=\"single-menu\"><summ"
+          },
+          "panelOpen": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 54,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "single-explore",
+            "active": "<div class=\"single-panel-heading\" tabindex=\"-1\"><h2>自由行动</h2><button class=\"single-button\" type=\"button\" aria-label=\"收起自由行动\">收起</button></div>"
+          },
+          "preview": {
+            "index": 0,
+            "choices": false,
+            "pending": {
+              "kind": "intent",
+              "id": "00d67671-27e0-4b8e-a46b-a8adf0df911b",
+              "text": "开门",
+              "preview": {
+                "text": "开门",
+                "action": "use",
+                "payload": {
+                  "objectId": "parlorDoor",
+                  "verb": "open",
+                  "gameMinutes": 2
+                },
+                "target": []
+              }
+            },
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 0,
+            "clientHeight": 0,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<section id=\"intent-preview\" tabindex=\"-1\"><h2>要这样行动吗？</h2><div class=\"single-preview\">开门</div><div class=\"single-actions\"><button class=\"single-button primary\" type=\"button\">就这样做</button><button class=\"single-button\" type=\"button\">先不做</button></div>"
+          },
+          "cancelled": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 54,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<section id=\"single-dialogue\" class=\"single-dialogue\" aria-label=\"故事对话窗\" data-kind=\"narration\" data-choices=\"false\" data-ending=\"false\" tabindex=\"-1\"><div class=\"dialogue-nameplate\"><span class=\"dialogue-speaker\">小墨</span><small class=\"dialogue-kind\""
+          },
+          "retainedInput": "开门",
+          "closed": {
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 54,
+            "clientHeight": 54,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。",
+            "position": "1 / 7",
+            "panel": "",
+            "active": "<button class=\"single-button\" type=\"button\" data-panel=\"single-explore\" aria-controls=\"single-explore\" aria-expanded=\"false\">自由行动</button>"
+          },
+          "rejected": {
+            "index": 0,
+            "choices": true,
+            "version": 2,
+            "scroll": 0,
+            "scrollHeight": 0,
+            "clientHeight": 0,
+            "body": "闹钟停在九点。我看着你擦掉杯沿的水，也分不清那是昨夜漏进来的雨，还是没喝完的温水。▾",
+            "position": "",
+            "panel": "",
+            "active": "<body><main id=\"single-player-root\" class=\"single-player is-playing\" data-open-panel=\"\" style=\"--play-viewport-height: 390px; --play-viewport-top: 0px;\"><header class=\"single-top\"><div class=\"single-brand\">✶ 巫柜</div><details class=\"single-menu\"><summ"
+          }
+        }
+      ]
+    }
+  },
+  "displayFixture": {
+    "source": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/mw42-scroll-picker-qnmBGl/report.json",
+    "coverage": "仅独立浏览器缓存第一句替换为长排版文本，不作为新剧情或世界生成证据；真实预览取消111→0，行动返回74→0；另有真实导入同场picker取消。",
+    "report": {
+      "temp": "/var/folders/kt/ygjlhpbx6sq1mk2912c3fzt80000gn/T/mw42-scroll-picker-qnmBGl",
+      "cases": [
+        {
+          "kind": "display-only cached long text, real preview/cancel",
+          "before": {
+            "scroll": 111,
+            "max": 229,
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "panel": ""
+          },
+          "after": {
+            "scroll": 0,
+            "max": 229,
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "panel": ""
+          }
+        },
+        {
+          "kind": "display-only long text, action window and back",
+          "before": {
+            "scroll": 74,
+            "max": 229,
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "panel": ""
+          },
+          "after": {
+            "scroll": 0,
+            "max": 229,
+            "index": 0,
+            "choices": false,
+            "version": 2,
+            "panel": ""
+          },
+          "labels": [
+            "行动",
+            "继续阅读 ↓"
+          ]
+        },
+        {
+          "kind": "real imported multiclass picker",
+          "extraPosts": 0,
+          "touchFocus": "C",
+          "keyFocus": "C",
+          "errors": []
+        }
+      ]
+    }
+  },
+  "screenshot": "reading-resume-before.png为真实568新手初句取消后scrollTop归零的页面；长句复现的数值见displayFixture。"
+}

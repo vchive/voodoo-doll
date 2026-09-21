@@ -23,6 +23,16 @@ const TRAVEL_ROOMS = ['parlor', 'bedroom', 'hall', 'office', 'home', 'bar', 'kit
 type IntentHandler = (value: string, direct?: boolean) => void;
 
 type Ui = { root: HTMLElement; state: HTMLElement; content: HTMLElement; log: HTMLElement; stage: HTMLElement; input: HTMLInputElement; send: HTMLButtonElement; onIntent?: IntentHandler; onLibrary?: () => void; performance?: GalgameStage };
+// Keep only the currently displayed line's position, outside every save and
+// world protocol. Rebuilding a window must not send the reader to its top.
+const readingPositions = new WeakMap<Ui, { key: string; top: number }>();
+
+function rememberReadingPosition(ui: Ui): void {
+  const host = ui.content.querySelector<HTMLElement>('#single-dialogue');
+  const page = host?.querySelector<HTMLElement>('.dialogue-page');
+  if (!page || page.hidden || host?.dataset.preview === 'true' || !page.clientHeight || !page.dataset.readingPositionKey) return;
+  readingPositions.set(ui, { key: page.dataset.readingPositionKey, top: Math.max(0, page.scrollTop) });
+}
 
 function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T; }
 function text(value: unknown, fallback = ''): string { return typeof value === 'string' ? value : fallback; }
@@ -220,6 +230,7 @@ function addPanelClose(ui: Ui, id: string): void {
 function renderDialogue(ui: Ui, state: LocalState): void {
   const host = ui.content.querySelector<HTMLElement>('#single-dialogue');
   if (!host) return;
+  rememberReadingPosition(ui);
   readingObservers.get(host)?.();
   state.dialogue = restoreDialogue(state.snapshot, state.dialogue);
   const playback = state.dialogue;
@@ -235,6 +246,10 @@ function renderDialogue(ui: Ui, state: LocalState): void {
   host.querySelector('.dialogue-kind')!.textContent = playback.choicesOpen ? '' : line.kind === 'thought' ? '心声' : line.kind === 'narration' || line.speakerId === 'PLAYER_DOLL' ? '巫毒娃娃' : '对白';
   host.querySelector('.dialogue-text')!.textContent = line.kind === 'speech' ? `「${line.text}」` : line.kind === 'thought' ? `（${line.text}）` : line.text;
   const page = host.querySelector<HTMLButtonElement>('.dialogue-page')!;
+  const positionKey = JSON.stringify([state.snapshot.worldId || 'local', state.snapshot.worldVersion, state.snapshot.roomId, playback.contextKey, playback.index, line]);
+  page.dataset.readingPositionKey = positionKey;
+  if (readingPositions.get(ui)?.key !== positionKey) readingPositions.delete(ui);
+  const restoreTop = readingPositions.get(ui)?.top || 0;
   page.hidden = playback.choicesOpen;
   host.querySelector('.dialogue-position')!.textContent = playback.choicesOpen ? '' : `${playback.index + 1} / ${playback.lines.length}`;
   const redraw = (focus = false): void => {
@@ -298,12 +313,23 @@ function renderDialogue(ui: Ui, state: LocalState): void {
       moreChoices.hidden = !visible;
     }
   }
-  page.addEventListener('scroll', updateScrollCues, { passive: true });
+  let restorePending = !page.hidden && restoreTop > 0;
+  const restorePosition = (): void => {
+    if (!restorePending || page.hidden || host.dataset.preview === 'true' || !page.clientHeight) return;
+    page.scrollTop = Math.min(restoreTop, Math.max(0, page.scrollHeight - page.clientHeight));
+    restorePending = false;
+    rememberReadingPosition(ui);
+  };
+  page.addEventListener('scroll', () => {
+    if (!restorePending) rememberReadingPosition(ui);
+    updateScrollCues();
+  }, { passive: true });
   actions.addEventListener('scroll', updateScrollCues, { passive: true });
   const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(updateScrollCues);
   observer?.observe(page); observer?.observe(actions);
   window.addEventListener('resize', updateScrollCues);
-  const frame = requestAnimationFrame(updateScrollCues);
+  restorePosition();
+  const frame = requestAnimationFrame(() => { restorePosition(); updateScrollCues(); });
   readingObservers.set(host, () => { observer?.disconnect(); window.removeEventListener('resize', updateScrollCues); cancelAnimationFrame(frame); });
   const backlog = ui.root.querySelector<HTMLElement>('#single-backlog')!;
   backlog.innerHTML = '<h2>本段对白</h2>';
@@ -413,6 +439,7 @@ function renderQuickActions(ui: Ui, state: LocalState, onIntent: IntentHandler):
 }
 
 function setupPlayContent(ui: Ui, state: LocalState, stage: GalgameStage | null, onIntent: IntentHandler): void {
+  rememberReadingPosition(ui);
   stage?.settle();
   // Keep the input node (and any unsent draft) when rebuilding the play surface.
   const oldReading = ui.content.querySelector<HTMLElement>('#single-dialogue');
@@ -455,6 +482,7 @@ function setupPlayContent(ui: Ui, state: LocalState, stage: GalgameStage | null,
 }
 
 function renderOnboarding(ui: Ui, initial: Partial<PlayProfile> & { story?: string }, submit: (data: StoryInput) => Promise<void> | void, legacyAvailable = false, localRecoveryAvailable = false): void {
+  rememberReadingPosition(ui);
   ui.performance?.settle();
   const legacyHint = legacyAvailable ? '<p class="single-notice">发现旧模式的本机记录。它不会被自动覆盖；如需查看，请用地址后面的 <code>?legacy=1</code> 打开旧模式，再导出后从右上角导入。</p>' : '';
   const recoveryHint = localRecoveryAvailable ? '<p class="single-notice">发现这台设备上的试玩进度，但当前浏览器会话是一个新世界。旧进度仍保留；可先从右上角导出，再导入到当前世界，或重新确认下面的故事。</p>' : '';
@@ -506,6 +534,7 @@ function renderStoryPreview(ui: Ui, draft: StoryDraftResponse, confirm: () => Pr
   actions.append(button('确认进入', () => { void run(confirm, '正在进入世界…'); }, true), button('改一改', () => { void run(cancel, '正在撤回预览…'); }));
 }
 function renderIntentPreview(ui: Ui, draft: IntentDraftResponse, confirm: () => void, cancel: () => void): void {
+  rememberReadingPosition(ui);
   ui.input.blur();
   openPlayPanel(ui);
   ui.content.querySelector('#intent-preview')?.remove();
