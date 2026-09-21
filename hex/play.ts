@@ -223,6 +223,7 @@ function renderDialogue(ui: Ui, state: LocalState): void {
   const playback = state.dialogue;
   const line = playback.lines[playback.index];
   ui.performance?.update(state.snapshot, state.profile, line, playback.choicesOpen);
+  ui.performance?.setInteractionEnabled(!ui.input.disabled && !state.offline);
   host.dataset.kind = line.kind;
   host.dataset.choices = String(playback.choicesOpen);
   host.dataset.ending = String(!state.offline && isAtStoryEnd(state.snapshot.guidance));
@@ -617,6 +618,7 @@ async function run(): Promise<void> {
     if (!locked && pending?.kind === 'story') {
       ui.content.querySelectorAll<HTMLButtonElement>('#story-actions button').forEach((item) => { item.disabled = false; });
     }
+    stage?.setInteractionEnabled(!locked && !pending && !state.offline);
   }
   const setOperationInFlight = (busy: boolean): void => {
     operationInFlight = busy;
@@ -646,7 +648,12 @@ async function run(): Promise<void> {
   if (!session && (state.profile.dollName && state.profile.story)) { setState('本地试玩 · 可随时重连'); } else if (!session) { setState('暂时离线 · 先在本机试玩'); }
   const showPlay = async () => {
     if (!stage) {
-      try { stage = createGalgameStage(GALGAME_ART); ui.performance = stage; }
+      try {
+        stage = createGalgameStage(GALGAME_ART, (id) => {
+          if (!state.offline && state.snapshot.present.includes(id)) ui.onIntent?.(`问${displayName(id, state.profile)}：你现在方便聊聊吗？`);
+        });
+        ui.performance = stage;
+      }
       catch { stage = null; setState(`${state.offline ? '本地试玩 · ' : ''}舞台暂时不可用，文字玩法仍可继续`); }
     }
     let busy = false;
@@ -708,7 +715,7 @@ async function run(): Promise<void> {
             saveLocal(state);
           }
           intentOpen = false;
-          if (!direct) ui.input.value = '';
+          if (!direct && ui.input.value.trim() === value) ui.input.value = '';
           openPlayPanel(ui);
           ui.content.querySelector('#intent-preview')?.remove();
           renderSnapshot(ui, state);

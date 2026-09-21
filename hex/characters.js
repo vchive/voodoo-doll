@@ -185,8 +185,11 @@ function drawCharacter(design, direction, phase, action) {
   return canvas;
 }
 
-export function createCharacterFrames(castId) {
-  const design = CHARACTER_DESIGNS[castId] || CHARACTER_DESIGNS.Z;
+export function createCharacterFrames(castId, designOverride) {
+  const base = CHARACTER_DESIGNS[castId] || CHARACTER_DESIGNS.Z;
+  // Optional presentation-local palette/shape hints. Legacy callers omit
+  // this argument and retain their exact original design and generated art.
+  const design = designOverride ? { ...base, ...designOverride } : base;
   const frames = {};
   const add = (name, dir, phase, action) => {
     const texture = Texture.from(drawCharacter(design, dir, phase, action));

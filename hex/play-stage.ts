@@ -1,13 +1,35 @@
 import type { DialogueLine, PlayEvent, PlayProfile, PlaySnapshot } from './play-api';
 import { performanceFromEvents, projectPerformance, type PerformanceExpression } from './play-performance';
+import { createPlayOverview } from './play-overview';
 
 export type PortraitArt = Partial<Record<PerformanceExpression, string>> & { neutral: string };
 export type GalgameArt = { portraits: Record<string, PortraitArt>; backgrounds: Record<string, string> };
 
 /** Presentation only: every movement/effect follows an already committed event. */
-export function createGalgameStage(art: GalgameArt) {
+export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => void) {
   const element = document.createElement('div'); element.className = 'vn-stage';
   element.innerHTML = '<div class="vn-backgrounds" aria-hidden="true"></div><div class="vn-light" aria-hidden="true"></div><div class="vn-cast"></div><div class="vn-action" hidden aria-hidden="true"><span class="vn-action-symbol"></span><span class="vn-action-label"></span></div><div class="vn-doll" aria-hidden="true"><span>✶</span></div>';
+  const overviewShell = document.createElement('section'); overviewShell.className = 'vn-overview-shell';
+  overviewShell.setAttribute('aria-label', '俯视场景');
+  overviewShell.innerHTML = '<div class="vn-overview-frame"><div class="vn-overview"></div><div class="vn-scene-hotspots"></div></div><span class="vn-overview-caption">俯视一览</span>';
+  element.append(overviewShell);
+  const overviewHost = overviewShell.querySelector<HTMLElement>('.vn-overview')!;
+  const overviewFrame = overviewShell.querySelector<HTMLElement>('.vn-overview-frame')!;
+  let observedDialogue: HTMLElement | null = null;
+  let layoutFrame = 0;
+  const resizeOverview = (): void => {
+    const { width, height, top } = overviewShell.getBoundingClientRect();
+    const captionHeight = overviewShell.querySelector<HTMLElement>('.vn-overview-caption')!.offsetHeight;
+    const available = element.dataset.view === 'portrait' && observedDialogue ? Math.min(height, observedDialogue.getBoundingClientRect().top - top - 6) : height;
+    const pictureHeight = Math.max(0, Math.min(available - (captionHeight ? captionHeight + 3 : 0), width * 8 / 9));
+    overviewFrame.style.width = `${pictureHeight * 9 / 8}px`;
+    overviewFrame.style.height = `${pictureHeight}px`;
+  };
+  const overviewResize = new ResizeObserver(resizeOverview); overviewResize.observe(overviewShell);
+  const hotspots = overviewShell.querySelector<HTMLElement>('.vn-scene-hotspots')!;
+  const overview = createPlayOverview(overviewHost);
+  const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'vn-view-toggle'; toggle.dataset.viewToggle = 'true';
+  element.append(toggle);
   const backgrounds = element.querySelector<HTMLElement>('.vn-backgrounds')!;
   const cast = element.querySelector<HTMLElement>('.vn-cast')!;
   const action = element.querySelector<HTMLElement>('.vn-action')!;
@@ -16,11 +38,66 @@ export function createGalgameStage(art: GalgameArt) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let room = '', world = '', background = '';
   let cueTimer: ReturnType<typeof setTimeout> | undefined;
+  type StageView = 'overview' | 'portrait';
+  let view: StageView = 'portrait';
+  let manualView: StageView | undefined;
+  let context = '';
+  let lastChoosing = false;
+  let interactionEnabled = true;
+  let hasSceneNpc = false;
+  const captionText = () => view !== 'overview' ? '俯视一览' : !hasSceneNpc ? '你和娃娃在这里' : interactionEnabled ? '点人物交谈' : '人物位置';
+  function applyView(): void {
+    element.dataset.view = view;
+    const theater = element.closest<HTMLElement>('.single-theater');
+    if (theater) theater.dataset.view = view;
+    const dialogue = theater?.querySelector<HTMLElement>('#single-dialogue') || null;
+    if (dialogue !== observedDialogue) {
+      if (observedDialogue) overviewResize.unobserve(observedDialogue);
+      observedDialogue = dialogue;
+      if (observedDialogue) overviewResize.observe(observedDialogue);
+    }
+    toggle.textContent = view === 'overview' ? '看人物' : '看场景';
+    toggle.setAttribute('aria-label', toggle.textContent);
+    hotspots.inert = view !== 'overview';
+    overviewShell.querySelector('.vn-overview-caption')!.textContent = captionText();
+    overview.setActive(view === 'overview');
+    resizeOverview();
+    cancelAnimationFrame(layoutFrame); layoutFrame = requestAnimationFrame(resizeOverview);
+  }
+  toggle.onclick = () => { manualView = view === 'overview' ? 'portrait' : 'overview'; view = manualView; applyView(); };
+  function setInteractionEnabled(enabled: boolean): void {
+    interactionEnabled = enabled;
+    hotspots.querySelectorAll<HTMLButtonElement>('button').forEach(node => { node.disabled = !enabled; });
+    overviewShell.querySelector('.vn-overview-caption')!.textContent = captionText();
+  }
 
   const animate = (node: HTMLElement, frames: Keyframe[], options: KeyframeAnimationOptions): void => {
     if (!reduceMotion.matches) node.animate(frames, options);
   };
   function update(snapshot: PlaySnapshot, profile: PlayProfile, line?: DialogueLine, choosing = false): void {
+    const nextContext = `${snapshot.worldId || 'local'}:${snapshot.worldVersion}:${snapshot.roomId}`;
+    if (context !== nextContext || lastChoosing !== choosing) manualView = undefined;
+    context = nextContext; lastChoosing = choosing;
+    view = manualView || (choosing ? 'overview' : 'portrait');
+    const overviewProjection = overview.update(snapshot, profile);
+    hasSceneNpc = overviewProjection.actors.some(actor => /^[A-Z]$/.test(actor.actorId));
+    hotspots.replaceChildren();
+    const player = overviewProjection.actors.find(actor => actor.actorId === 'YOU');
+    if (player) {
+      const label = document.createElement('span'); label.className = 'vn-scene-self'; label.textContent = '你';
+      label.style.left = `${player.xPercent}%`; label.style.top = `${player.footYPercent}%`; hotspots.append(label);
+    }
+    overviewProjection.actors.filter(actor => /^[A-Z]$/.test(actor.actorId)).forEach(actor => {
+      const item = document.createElement('button'); item.type = 'button'; item.className = 'vn-scene-actor';
+      item.dataset.sceneCastId = actor.actorId;
+      item.style.left = `${actor.xPercent}%`; item.style.top = `${actor.yPercent}%`;
+      item.setAttribute('aria-label', `和${actor.label}交谈`);
+      const name = document.createElement('span'); name.textContent = actor.label; item.append(name);
+      item.disabled = !interactionEnabled;
+      item.onclick = () => { if (interactionEnabled && view === 'overview') onActor?.(actor.actorId); };
+      hotspots.append(item);
+    });
+    applyView();
     const projection = projectPerformance(snapshot, choosing ? undefined : line);
     element.dataset.mode = projection.mode;
     element.dataset.speaker = projection.speakerId || '';
@@ -73,7 +150,7 @@ export function createGalgameStage(art: GalgameArt) {
         animate(figure, [{ opacity: 0, transform: 'translateX(-50%) translateY(12px)' }, { opacity: 1, transform: 'translateX(-50%) translateY(0)' }], { duration: 360, easing: 'ease-out' });
       }
       const active = projection.speakerId === id;
-      figure.style.setProperty('--cast-x', `${(index + 1) * 100 / (visible.length + 1)}%`);
+      figure.style.setProperty('--cast-x', `${visible.length === 1 ? 67 : 40 + (index + 1) * 52 / (visible.length + 1)}%`);
       figure.dataset.active = String(active);
       figure.dataset.expression = active ? projection.expression : 'neutral';
       const image = figure.querySelector<HTMLImageElement>('img')!;
@@ -108,12 +185,14 @@ export function createGalgameStage(art: GalgameArt) {
     cueTimer = setTimeout(() => { action.hidden = true; delete element.dataset.action; }, reduceMotion.matches ? 1500 : 2200);
   }
   function settle(): void {
+    cancelAnimationFrame(layoutFrame);
+    overview.settle();
     element.getAnimations({ subtree: true }).forEach(animation => animation.cancel());
     if (cueTimer) clearTimeout(cueTimer);
     action.hidden = true; delete element.dataset.action;
     element.querySelectorAll('[data-leaving="true"]').forEach(node => node.remove());
   }
-  return { element, update, perform, settle };
+  return { element, update, perform, settle, setInteractionEnabled };
 }
 
 export type GalgameStage = ReturnType<typeof createGalgameStage>;

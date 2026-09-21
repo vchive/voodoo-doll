@@ -1,5 +1,5 @@
 // MW-36 / SP-21 / MW-AC-36, MW-37 / SP-22 / MW-AC-37,
-// and MW-38 / SP-23 / MW-AC-38.
+// MW-38 / SP-23 / MW-AC-38, and MW-39 / SP-24 / MW-AC-39.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -21,7 +21,7 @@ const output = resolve(root, 'artifacts', 'playtest', stamp);
 const temporary = await mkdtemp(join(tmpdir(), 'voodoo-playtest-'));
 const report = { startedAt: new Date().toISOString(), cases: [], errors: [], sources: {} };
 await mkdir(output, { recursive: true });
-for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
+for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-overview-model.ts', 'hex/play-overview.ts', 'hex/characters.js', 'hex/rooms.js', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
   report.sources[path] = createHash('sha256').update(await readFile(join(root, path))).digest('hex');
 }
 report.baseCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -67,6 +67,18 @@ async function settled(page) {
     const button = document.querySelector('#single-tools button');
     return button && !button.disabled;
   });
+}
+async function resizeViewport(page, viewport) {
+  await page.setViewportSize(viewport);
+  // Browser viewport changes and the application's visualViewport listener
+  // arrive separately. Measure only after the app consumed this resize.
+  await page.waitForFunction(({ width, height }) => {
+    const root = document.querySelector('.single-player');
+    const applied = root && parseFloat(getComputedStyle(root).getPropertyValue('--play-viewport-height'));
+    const visible = window.visualViewport?.height || innerHeight;
+    return innerWidth === width && innerHeight === height && Number.isFinite(applied) && Math.abs(applied - visible) < .5;
+  }, viewport);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
 async function startStory(page) {
   await page.goto(base);
@@ -215,14 +227,21 @@ async function assertStageLayout(page) {
       const rect = document.querySelector(selector).getBoundingClientRect();
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
     };
-    return { stage: box('.vn-stage'), dialogue: box('#single-dialogue'), footer: box('.dialogue-footer'),
+    return { stage: box('.vn-stage'), view: document.querySelector('.vn-stage').dataset.view,
+      preview: Boolean(document.querySelector('#intent-preview')), dialogue: box('#single-dialogue'), footer: box('.dialogue-footer'),
       width: innerWidth, height: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
   });
   const { stage, dialogue, footer, width, height } = geometry;
   assert.equal(geometry.overflow, false, 'Galgame舞台不能横向溢出');
   assert(stage.width > 0 && stage.height > 0, '舞台必须有可见区域');
-  assert(dialogue.y > stage.y && dialogue.y < stage.bottom && dialogue.bottom <= stage.bottom + 2, '对话窗应叠在舞台底部');
-  assert(dialogue.width > stage.width * .65, '对话窗不应仍是舞台旁的小侧栏');
+  assert(dialogue.y >= stage.y && dialogue.y < stage.bottom && dialogue.bottom <= stage.bottom + 2, '对话窗应位于舞台可见区域内');
+  if (geometry.view === 'overview' && !geometry.preview) {
+    assert(dialogue.width >= stage.width * .35, '探索选择窗必须保留足够的文字和操作空间');
+    assert(dialogue.x >= stage.x - 1 && dialogue.right <= stage.right + 1, '探索选择窗不能越出舞台');
+  } else {
+    assert(dialogue.y > stage.y, '阅读对话窗应叠在舞台底部');
+    assert(dialogue.width > stage.width * .65, '人物对白不应压缩到侧边小窗');
+  }
   assert(footer.x >= 0 && footer.y >= 0 && footer.right <= width + 1 && footer.bottom <= height + 1, '对话操作需处于可视区域');
   return geometry;
 }
@@ -294,6 +313,7 @@ async function readPerformanceToChoices(page, metrics, { loaded = true, reducedM
     } else if (/^[A-Z]$/.test(line.speakerId)) {
       assert.equal(stage.speaker, line.speakerId);
       assert(cast.some(item => item.id === line.speakerId && item.active === 'true'), '当前说话人应点亮立绘');
+      assert(await page.locator(`.vn-character[data-cast-id="${line.speakerId}"]:not([data-leaving="true"])`).isVisible(), '对白演出中的当前人物必须实际可见');
       metrics.spokenIds ||= [];
       if (!metrics.spokenIds.includes(line.speakerId)) metrics.spokenIds.push(line.speakerId);
       if (line.speakerId === 'A' && loaded) await page.screenshot({ path: join(output, metrics.name + '-speaking.png') });
@@ -324,6 +344,68 @@ async function waitForPortraits(page) {
   await page.waitForFunction(() => [...document.querySelectorAll('.vn-character:not([data-leaving="true"]) img.vn-portrait')]
     .every(image => image.complete && image.naturalWidth > 0));
 }
+async function assertOverviewCast(page) {
+  const current = await state(page);
+  const cast = await page.locator('[data-scene-cast-id]').evaluateAll(nodes => nodes.map(node => node.dataset.sceneCastId));
+  const expected = current.snapshot.present.filter(id => !['YOU', 'PLAYER_DOLL', 'ENV'].includes(id)
+    && (!current.snapshot.agents?.[id]?.roomId || current.snapshot.agents[id].roomId === current.snapshot.roomId));
+  assert.deepEqual([...cast].sort(), [...new Set(expected)].sort(), '俯视人物热点必须与当前公开在场角色一致');
+  return cast;
+}
+async function assertHybridLayout(page, expectedView) {
+  await page.waitForFunction(view => document.querySelector('.vn-stage')?.dataset.view === view, expectedView);
+  await page.waitForFunction(() => document.querySelector('.vn-overview')?.dataset.status === 'ready');
+  const geometry = await page.evaluate(() => {
+    const box = node => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+    };
+    const overview = document.querySelector('.vn-overview'), canvas = overview.querySelector('canvas');
+    const toggle = document.querySelector('[data-view-toggle]'), toggleBox = box(toggle);
+    const hit = document.elementFromPoint(toggleBox.x + toggleBox.width / 2, toggleBox.y + toggleBox.height / 2);
+    return { overview: box(overview), canvas: canvas && { ...box(canvas), pixels: [canvas.width, canvas.height] },
+      toggle: { ...toggleBox, unobstructed: Boolean(hit && toggle.contains(hit)), label: toggle.textContent },
+      dialogue: box(document.querySelector('#single-dialogue')), stage: box(document.querySelector('.vn-stage')),
+      viewport: { width: innerWidth, height: innerHeight } };
+  });
+  const { overview, canvas, toggle, dialogue, stage, viewport } = geometry;
+  assert(canvas && canvas.pixels.every(size => size > 0), '俯视场景需实际初始化画布');
+  assert(canvas.width > 0 && canvas.height > 0, '人物阅读与探索时都应看见俯视场景');
+  assert(overview.x >= stage.x - 1 && overview.y >= stage.y - 1 && overview.right <= stage.right + 1 && overview.bottom <= stage.bottom + 1,
+    '俯视场景不能越出舞台');
+  assert(canvas.x >= overview.x - 1 && canvas.y >= overview.y - 1 && canvas.right <= overview.right + 1 && canvas.bottom <= overview.bottom + 1,
+    '俯视画布必须被完整容纳');
+  assert(toggle.width >= 44 && toggle.height >= 44, '视图切换必须保留44像素触区');
+  assert(toggle.x >= 0 && toggle.y >= 0 && toggle.right <= viewport.width + 1 && toggle.bottom <= viewport.height + 1 && toggle.unobstructed,
+    '视图切换必须可见且不被覆盖');
+  assert.match(toggle.label, expectedView === 'portrait' ? /看场景/ : /看人物/);
+  if (expectedView === 'portrait') {
+    assert(overview.bottom <= dialogue.y + 1, '阅读时小俯视图不能遮住对白');
+    assert(overview.width < stage.width * .6, '阅读时俯视场景应缩成小窗');
+  } else {
+    assert(Math.min(overview.width, overview.height) >= 100, '探索时俯视场景短边至少100像素，人物和房间才可辨识');
+    const overlapWidth = Math.min(overview.right, dialogue.right) - Math.max(overview.x, dialogue.x);
+    const overlapHeight = Math.min(overview.bottom, dialogue.bottom) - Math.max(overview.y, dialogue.y);
+    assert(overlapWidth <= 1 || overlapHeight <= 1, '探索时俯视场景与行动窗口不能互相覆盖');
+  }
+  await assertStageLayout(page);
+  await assertOverviewCast(page);
+  return geometry;
+}
+async function switchHybridWithoutAction(page, metrics, expectedView) {
+  const before = await state(page), posts = metrics.posts.length;
+  const beforeOverview = await page.locator('.vn-overview').boundingBox();
+  const cue = await page.locator('.vn-stage').getAttribute('data-action-event');
+  await page.locator('[data-view-toggle]').click();
+  const geometry = await assertHybridLayout(page, expectedView);
+  assert.equal(metrics.posts.length, posts, '切换俯视/立绘不能提交行动或草稿');
+  assert.deepEqual((await state(page)).snapshot, before.snapshot, '切换视图不能改变世界、时间或日程');
+  assert.deepEqual((await state(page)).dialogue, before.dialogue, '切换视图不能翻页或改变选项状态');
+  assert.equal(await page.locator('.vn-stage').getAttribute('data-action-event'), cue, '切换视图不能重演行动');
+  if (expectedView === 'overview') assert(geometry.overview.width > beforeOverview.width && geometry.overview.height > beforeOverview.height,
+    '从人物切到场景时俯视图必须实际放大');
+  return geometry;
+}
 async function scenario(name, viewport, run) {
   if (process.env.PLAYTEST_CASE && !new RegExp(process.env.PLAYTEST_CASE).test(name)) return;
   const context = await browser.newContext({ viewport, acceptDownloads: true });
@@ -353,6 +435,120 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[844, 390], [568, 320], [390, 844], [320, 568]]) {
+    await scenario(`hybrid-stage-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      const viewport = { width, height }, rotated = { width: height, height: width };
+      metrics.readingGeometry = await assertHybridLayout(page, 'portrait');
+      await page.screenshot({ path: join(output, metrics.name + '-reading.png') });
+      await switchHybridWithoutAction(page, metrics, 'overview');
+      await switchHybridWithoutAction(page, metrics, 'portrait');
+      const reading = await state(page), readingPosts = metrics.posts.length;
+      await resizeViewport(page, rotated);
+      await assertHybridLayout(page, 'portrait');
+      assert.deepEqual((await state(page)).dialogue, reading.dialogue, '阅读时旋转不能丢阅读位置');
+      assert.deepEqual((await state(page)).snapshot, reading.snapshot);
+      assert.equal(metrics.posts.length, readingPosts, '旋转不能提交行动');
+      await resizeViewport(page, viewport);
+      await walk(page, metrics, 'dossier');
+      await waitForPortraits(page);
+      metrics.explorationGeometry = await assertHybridLayout(page, 'overview');
+      assert.equal((await state(page)).snapshot.roomId, 'office');
+      assert((await assertOverviewCast(page)).includes('A'));
+      assert((await assertPublicCast(page)).some(item => item.id === 'A'), '两个视图应共享在场的林川');
+      metrics.npcTargetGeometry = await page.locator('[data-scene-cast-id="A"]').evaluate(button => {
+        const rect = button.getBoundingClientRect();
+        const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom,
+          unobstructed: Boolean(hit && button.contains(hit)), viewport: { width: innerWidth, height: innerHeight } };
+      });
+      const target = metrics.npcTargetGeometry;
+      assert(target.width >= 44 && target.height >= 44, '俯视人物热点必须保留44像素触区');
+      assert(target.x >= 0 && target.y >= 0 && target.right <= target.viewport.width + 1 && target.bottom <= target.viewport.height + 1 && target.unobstructed,
+        '俯视人物热点必须可见且不能被人物立绘或对白挡住');
+      await page.screenshot({ path: join(output, metrics.name + '-exploring.png') });
+      await switchHybridWithoutAction(page, metrics, 'portrait');
+      await switchHybridWithoutAction(page, metrics, 'overview');
+      // Rotation must preserve a typed but unsent free-action draft too.
+      await openFree(page);
+      await page.locator('#single-input').fill('问林川：交班记录怎么了');
+      const drafting = await state(page), draftingPosts = metrics.posts.length;
+      await resizeViewport(page, rotated);
+      assert.equal(await page.locator('#single-input').inputValue(), '问林川：交班记录怎么了');
+      assert.deepEqual((await state(page)).snapshot, drafting.snapshot);
+      assert.deepEqual((await state(page)).dialogue, drafting.dialogue);
+      assert.equal(metrics.posts.length, draftingPosts, '旋转草稿不能偷偷预览或确认');
+      await resizeViewport(page, viewport);
+      await page.getByRole('button', { name: '收起自由行动', exact: true }).click();
+      // Select the actual NPC in the overview; this uses the normal action
+      // preview boundary and must not secretly perform or bypass confirmation.
+      const before = await state(page), beforePosts = metrics.posts.length;
+      await page.locator('[data-scene-cast-id="A"]').click();
+      await page.locator('#intent-preview').waitFor();
+      const pending = (await state(page)).pending;
+      assert.equal(pending.kind, 'intent');
+      assert.equal(metrics.posts.length - beforePosts, 1, '点选人物只能创建一次行动预览');
+      assert.deepEqual((await state(page)).snapshot, before.snapshot);
+      metrics.previewGeometry = await assertIntentPreviewLayout(page);
+      await resizeViewport(page, rotated);
+      await assertIntentPreviewLayout(page);
+      assert.deepEqual((await state(page)).pending, pending, '预览中旋转不能丢pending');
+      assert.deepEqual((await state(page)).snapshot, before.snapshot);
+      await resizeViewport(page, viewport);
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      assert.equal((await state(page)).pending, undefined);
+      assert.deepEqual((await state(page)).snapshot, before.snapshot, '取消场景人物交互不得推进行动');
+      assert.deepEqual((await state(page)).dialogue, before.dialogue);
+      assert.equal(await page.locator('#single-input').inputValue(), '问林川：交班记录怎么了', '取消人物热点预览不能清除先前未发送的自由输入');
+      assert.equal(metrics.posts.length - beforePosts, 2, '场景人物预览取消只允许intent与cancel');
+      assert(metrics.posts.slice(beforePosts).every(path => !path.endsWith('/confirm')));
+      await assertHybridLayout(page, 'overview');
+      const confirmPosts = metrics.posts.length;
+      await page.locator('[data-scene-cast-id="A"]').click();
+      await page.locator('#intent-preview').waitFor();
+      await confirm(page);
+      assert.equal(metrics.posts.length - confirmPosts, 2, '场景人物一次确认只允许intent与confirm');
+      assert((await state(page)).snapshot.worldVersion > before.snapshot.worldVersion, '明确确认后才真正交谈');
+      assert.equal((await state(page)).snapshot.roomId, 'office');
+      assert.equal(await page.locator('#single-input').inputValue(), '问林川：交班记录怎么了', '确认人物热点交互不能清除另一条未发送的自由输入');
+      metrics.confirmedNpc = 'A'; metrics.actions++;
+      await assertHybridLayout(page, 'portrait');
+      await readPerformanceToChoices(page, metrics);
+      await assertHybridLayout(page, 'overview');
+      metrics.rotationPreserved = ['reading', 'draft', 'pending'];
+    });
+  }
+  await scenario('hybrid-renderer-unavailable', { width: 568, height: 320 }, async (page, context, metrics) => {
+    const before = await state(page), posts = metrics.posts.length;
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (kind, ...args) {
+        if (/webgl|webgpu/i.test(kind)) return null;
+        return getContext.call(this, kind, ...args);
+      };
+    });
+    await page.reload(); await settled(page);
+    await page.waitForFunction(() => document.querySelector('.vn-overview')?.dataset.status === 'unavailable');
+    assert.deepEqual((await state(page)).snapshot, before.snapshot, '俯视渲染器失效不能破坏世界');
+    assert.deepEqual((await state(page)).dialogue, before.dialogue);
+    assert.equal(metrics.posts.length, posts, '渲染器失败不能发送行动请求');
+    await readToChoices(page, metrics);
+    assert(await page.locator('[data-story-action="true"]').first().isVisible(), '俯视渲染失效仍应有推荐行动');
+    const beforeSwitch = await state(page), switchPosts = metrics.posts.length;
+    await page.locator('[data-view-toggle]').click();
+    assert.equal(await page.locator('.vn-stage').getAttribute('data-view'), 'portrait');
+    assert.deepEqual((await state(page)).snapshot, beforeSwitch.snapshot);
+    assert.deepEqual((await state(page)).dialogue, beforeSwitch.dialogue);
+    assert.equal(metrics.posts.length, switchPosts);
+    await preview(page, '去办公室');
+    await assertIntentPreviewLayout(page); await confirm(page);
+    await waitForPortraits(page);
+    assert.equal((await state(page)).snapshot.roomId, 'office');
+    assert((await assertPublicCast(page)).some(item => item.id === 'A'), '俯视失效不应影响人物立绘');
+    await readToChoices(page, metrics);
+    await preview(page, '开门'); await confirm(page);
+    assert(await page.locator('.dialogue-page').isVisible(), '渲染器失效仍能读到确认后的行动反馈');
+    metrics.rendererFailure = 'WebGL/WebGPU contexts deliberately unavailable; portrait, recommendations, preview and confirmed actions remained usable.';
+  });
   for (const [width, height] of [[844, 390], [568, 320], [390, 844], [320, 568]]) {
     await scenario(`vn-stage-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       await page.locator('.vn-stage').waitFor();
@@ -441,6 +637,9 @@ try {
     await page.waitForFunction(() => document.querySelector('.vn-stage')?.dataset.backgroundFallback === 'true');
     await preview(page, '去办公室');
     await performWithCue(page, metrics, 'move', () => confirm(page));
+    // A retained choices window may select the overview after this direct
+    // move. Inspect the failed portrait in its explicit close-up view.
+    if (await page.locator('.vn-stage').getAttribute('data-view') === 'overview') await switchHybridWithoutAction(page, metrics, 'portrait');
     await page.locator('.vn-character[data-cast-id="A"] .vn-portrait-fallback').waitFor();
     await page.waitForFunction(() => document.querySelector('.vn-character[data-cast-id="A"] img.vn-portrait')?.hidden);
     assert.equal(await page.locator('.vn-character[data-cast-id="A"] img.vn-portrait').isVisible(), false);
@@ -616,11 +815,14 @@ try {
     await waitForPortraits(page);
     const beforeCast = await assertPublicCast(page);
     assert(beforeCast.some(item => item.id === 'A' && item.loaded), '等待前必须实际加载林川立绘');
-    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    const beforeOverviewCast = await assertOverviewCast(page);
+    assert(beforeOverviewCast.includes('A'), '等待前俯视图必须有林川');
+    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeOverviewCast, beforeClock: (await state(page)).snapshot.clock };
     await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待60分钟'); await confirm(page);
-    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]'));
+    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]') && !document.querySelector('[data-scene-cast-id="A"]'));
     metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterOverviewCast = await assertOverviewCast(page);
     metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     await readToChoices(page, metrics);
     let current = await state(page);
@@ -638,12 +840,15 @@ try {
     await waitForPortraits(page);
     const beforeCast = await assertPublicCast(page);
     assert(beforeCast.some(item => item.id === 'A' && item.loaded), '第三日等待前必须实际加载林川立绘');
-    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    const beforeOverviewCast = await assertOverviewCast(page);
+    assert(beforeOverviewCast.includes('A'), '第三日等待前俯视图必须有林川');
+    metrics.scheduleDeparture = { id: 'A', beforeCast, beforeOverviewCast, beforeClock: (await state(page)).snapshot.clock };
     await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待120分钟'); await confirm(page);
     await preview(page, '等待60分钟'); await confirm(page);
-    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]'));
+    await page.waitForFunction(() => !document.querySelector('.vn-character[data-cast-id="A"]') && !document.querySelector('[data-scene-cast-id="A"]'));
     metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterOverviewCast = await assertOverviewCast(page);
     metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     await readToChoices(page, metrics);
     const current = await state(page);
@@ -663,11 +868,14 @@ try {
     await waitForPortraits(page);
     const beforeCast = await assertPublicCast(page);
     assert(beforeCast.some(item => item.id === scheduledId && item.loaded), '等待前必须实际加载支线人物立绘：' + scheduledId);
-    metrics.scheduleDeparture = { id: scheduledId, beforeCast, beforeClock: (await state(page)).snapshot.clock };
+    const beforeOverviewCast = await assertOverviewCast(page);
+    assert(beforeOverviewCast.includes(scheduledId), '等待前俯视图必须有支线人物：' + scheduledId);
+    metrics.scheduleDeparture = { id: scheduledId, beforeCast, beforeOverviewCast, beforeClock: (await state(page)).snapshot.clock };
     await page.screenshot({ path: join(output, metrics.name + '-before-wait.png') });
     await preview(page, '等待120分钟'); await confirm(page);
-    await page.waitForFunction(id => !document.querySelector(`.vn-character[data-cast-id="${id}"]`), scheduledId);
+    await page.waitForFunction(id => !document.querySelector(`.vn-character[data-cast-id="${id}"]`) && !document.querySelector(`[data-scene-cast-id="${id}"]`), scheduledId);
     metrics.scheduleDeparture.afterCast = await assertPublicCast(page);
+    metrics.scheduleDeparture.afterOverviewCast = await assertOverviewCast(page);
     metrics.scheduleDeparture.afterClock = (await state(page)).snapshot.clock;
     const current = await state(page);
     assert.equal(current.snapshot.narrative.facts.tapeHeard, false);

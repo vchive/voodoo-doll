@@ -88,3 +88,54 @@
 .single-player.is-playing #intent-preview h2 { flex-shrink:0; margin:0; font-size:14px; line-height:1.5; }
 .single-player.is-playing #intent-preview .single-preview { flex:1; min-height:44px; margin:0; padding:8px 10px; overflow-y:auto; overscroll-behavior:contain; font-size:14px; line-height:1.6; }
 .single-player.is-playing #intent-preview .single-actions { flex-shrink:0; margin:0; }
+
+/* MW-39: one world, a spatial overview and a close dialogue composition. */
+.vn-overview-shell { position:absolute; z-index:3; left:16px; top:46px; width:30%; height:calc(60% - 78px); min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:3px; }
+.vn-overview-frame { position:relative; flex-shrink:0; overflow:hidden; border:1px solid #c8b49580; border-radius:5px; box-shadow:0 4px 16px #0a142959; background:#2b313a; }
+.vn-overview, .vn-scene-hotspots { position:absolute; inset:0; }
+.single-player.is-playing .vn-overview canvas { display:block; width:100% !important; height:100% !important; min-height:0; object-fit:contain; image-rendering:pixelated; }
+.vn-overview-caption { flex-shrink:0; font-size:10px; color:#ded0b5; line-height:15px; letter-spacing:.08em; text-shadow:0 1px 3px #000; }
+.vn-scene-hotspots { z-index:1; }
+.vn-scene-actor { position:absolute; transform:translate(-50%,-50%); width:64px; min-height:56px; padding:0; display:flex; align-items:flex-end; justify-content:center; border:1px solid transparent; border-radius:12px; color:#f6e8d2; background:transparent; cursor:pointer; }
+.vn-scene-actor span { padding:2px 5px; font-size:10px; line-height:14px; background:#182434de; border:1px solid #ceb99270; border-radius:3px; }
+.vn-scene-actor:hover, .vn-scene-actor:focus-visible { border-color:#e0c58c; background:#dbc18c16; outline:none; }
+.vn-scene-actor:disabled { cursor:default; }
+.vn-scene-actor:disabled span { opacity:.65; }
+.vn-scene-self { position:absolute; transform:translateX(-50%); color:#f2ddae; font-size:10px; line-height:14px; padding:0 4px; border-radius:2px; background:#182434c9; pointer-events:none; }
+.vn-overview[data-status="unavailable"]::after { content:'场景暂不可用'; position:absolute; inset:0; display:grid; place-items:center; padding:4px; text-align:center; color:#c9c4b8; font-size:10px; }
+.vn-view-toggle { position:absolute; z-index:6; right:66px; top:4px; min-width:76px; min-height:44px; padding:6px 12px; border:1px solid #d7be8866; border-radius:4px; color:#efdec2; background:#192438da; cursor:pointer; font-size:12px !important; }
+.vn-view-toggle:focus-visible { outline:2px solid #eed4ac; outline-offset:2px; }
+.single-player.is-playing .single-meta { max-width:calc(100% - 170px); }
+.vn-stage[data-view="portrait"] .vn-scene-hotspots { visibility:hidden; }
+.vn-stage[data-view="portrait"] .vn-overview-caption { display:none; }
+.vn-stage[data-view="overview"] .vn-overview-shell { left:12px; top:42px; bottom:14px; width:calc(50% - 24px); height:auto; }
+.vn-stage[data-view="overview"] .vn-cast { visibility:hidden; }
+.vn-stage[data-view="overview"] .vn-background { filter:blur(3px) brightness(.3) saturate(.5); }
+.vn-stage[data-view="overview"] .vn-light { opacity:.3; }
+.vn-stage[data-view="overview"] .vn-action { top:auto; bottom:16px; left:18px; padding:5px 9px; z-index:4; }
+.single-player.is-playing .single-theater[data-view="overview"] .single-dialogue { top:46px; left:50%; right:12px; bottom:10px; height:auto; min-height:0; padding:20px 12px 6px; }
+.single-player.is-playing .single-theater[data-view="overview"] .dialogue-nameplate { left:10px; max-width:calc(100% - 20px); padding-left:10px; padding-right:10px; }
+.single-player.is-playing .single-theater[data-view="overview"] .single-story-actions { gap:6px; }
+.single-player.is-playing .single-theater[data-view="overview"] .single-story-actions small { display:block; margin:0; }
+.single-player.is-playing .single-theater[data-view="overview"] .dialogue-page { font-size:15px !important; }
+.single-player.is-playing .single-theater #single-dialogue[data-preview="true"] { top:auto; left:14px; right:14px; bottom:10px; height:72%; min-height:166px; padding:12px 16px 8px; }
+@media (orientation:landscape) and (max-height:420px) and (min-width:560px) {
+  .vn-overview-shell { top:8px; left:24%; width:25%; height:calc(100% - 140px); }
+  .vn-stage[data-view="overview"] .vn-overview-shell { top:38px; }
+  .single-player.is-playing .single-theater[data-view="overview"] .single-dialogue { top:42px; bottom:8px; padding:16px 10px 4px; }
+  .single-player.is-playing .single-theater[data-view="overview"] .single-story-actions .single-button { padding:5px 7px; }
+  .single-player.is-playing .single-theater[data-view="overview"] .dialogue-controls { gap:0; }
+  .single-player.is-playing .single-theater[data-view="overview"] .dialogue-controls .single-button { padding:5px 7px; font-size:12px; }
+}
+@media (orientation:portrait) and (max-height:650px) {
+  .vn-stage[data-view="overview"] .vn-overview-caption { display:none; }
+}
+@media (orientation:portrait), (max-width:559px) {
+  .vn-overview-shell { left:8px; top:52px; width:30%; height:120px; }
+  .vn-character { left:var(--cast-x); width:85%; }
+  .vn-stage[data-view="overview"] .vn-overview-shell { left:12px; right:12px; width:auto; top:44px; bottom:calc(55% + 32px); height:auto; }
+  .single-player.is-playing .single-theater[data-view="overview"] .single-dialogue { left:10px; right:10px; top:auto; bottom:10px; height:55%; min-height:155px; padding:24px 14px 6px; }
+  .single-player.is-playing .single-theater[data-view="overview"] .single-story-actions small { display:inline; margin-left:8px; }
+  .vn-stage[data-view="overview"] .vn-action { bottom:calc(55% + 22px); left:14px; }
+  .single-player.is-playing .single-theater #single-dialogue[data-preview="true"] { left:10px; right:10px; }
+}
