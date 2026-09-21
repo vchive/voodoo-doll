@@ -1,6 +1,8 @@
 # 004 任务清单 · 多 Agent 世界内核迁移
 
-本轮（2026-09-21，MW-42 / SP-27 / MW-AC-42）：本机桌面已测范围完成。预览取消、行动返回或非执行重建恢复当前句内位置，书签仅在页面内存。最终阅读专项 3/3、相关回归 21/21、类型检查/Hex 构建通过，见[阅读恢复证据](../../evidence/2026-09-21-reading-resume.md)。真实教程和展示 fixture 分开记录；worldId/地点/文本独立变化仅实现审查，不承诺跨刷新句内恢复。未重跑 Node/Python 单元、根构建或全 46 项；微信/公网另验。
+本轮（2026-09-21）：多 Agent 世界架构状态核查，仅纠正 MW-10/14/19/21/22 的实现描述，不新增任务或改变完成状态。源码事实与限制见[Agent 世界核查](../../evidence/2026-09-21-agent-world-status.md)，后续核心阶段为 plan 中的实现建议。
+
+上一轮（2026-09-21，MW-42 / SP-27 / MW-AC-42）：本机桌面已测范围完成。预览取消、行动返回或非执行重建恢复当前句内位置，书签仅在页面内存。最终阅读专项 3/3、相关回归 21/21、类型检查/Hex 构建通过，见[阅读恢复证据](../../evidence/2026-09-21-reading-resume.md)。真实教程和展示 fixture 分开记录；worldId/地点/文本独立变化仅实现审查，不承诺跨刷新句内恢复。未重跑 Node/Python 单元、根构建或全 46 项；微信/公网另验。
 
 上一轮（2026-09-21，MW-41 / SP-26 / MW-AC-41）：本机桌面已测范围完成。重叠 NPC 热点先明确选人，多人立绘避让顶部控件。3 项真实 API 多人场景与 18 项相关回归均取得通过证据；首跑分别有 568 截图、390 阅读点击超时，同源码单项补测通过，未改代码或断言，不能记为一次全绿。组件生命周期独立检查 3/3，类型检查/Hex 构建通过；见[多人舞台证据](../../evidence/2026-09-21-multicast-stage.md)。未重跑单元或根构建，不改玩家存档/故事。
 
@@ -36,19 +38,19 @@
 | MW-07 | 实现 local Agent Adapter 和 ENV deterministic resolver | 无模型可玩 | MW-AC-07 | MW-05, MW-06 | 已完成：规则角色与环境反馈有测试证据 |
 | MW-08 | 实现 PLAYER_DOLL -> YOU 行动解析，禁止玩家直控 A–Y/Z | 用户控制边界 | MW-AC-08 | MW-05, MW-07 | 已完成：领域错误为 422 语义 |
 | MW-09 | 实现多角色微回合、局部 fallback、取消、超时和原子提交 | 事件回合 | MW-AC-09 | MW-06, MW-07, MW-08 | 部分完成：多目标/局部 fallback/原子写入/持久化 draft-confirm-cancel 已通过；`OperationQueue` 已接入同步角色提案路径，迟到结果拒绝写入审计；持久队列、异步 worker 与完整 provider 超时矩阵待补 |
-| MW-10 | 接入 A/B/C 独立记忆、目标、立场和回应能力 | 每人一个 Agent | MW-AC-10 | MW-06, MW-09 | 部分完成：每个角色使用隔离 Context Builder、独立 memory/traits/goal；真实多轮目标行为仍待扩展 |
+| MW-10 | 接入 A/B/C 独立记忆、目标、立场和回应能力 | 每人一个 Agent | MW-AC-10 | MW-06, MW-09 | 部分完成：角色独立 memory 与 profile traits/goals 已存储；Context Builder 隔离可见事件/记忆/关系，但未把 traits/goals 放入模型请求，本地 RuleAgent 仅按 traits 偏置固定响应。教程同场 A/B/C 问答优先走固定稿，绕过模型；人格/目标驱动多轮对话与持续目标行为尚未完成 |
 | MW-11 | 接入 Z 临时角色生命周期和长期角色注册确认 | Z 复用规则 | MW-AC-11 | MW-02, MW-10 | 待开始 |
 | MW-12 | 迁移 v5/003/单娃娃存档并保留 legacy-v2 回滚 | 分阶段迁移 | MW-AC-12 | MW-04, MW-10 | 部分完成：Python 只读 v5/v1 importer 已有 hash、头像/事实/房间/记忆保留和回滚元数据测试；v5/v1 HTTP 会话导入与坏档原子失败已有测试，targetSet、浏览器旧 key 保留和回滚验收待补 |
 | MW-13 | 将 hex 前端迁移为 TypeScript API client、SSE reducer 和事件舞台 | 前端迁移 | MW-AC-13 | MW-01, MW-09 | 部分完成：默认 `play.ts` 已接入 Python 单人产品 API；typed Kernel client、去重 reducer 和 SSE 断线补拉已有合同测试，完整 SSE 事件舞台待补。320×568、390×844、430×932 三档桌面 Chrome 移动视口仿真已通过，微信 iOS/Android 真机仍待验收；`?legacy=1` 保留 Node/Pi 回滚界面 |
-| MW-14 | 接入 Pi/DeepSeek/Claude Provider Adapter 与 RoleModelRouter，按世界搭建/娃娃/人物/观察者配置模型、预算、超时、取消和非法输出 fallback | 模型可替换、WL-11 | MW-AC-14 | MW-07, MW-09 | 部分完成：三 provider 共用结构化 adapter、预算限制和本地 fallback；职责 profile 路由、真实网关 transport/取消矩阵待测 |
+| MW-14 | 接入 Pi/DeepSeek/Claude Provider Adapter 与 RoleModelRouter，按世界搭建/娃娃/人物/观察者配置模型、预算、超时、取消和非法输出 fallback | 模型可替换、WL-11 | MW-AC-14 | MW-07, MW-09 | 部分完成：三 provider 有结构化 adapter 合同，Gateway 有预算/超时和本地 fallback；当前 Kernel 共用一个 Gateway/RuleAgent，由同一组 MODEL_* 环境配置创建。RoleModelRouter 与按职责模型配置尚未实现，不能称每角色已有独立模型运行时；真实网关与取消矩阵待验 |
 | MW-15 | 迁移 003 关系、多目标、policy gate、SFW 分享降级和审计 | 003 兼容 | MW-AC-15 | MW-04, MW-06, MW-09 | 待开始 |
 | MW-16 | 完成桌面/微信/断网/公网/回滚验证并更新 HANDOFF | 发布证据 | MW-AC-16 | MW-12, MW-13, MW-14, MW-15 | 部分完成：320×568、390×844、430×932 三档桌面 Chrome 移动视口仿真已通过；微信 iOS/Android 真机、公网/HTTPS、完整断网与回滚验证仍待完成 |
 | MW-17 | 实现服务端 WorldClock 与惰性/后台节拍 | WL-01 | MW-AC-17 | MW-04, MW-05 | 部分完成：WorldClock、HTTP clock、内部 tick、客户端时间拒绝及管理令牌关闭/授权已有；后台 worker、生产配置和跨进程重启实测待补 |
 | MW-18 | 实现时间表注册表与 PresenceProjection | WL-02, WL-03 | MW-AC-18 | MW-02, MW-04, MW-17 | 部分完成：重复日程、半开区间、跨午夜、投影和归位已回归；世界草稿 API 已可校验确认日程；例外日期、完整冲突审计待补 |
-| MW-19 | 实现 InterestResolver、ActivationLease 与角色生命周期 | WL-03, WL-04, WL-05 | MW-AC-19 | MW-06, MW-09, MW-18 | 部分完成：严格 room/zone、TTL、heartbeat、过期拒绝、checkpoint/summary、日程切换和 generation/token 已回归；坐标半径、完整异步 provider 矩阵、生产后台节拍待补 |
+| MW-19 | 实现 InterestResolver、ActivationLease 与角色生命周期 | WL-03, WL-04, WL-05 | MW-AC-19 | MW-06, MW-09, MW-18 | 部分完成：room/zone 兴趣租约、TTL/heartbeat、checkpoint/summary、日程驻留投影与 generation/token 已有回归；这些是激活和时间表基础，不是 NPC 后台自主生活。未实现低频目标驱动的 NPC 自主交互；坐标半径、完整异步 provider 矩阵和生产后台节拍待补 |
 | MW-20 | 实现可重放随机遭遇解析 | WL-06 | MW-AC-20 | MW-18, MW-19 | 部分完成：注册表加权候选、稳定种子与选择落入 activation 事件，重复 heartbeat 不重抽；关系条件、离开后重入/跨进程重连不重复演出的完整矩阵待补 |
-| MW-21 | 实现 WorldObserver 审计与受限修复提案，只合并审计有新事件的活跃世界，保持只读且不进入玩家角色对话 | WL-07, WL-10 | MW-AC-21 | MW-04, MW-18, MW-19 | 部分完成：确定性报告已脱敏持久化；数据库按 worldId+reportHash 去重，跨连接/重启/旧库升级有回归；active/dirty 批次、完整不变量、低频模型、correction proposal 和受限修复待补 |
-| MW-22 | 实现世界搭建草稿编译与确认，包括世界圣经、地点图、角色目标/秘密、关系、日程和遭遇 | WL-08, WL-10 | MW-AC-22 | MW-01, MW-02, MW-18, MW-20 | 部分完成：实体、日程、遭遇同批预览、确认发布、取消、CAS 与重启幂等已验收；世界圣经、新房间/角色/关系注册、澄清问题和高能力模型工作流待补 |
+| MW-21 | 实现 WorldObserver 审计与受限修复提案，只合并审计有新事件的活跃世界，保持只读且不进入玩家角色对话 | WL-07, WL-10 | MW-AC-21 | MW-04, MW-18, MW-19 | 部分完成：现有确定性审计检查未知地点/驻留投影和同优先级日程冲突，报告脱敏持久化并按 worldId+reportHash 去重；跨连接/重启/旧库升级有历史回归。不是已能拨正剧情的世界 Agent；active/dirty 调度、完整不变量、低频模型及 correction proposal/受限修复均待补 |
+| MW-22 | 实现世界搭建草稿编译与确认，包括世界圣经、地点图、角色目标/秘密、关系、日程和遭遇 | WL-08, WL-10 | MW-AC-22 | MW-01, MW-02, MW-18, MW-20 | 部分完成：声明式实体/日程/遭遇同批预览、确认发布、取消、CAS 与重启幂等已有证据；模型声明生成 helper 存在，但未接通当前单人故事入口。完整世界圣经、新房间/角色/关系注册、澄清与高能力模型搭建工作流尚未完成，不能将模板初始化视为模型生成完整世界 |
 | MW-23 | 实现 primitive tool registry 与实体 affordance | WL-09 | MW-AC-23 | MW-05, MW-07, MW-22 | 部分完成：固定 primitive、JSON Schema、room/zone、类型/动作/路线校验已有；下一切片只收紧不可变 Published Registry 与可变 Runtime State 的读写边界，定义只能决定能力，运行态只保存位置/区域/合法动作结果。事件从零回放随后作为 MW-04/MW-26 独立切片 |
 | MW-24 | 实现车辆、地铁、自行车 mobility resolver 与无人观察时的 TravelProjection | WL-03, WL-09 | MW-AC-24 | MW-18, MW-19, MW-23 | 部分完成：车辆/自行车和地铁状态机、路线/站点校验、ENV feedback 已回归；自行车单步及地铁 board/travel/alight 已通过组合动作预演。班次、领域事件重建、途中物化、坐标和后台到达投影待补 |
 | MW-25 | 实现世界搭建 ToolCompiler | WL-08, WL-09 | MW-AC-25 | MW-20, MW-22, MW-23 | 部分完成：`tool-compiler-3` 对实体/日程/遭遇逐层校验，预览、哈希复核、引用与类型检查已有；基础自行车/地铁组合动作可预演并拒绝非法顺序、范围、实体、工具和 affordance。新房间/角色、例外日程、图可达性及分支组合待补 |

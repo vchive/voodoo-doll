@@ -1,0 +1,59 @@
+{
+  "testedAt": "2026-09-21T07:20:58.284197+00:00",
+  "scope": "SinglePlayerGame public methods with disposable in-memory EventStore and injected counting adapter; no HTTP or real model/network",
+  "memorySentinels": "Injected only into isolated test WorldState, never user data",
+  "networkBlocked": true,
+  "sources": {
+    "backend/app/gameplay.py": "c9be7fc209c40f28d4abbd7fe20393e51513187d16ff5c2d9ec922df81c92ef2",
+    "backend/app/domain/world.py": "56324f9ad43ba53ca6c665863f35aca17ea9fa822e09fd324aa6209c4bd8db85",
+    "backend/app/domain/perception.py": "239924474c355266208b9b25bde188298fc045859ede7bb38fa3d5c872a0eccb",
+    "backend/app/domain/memory.py": "34e8a9aa43da1ee1aaacc0c9c27a34e2db5e303ff482eff9ae9c2c9739b5a548",
+    "backend/app/signal_story.py": "6b7798a2c8a4b0c18339574e2db22cab09ab730f551e9704ec3625704a55cff3",
+    "backend/app/agents/gateway.py": "96f8959825fdbbfbd7f4f1221391fa5682dd35cd7800722af8ce80ab261c144e"
+  },
+  "cases": [
+    {
+      "template": "signal-rain-v1",
+      "room": "office",
+      "presentBeforeAskIncludesA": true,
+      "callsBeforeAsk": 0,
+      "callsAtPreview": 0,
+      "callsAfterConfirm": 0,
+      "confirmCallDelta": 0,
+      "responseSource": "local",
+      "responseAction": "answer",
+      "responseText": "如果你愿意和我一起署名，我会把父亲的照护安排也写进说明。真相不能只靠一个人记住。"
+    },
+    {
+      "template": "custom",
+      "room": "office",
+      "presentBeforeAskIncludesA": true,
+      "callsBeforeAsk": 0,
+      "callsAtPreview": 0,
+      "callsAfterConfirm": 1,
+      "confirmCallDelta": 1,
+      "responseSource": "audit-fake",
+      "responseAction": "answer",
+      "responseText": "这是计数实验的本地替身回应。",
+      "contextKeys": [
+        "capabilities",
+        "environment",
+        "events",
+        "memory",
+        "present",
+        "relationships",
+        "room",
+        "short_memory",
+        "viewer"
+      ],
+      "contextViewer": "A",
+      "ownMemoryIncluded": true,
+      "otherPrivateMemoryExcluded": true,
+      "confirmedAnswerPersistedToOwnMemory": true,
+      "outOfRoomBDoesNotReceiveAnswerMemory": true,
+      "characterTraitsInContext": false,
+      "characterGoalsInContext": false
+    }
+  ],
+  "pass": true
+}
