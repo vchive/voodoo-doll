@@ -1,6 +1,7 @@
 import type { DialogueLine, PlayEvent, PlayProfile, PlaySnapshot } from './play-api';
 import { performanceFromEvents, projectPerformance, type PerformanceExpression } from './play-performance';
 import { createPlayOverview } from './play-overview';
+import { createCastPicker } from './play-cast-picker';
 
 export type PortraitArt = Partial<Record<PerformanceExpression, string>> & { neutral: string };
 export type GalgameArt = { portraits: Record<string, PortraitArt>; backgrounds: Record<string, string> };
@@ -62,6 +63,13 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
   let lastChoosing = false;
   let interactionEnabled = true;
   let hasSceneNpc = false;
+  const castPicker = createCastPicker(element, {
+    getCandidates: () => Array.from(hotspots.querySelectorAll<HTMLButtonElement>('[data-scene-cast-id]')).map(button => ({
+      id: button.dataset.sceneCastId!, label: button.textContent || button.dataset.sceneCastId!, button,
+    })),
+    isEnabled: () => interactionEnabled && view === 'overview',
+    onSelect: (id) => onActor?.(id),
+  });
   const captionText = () => view !== 'overview' ? '俯视一览' : !hasSceneNpc ? '你和娃娃在这里' : interactionEnabled ? '点人物交谈' : '人物位置';
   function applyView(): void {
     element.dataset.view = view;
@@ -98,6 +106,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
   overviewToggle.onkeydown = (event) => { if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault(); };
   function setInteractionEnabled(enabled: boolean): void {
     interactionEnabled = enabled;
+    if (!enabled) castPicker.close();
     hotspots.querySelectorAll<HTMLButtonElement>('button').forEach(node => { node.disabled = !enabled; });
     overviewShell.querySelector('.vn-overview-caption')!.textContent = captionText();
   }
@@ -106,6 +115,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
     if (!reduceMotion.matches) node.animate(frames, options);
   };
   function update(snapshot: PlaySnapshot, profile: PlayProfile, line?: DialogueLine, choosing = false): void {
+    castPicker.close();
     const nextContext = `${snapshot.worldId || 'local'}:${snapshot.worldVersion}:${snapshot.roomId}`;
     if (context !== nextContext || lastChoosing !== choosing) manualView = undefined;
     context = nextContext; lastChoosing = choosing;
@@ -125,7 +135,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
       item.setAttribute('aria-label', `和${actor.label}交谈`);
       const name = document.createElement('span'); name.textContent = actor.label; item.append(name);
       item.disabled = !interactionEnabled;
-      item.onclick = () => { if (interactionEnabled && view === 'overview') onActor?.(actor.actorId); };
+      item.onclick = (event) => castPicker.pick(event, actor.actorId);
       hotspots.append(item);
     });
     applyView();
@@ -161,6 +171,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
     // speaker when a custom world has more people than the frame can show.
     const visible = projection.castIds.slice(0, 3);
     if (projection.speakerId && projection.castIds.includes(projection.speakerId) && !visible.includes(projection.speakerId)) visible[2] = projection.speakerId;
+    element.dataset.castCount = String(visible.length);
     for (const [id, node] of figures) if (!visible.includes(id)) {
       node.dataset.leaving = 'true'; node.setAttribute('aria-hidden', 'true');
       node.querySelector('img')?.setAttribute('alt', '');
@@ -182,6 +193,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
       }
       const active = projection.speakerId === id;
       figure.style.setProperty('--cast-x', `${visible.length === 1 ? 67 : 40 + (index + 1) * 52 / (visible.length + 1)}%`);
+      figure.style.setProperty('--cast-narrow-x', `${visible.length === 3 ? [43, 65, 87][index] : [48, 78][index]}%`);
       figure.dataset.active = String(active);
       figure.dataset.expression = active ? projection.expression : 'neutral';
       const image = figure.querySelector<HTMLImageElement>('img')!;
@@ -216,6 +228,7 @@ export function createGalgameStage(art: GalgameArt, onActor?: (id: string) => vo
     cueTimer = setTimeout(() => { action.hidden = true; delete element.dataset.action; }, reduceMotion.matches ? 1500 : 2200);
   }
   function settle(): void {
+    castPicker.close();
     cancelAnimationFrame(layoutFrame);
     overview.settle();
     element.getAnimations({ subtree: true }).forEach(animation => animation.cancel());

@@ -1,0 +1,210 @@
+{
+  "checkedAt": "2026-09-21T05:23:19.194130+00:00",
+  "origin": "http://127.0.0.1:18766",
+  "scope": "本机只读 HTTP；没有操作玩家会话/存档，不是公网部署证据",
+  "assetCount": 27,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "ae832ba9f17050cc9525f813d09d606dea58ce264ce0d8797eafcdf1c60f03d7",
+      "bytes": 2331,
+      "matchesBuild": true
+    },
+    {
+      "path": "/healthz",
+      "status": 200,
+      "sha256": "3b1bf2498d5550473beebc477c91f4214129f1de0ec056d5be2fda92f2295f7f",
+      "bytes": 50
+    },
+    {
+      "path": "/assets/angry-Co9OoY93.webp",
+      "status": 200,
+      "sha256": "de1984c53ec746520b67ce6f7e0f6d475a8cfc4f448345eb0bf3383dcf5e9f6a",
+      "bytes": 98354,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/angry-DlDMJA28.webp",
+      "status": 200,
+      "sha256": "701b2389ee5cbae5269da17e271c22bdcaa8bd9d38d15629e297f03bc18b74bb",
+      "bytes": 101164,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/app-BQ25pdgS.js",
+      "status": 200,
+      "sha256": "2b4ec77f81e58e54d74f3b4595c3f67956b568cf35239c2517f1a0a63fa90225",
+      "bytes": 65840,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/browserAll-DpJfAqVx.js",
+      "status": 200,
+      "sha256": "e839e15af4cd9f7fbedf7649802dac9075971af3efba98868059e7bfc43ca2a8",
+      "bytes": 294,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/characters-C3kBMUAX.js",
+      "status": 200,
+      "sha256": "a6e1ca2ac920931df62b6181a214a9cb7ed6f33cab24dcbe2b5ffc2e7cf4ecac",
+      "bytes": 7382,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/concerned-Csgr0pdv.webp",
+      "status": 200,
+      "sha256": "9d6c046acde0c1778bce17174c6023720838a2f509443927ec77884f742c9170",
+      "bytes": 101086,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/concerned-CuotftN6.webp",
+      "status": 200,
+      "sha256": "7a3751a8a70eff150c0851e1565010ceedf51c9e7f4a28965eddb3d392b90c29",
+      "bytes": 98508,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/hall-Ck14WJ6x.webp",
+      "status": 200,
+      "sha256": "1d0e5031ce7476a4478bd89c885b3e57111af7f6eee688c78d96d7065ec62637",
+      "bytes": 62258,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/happy-BaYW2fLb.webp",
+      "status": 200,
+      "sha256": "395a18a98a7aae4249d3bcc3d98618a74132959f788e9749d72ff9f47cef022b",
+      "bytes": 98354,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/home-BxMZ-YHX.webp",
+      "status": 200,
+      "sha256": "88722a9cebcf6b51d8241cd08815503b35f6f1ec78f24a25d9c8e95280ff25a6",
+      "bytes": 118490,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-CV4SKRs3.css",
+      "status": 200,
+      "sha256": "60bad7956b6cd6044ff3a1f0caa26e268e57ee0129996336b4078b2de6e96662",
+      "bytes": 23490,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-CagWZnWD.js",
+      "status": 200,
+      "sha256": "450b64b871dc7179e221e32d1f1287d2ea3245fec4c9faa85d0f7738d9dfd067",
+      "bytes": 889573,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/index-CmHd7Izm.js",
+      "status": 200,
+      "sha256": "31aa0a13e81804892ccba50c9751e84980bccb05d359127d5c8517b23e3ab419",
+      "bytes": 1248,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/kitchen-CJLXMe0A.webp",
+      "status": 200,
+      "sha256": "b29104f5d1a3905c729a7754981588eaada351676dad5b4ba02ebebe2f96f235",
+      "bytes": 83962,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/neutral-BD0gamOM.webp",
+      "status": 200,
+      "sha256": "45210ebe1179e8fe81a16764fad10a3f65bb2a5d85cc7b56567a20cf033befef",
+      "bytes": 98486,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/neutral-DsTODG3a.webp",
+      "status": 200,
+      "sha256": "3530c53167290f3421e0a9356413a86f90dc8cbfde5b92419f88a454a97d5215",
+      "bytes": 101162,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/neutral-TjB8CyTi.webp",
+      "status": 200,
+      "sha256": "13ac3b244a09a8dec8605c1544045474a19957d3306a50b896967809bbacad03",
+      "bytes": 98420,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/office-4SfhUEtf.webp",
+      "status": 200,
+      "sha256": "354851b97b8fb5aea66d0947d256a58ef24f52e9489d945420a823e60ad14a4b",
+      "bytes": 70906,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/parlor-BQWkvQYT.webp",
+      "status": 200,
+      "sha256": "5ff938272581a93759fb5e7a295643ee1d9c2d6968bb02ca5cdcb67f4608350b",
+      "bytes": 110512,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/play-BglHROVv.js",
+      "status": 200,
+      "sha256": "fae5723381215f690b12d35f89488fecc29e2c6f821f8cacd52499c00f356fe2",
+      "bytes": 76393,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/play-DRcNBhFz.css",
+      "status": 200,
+      "sha256": "04524c829497b26a9409afad550f9f6f90c2461e94f6056f7cfb1f99bb2274d3",
+      "bytes": 15665,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/preload-helper-PPVm8Dsz.js",
+      "status": 200,
+      "sha256": "0bcb72f8ec0d95f592f3a84b3554b9ef5a5325ff5416a9114d6913e03c1c9eb4",
+      "bytes": 1232,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/rooms-DHVoHVyh.js",
+      "status": 200,
+      "sha256": "7cadc12915d8f82a17b3903c29682cb7f8006442ec5d49a56b184c9ca3670d64",
+      "bytes": 2182,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/station-CeCbmI2s.webp",
+      "status": 200,
+      "sha256": "13487d667497a25547a090f664ce55d583c6de0000144806971910809fe8cde8",
+      "bytes": 195828,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/surprised-C6YtAH9D.webp",
+      "status": 200,
+      "sha256": "0c71154dea6554c7718932ad119a531d5ee3a4dca7b0ea582105c7a2e20b2ee4",
+      "bytes": 101222,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/surprised-DCKRd0GR.webp",
+      "status": 200,
+      "sha256": "5aa3c23ab3c44025d3e7ad061aba21646b4560f3287147625510a70f0ad39559",
+      "bytes": 98320,
+      "matchesBuild": true
+    },
+    {
+      "path": "/assets/webworkerAll-Dr_LrqmW.js",
+      "status": 200,
+      "sha256": "7971ee161fe5ff3b434069f0e918937de8cee9bb15aa34ef00850e6e34b1a76b",
+      "bytes": 165,
+      "matchesBuild": true
+    }
+  ]
+}

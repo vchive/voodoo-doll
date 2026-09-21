@@ -1,6 +1,7 @@
 // MW-36 / SP-21 / MW-AC-36, MW-37 / SP-22 / MW-AC-37,
 // MW-38 / SP-23 / MW-AC-38, and MW-39 / SP-24 / MW-AC-39.
 // MW-40 additionally verifies the independently saved overview disclosure.
+// MW-41 covers ambiguous multi-character picking through real imported worlds.
 // Drive the shipped UI against an isolated world.
 // No page/session from a running game is reused, and no model credentials load.
 import assert from 'node:assert/strict';
@@ -22,7 +23,7 @@ const output = resolve(root, 'artifacts', 'playtest', stamp);
 const temporary = await mkdtemp(join(tmpdir(), 'voodoo-playtest-'));
 const report = { startedAt: new Date().toISOString(), cases: [], errors: [], sources: {} };
 await mkdir(output, { recursive: true });
-for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-overview-model.ts', 'hex/play-overview.ts', 'hex/characters.js', 'hex/rooms.js', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
+for (const path of ['scripts/playtest-single-player.mjs', 'hex/play.ts', 'hex/play-state.ts', 'hex/play-guidance.ts', 'hex/play-dialogue.ts', 'hex/play-local.ts', 'hex/play-recovery.ts', 'hex/play-performance.ts', 'hex/play-overview-model.ts', 'hex/play-overview.ts', 'hex/play-cast-picker.ts', 'hex/play-cast-picker.css', 'hex/characters.js', 'hex/rooms.js', 'hex/play-stage.ts', 'hex/play-stage.css', 'hex/play-art.ts', 'hex/play.css', 'backend/app/gameplay.py', 'backend/app/narrative.py', 'backend/app/signal_story.py', 'dist-hex/index.html']) {
   report.sources[path] = createHash('sha256').update(await readFile(join(root, path))).digest('hex');
 }
 report.baseCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -392,6 +393,57 @@ async function toggleOverviewWithoutAction(page, metrics, collapsed, { storageUn
   metrics.overviewDisclosureChecks = (metrics.overviewDisclosureChecks || 0) + 1;
   return geometry;
 }
+async function multiCastFixture(names) {
+  const payload = { schemaVersion: 5, dollName: '小墨', onboardingPhase: 'names-confirmed',
+    story: '三个同事在客厅谈论今天的安排。', confirmedFacts: ['三个同事在客厅谈论今天的安排。'], names,
+    stage: { roomId: 'parlor', present: ['YOU', 'A', 'B', 'C'] } };
+  const path = join(temporary, 'multi-cast-' + names.B.length + '.json');
+  await writeFile(path, JSON.stringify(payload));
+  return path;
+}
+async function overlappingCastPoint(page) {
+  const point = await page.locator('[data-scene-cast-id]').evaluateAll(buttons => {
+    const rectangles = buttons.map(button => ({ id: button.dataset.sceneCastId, box: button.getBoundingClientRect() }));
+    const b = rectangles.find(item => item.id === 'B').box, c = rectangles.find(item => item.id === 'C').box;
+    const left = Math.max(b.left, c.left), right = Math.min(b.right, c.right);
+    const top = Math.max(b.top, c.top), bottom = Math.min(b.bottom, c.bottom);
+    if (right <= left || bottom <= top) return null;
+    const body = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    const hitsBody = body.x >= c.left && body.x <= c.right && body.y >= c.top && body.y <= c.bottom;
+    const hit = hitsBody ? body : { x: (left + right) / 2, y: (top + bottom) / 2 };
+    return { ...hit, kind: hitsBody ? 'B-body' : 'B-C-overlap', candidates: rectangles.filter(({ box }) =>
+      hit.x >= box.left && hit.x <= box.right && hit.y >= box.top && hit.y <= box.bottom).map(({ id }) => id).sort() };
+  });
+  assert(point && point.candidates.includes('B') && point.candidates.includes('C'), '专项必须实际点到B/C热点交叠，不能以互不相交的点假冒覆盖');
+  return point;
+}
+async function assertCastPickerLayout(page, names, candidates) {
+  const picker = page.locator('dialog[data-cast-picker]');
+  await picker.waitFor();
+  assert(await picker.evaluate(dialog => dialog.open), '交谈选择必须使用已打开的原生对话框');
+  assert.match(await picker.innerText(), /和谁交谈/);
+  const ids = await picker.locator('[data-cast-picker-id]').evaluateAll(buttons => buttons.map(button => button.dataset.castPickerId).sort());
+  assert.deepEqual(ids, candidates, '歧义选择只列实际重叠的在场候选');
+  const geometry = [];
+  for (const id of ids) {
+    const button = picker.locator(`[data-cast-picker-id="${id}"]`);
+    assert.equal((await button.innerText()).trim(), names[id], '候选显示完整人物姓名');
+    await button.scrollIntoViewIfNeeded();
+    const rect = await button.evaluate(node => {
+      const box = node.getBoundingClientRect(), hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return { x: box.x, y: box.y, right: box.right, bottom: box.bottom, width: box.width, height: box.height,
+        viewport: { width: innerWidth, height: innerHeight }, unobstructed: Boolean(hit && node.contains(hit)),
+        scrollWidth: node.scrollWidth, clientWidth: node.clientWidth };
+    });
+    assert(rect.width >= 44 && rect.height >= 44, '每个人物选择需要44像素触区');
+    assert(rect.x >= 0 && rect.y >= 0 && rect.right <= rect.viewport.width + 1 && rect.bottom <= rect.viewport.height + 1 && rect.unobstructed,
+      '交谈候选必须位于可视区并能点中：' + id);
+    assert(rect.scrollWidth <= rect.clientWidth + 1, '长姓名必须换行，不能横向裁切：' + id);
+    geometry.push({ id, ...rect });
+  }
+  assert(await picker.getByRole('button', { name: '取消选择交谈对象', exact: true }).isVisible(), '交谈选择必须可取消');
+  return geometry;
+}
 async function assertHybridLayout(page, expectedView) {
   await page.waitForFunction(view => document.querySelector('.vn-stage')?.dataset.view === view, expectedView);
   await page.waitForFunction(() => document.querySelector('.vn-overview')?.dataset.status === 'ready');
@@ -485,6 +537,86 @@ try {
   await startServer();
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
   report.browser = browser.version();
+  for (const [width, height] of [[568, 320], [844, 390], [320, 568]]) {
+    await scenario(`multi-cast-${width}x${height}`, { width, height }, async (page, context, metrics) => {
+      const names = width === 320 ? { A: '林川（档案馆的值班同事）', B: '沈青（档案馆的夜班同事）', C: '周野（地铁站的值班同事）' }
+        : { A: '林川', B: '沈青', C: '周野' };
+      await importSave(page, await multiCastFixture(names));
+      await readToChoices(page, metrics);
+      await assertHybridLayout(page, 'overview'); await waitForPortraits(page);
+      assert.deepEqual((await state(page)).snapshot.present, ['YOU', 'A', 'B', 'C']);
+      assert.deepEqual((await session(page)).snapshot.present, ['YOU', 'A', 'B', 'C'], '同场人物必须来自真实服务端导入结果');
+      metrics.fixture = 'Real UI import of a supported v5 save in this isolated world; no mocked snapshot, browser cache or database edits.';
+      // An actual pointer click at B's body/intersection must not silently
+      // dispatch C merely because C's transparent hit box is on top.
+      const point = await overlappingCastPoint(page);
+      metrics.overlap = point;
+      const before = await state(page), beforePosts = metrics.posts.length;
+      await page.mouse.click(point.x, point.y);
+      metrics.pickerGeometry = await assertCastPickerLayout(page, names, point.candidates);
+      assert.equal(metrics.posts.length, beforePosts, '打开歧义选择不能自动向最上层角色发送intent');
+      assert.deepEqual(await state(page), before, '打开歧义选择不能修改世界或阅读');
+      await page.screenshot({ path: join(output, metrics.name + '-picker.png') });
+      await page.getByRole('button', { name: '取消选择交谈对象', exact: true }).click();
+      await page.locator('dialog[data-cast-picker][open]').waitFor({ state: 'hidden' });
+      assert.equal(metrics.posts.length, beforePosts, '取消人物选择必须零POST');
+      assert.deepEqual(await state(page), before);
+      await page.mouse.click(point.x, point.y);
+      await assertCastPickerLayout(page, names, point.candidates);
+      await resizeViewport(page, { width: height, height: width });
+      await assertCastPickerLayout(page, names, point.candidates);
+      assert.equal(metrics.posts.length, beforePosts, '人物选择中旋转不能提交行动');
+      assert.deepEqual(await state(page), before);
+      await resizeViewport(page, { width, height });
+      const intentResponse = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/api/v4/play/intent'));
+      await page.locator('[data-cast-picker-id="B"]').click();
+      const intent = await (await intentResponse).json();
+      await page.locator('#intent-preview').waitFor();
+      assert.deepEqual(intent.preview.target, ['B'], '明确选择B后服务端草稿必须指向B，不能误投C');
+      assert(intent.preview.text.includes(names.B), '交谈预览必须写出实际选择的完整姓名');
+      assert.equal(await page.locator('dialog[data-cast-picker][open]').count(), 0, '选择角色后关闭旧选择框');
+      await assertIntentPreviewLayout(page);
+      assert.equal(metrics.posts.length - beforePosts, 1, '明确选人只创建一次预览');
+      assert.deepEqual((await state(page)).snapshot, before.snapshot);
+      await page.getByRole('button', { name: '先不做', exact: true }).click(); await settled(page);
+      assert.equal(metrics.posts.length - beforePosts, 2, '取消预览只产生intent与cancel');
+      assert.deepEqual((await state(page)).snapshot, before.snapshot);
+      assert(metrics.posts.slice(beforePosts).every(path => !path.endsWith('/confirm')));
+      // Keyboard focus already identifies one actor, so Enter preserves the
+      // existing direct preview path without another ambiguous-choice step.
+      await page.locator('[data-scene-cast-id="B"]').focus();
+      await page.keyboard.press('Enter');
+      await page.locator('#intent-preview').waitFor();
+      assert.equal(await page.locator('dialog[data-cast-picker][open]').count(), 0);
+      const committedResponse = page.waitForResponse(response => response.request().method() === 'POST' && /\/api\/v4\/play\/intent\/[^/]+\/confirm$/.test(new URL(response.url()).pathname));
+      await confirm(page);
+      const committed = await (await committedResponse).json();
+      assert(committed.events.some(event => event.actor === 'YOU' && event.target === 'B'), '最终真实回执必须是YOU向B交谈');
+      assert(!committed.events.some(event => event.actor === 'YOU' && event.target === 'C'), '交谈确认不能出现误向C的玩家行动');
+      metrics.confirmedTarget = 'B'; metrics.actions++;
+      await waitForPortraits(page); await assertHybridLayout(page, 'portrait');
+      await page.screenshot({ path: join(output, metrics.name + '-portraits.png') });
+      await readToChoices(page, metrics);
+      const departurePoint = await overlappingCastPoint(page);
+      await page.mouse.click(departurePoint.x, departurePoint.y);
+      await assertCastPickerLayout(page, names, departurePoint.candidates);
+      // Another real tab moves the shared world. The product has no automatic
+      // cross-tab subscription, so this specifically covers reload recovery,
+      // not an invented live-update notification while the picker is open.
+      const other = await context.newPage(); trackPage(other, metrics);
+      await other.goto(base); await settled(other);
+      await preview(other, '去办公室'); await confirm(other);
+      const elsewhere = (await session(other)).snapshot;
+      assert.equal(elsewhere.roomId, 'office');
+      assert(!elsewhere.present.includes('B'));
+      await page.reload(); await settled(page);
+      assert.equal(await page.locator('dialog[data-cast-picker][open]').count(), 0, '离场刷新后不能恢复旧候选框');
+      assert.deepEqual((await state(page)).snapshot.present, elsewhere.present);
+      assert.equal(await page.locator('[data-scene-cast-id="B"]').count(), 0, '离场后不能保留旧B热点');
+      await other.close();
+      metrics.departureCoverage = 'Another tab performed an authoritative move; reload removed the stale picker and departed NPC hotspots. Live stage.update cleanup is a separate component check.';
+    });
+  }
   for (const [width, height] of [[844, 390], [568, 320], [390, 844], [320, 568]]) {
     await scenario(`hybrid-stage-${width}x${height}`, { width, height }, async (page, context, metrics) => {
       const viewport = { width, height }, rotated = { width: height, height: width };

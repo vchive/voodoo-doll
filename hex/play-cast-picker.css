@@ -1,0 +1,10 @@
+/* MW-41: ambiguous scene clicks must name a person before opening a preview. */
+.vn-cast-picker { width:min(360px,calc(100vw - 24px)); max-height:min(460px,calc(100dvh - 24px)); box-sizing:border-box; padding:16px; border:1px solid #cdbd9f8c; border-radius:8px; color:#f3e6d1; background:#1c2738; box-shadow:0 14px 48px #050b2180; }
+.vn-cast-picker[open] { display:flex; flex-direction:column; gap:12px; }
+.vn-cast-picker::backdrop { background:#0c1526b8; }
+.vn-cast-picker h2 { flex-shrink:0; margin:0; font-size:17px; line-height:1.5; }
+.vn-cast-picker-people { display:grid; grid-template-columns:1fr; grid-auto-rows:minmax(44px,auto); gap:8px; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+.vn-cast-picker-person, .vn-cast-picker-cancel { box-sizing:border-box; min-height:44px; padding:9px 12px; border:1px solid #d2c1a35e; border-radius:4px; color:#f3e6d1; background:#a2abbd12; font:inherit; font-size:14px; line-height:1.5; text-align:left; cursor:pointer; overflow-wrap:anywhere; }
+.vn-cast-picker-cancel { flex-shrink:0; text-align:center; color:#d8c4a4; background:transparent; }
+.vn-cast-picker-person:focus-visible, .vn-cast-picker-cancel:focus-visible { outline:2px solid #eed4ac; outline-offset:-3px; }
+.vn-cast-picker-person:hover { background:#dbc18c20; }

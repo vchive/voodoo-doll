@@ -1,6 +1,7 @@
 import { createGalgameStage, type GalgameStage } from './play-stage';
 import { ART_CREDITS, GALGAME_ART } from './play-art';
 import './play-stage.css';
+import './play-cast-picker.css';
 import { PlayApiClient, PlayApiError, type IntentDraftResponse, type PlayEvent, type PlayProfile, type PlaySnapshot, type SessionResponse, type StoryDraftResponse, type StoryInput } from './play-api';
 import { appendLocalLogEntry, createLocalSaveEnvelope, emptyLocalState, hasCompletedLocalWorld, initialPlaySnapshot, normalizeLocalState, PLAY_OFFLINE_BACKUP_KEY, PLAY_STORAGE_KEY, restorePendingStoryDraft, shouldKeepLocalBranch, type LocalLogEntry, type LocalLogKind, type LocalState } from './play-state';
 
@@ -132,7 +133,8 @@ function renderSnapshot(ui: Ui, state: LocalState): void {
   if (!ui.content.querySelector('#single-stage-host')) {
     const stageHost = document.createElement('div'); stageHost.className = 'single-stage'; stageHost.id = 'single-stage-host'; ui.content.prepend(stageHost);
   }
-  const meta = ui.content.querySelector('#single-meta'); if (meta) meta.textContent = `在场 · ${ids.map((id) => displayName(id, state.profile)).join('、')}`;
+  const meta = ui.content.querySelector<HTMLElement>('#single-meta');
+  if (meta) { meta.textContent = `在场 · ${ids.map((id) => displayName(id, state.profile)).join('、')}`; meta.title = meta.textContent; }
   if (ui.onIntent && ui.content.querySelector('#single-quick-actions')) { renderGuidance(ui, state, ui.onIntent); renderQuickActions(ui, state, ui.onIntent); }
 }
 function clockText(clock: PlaySnapshot['clock']): string { if (!clock) return '时间未知'; const minute = Math.max(0, Math.min(1439, Number(clock.minute) || 0)); return `第 ${Number(clock.day) || 1} 天 ${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`; }

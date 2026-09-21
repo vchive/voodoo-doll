@@ -1,0 +1,44 @@
+{
+  "testedAt": "2026-09-21T05:23:34.989Z",
+  "scope": "独立展示组件fixture，直接挂载真实createGalgameStage；不是游戏后端或真实存档验收",
+  "browser": "153.0.8010.52",
+  "viewport": {
+    "width": 568,
+    "height": 320
+  },
+  "sources": {
+    "hex/play-stage.ts": "afd4f780366704bfd88cb7c9667f66ca733e38b5ab034aff870c2e4c627046b8",
+    "hex/play-stage.css": "8188fa82b63d15bc347aa3dfe4c9a6be4ff8d5d8d2c750833f77dfb81dd160e3",
+    "hex/play-cast-picker.ts": "2e744423b24a083a6748b45f42c0c102ddd22f91566acba4ef0d773bcb49afbf",
+    "hex/play-cast-picker.css": "d36be6fa9786b081fef2169db8b03fc38a87e1bffc838b4649b7daf96ec56afe",
+    "hex/play-overview.ts": "af4061ffcd2e2acab5cbdb8ff280db87c03e2e3bf2029f0439a59bf35e486944",
+    "hex/play-overview-model.ts": "0fe5ea7758f3222cf09abd023c0eb4c7480513be84f94503565eab074874288c"
+  },
+  "checks": [
+    {
+      "name": "stage.update makes B leave",
+      "open": false,
+      "calls": [],
+      "present": [
+        "A",
+        "C"
+      ],
+      "pass": true
+    },
+    {
+      "name": "stage.setInteractionEnabled(false)",
+      "open": false,
+      "calls": [],
+      "pass": true
+    },
+    {
+      "name": "stage.settle()",
+      "open": false,
+      "calls": [],
+      "pass": true
+    }
+  ],
+  "pageErrors": [],
+  "pass": true,
+  "screenshot": "multicast-stage/component-lifecycle-picker.png"
+}
